@@ -1,0 +1,85 @@
+const express = require('express');
+const router = express.Router();
+
+const LoaiPhongModel = require('../model/loaiphongs');
+
+// get list 
+router.get('/', async (req, res) => {
+    const loaiphongs = await LoaiPhongModel.find().sort({createdAt : -1});
+    res.send(loaiphongs);
+});
+
+// delete
+router.delete('/delete/:id', async (req, res) => {
+    const { id } = req.params;
+    const result = await LoaiPhongModel.deleteOne({ _id: id });
+    if (result) {
+        res.json({
+            "status": "200",
+            "msg": "Delete success",
+            "data": result
+        })
+    } else {
+        res.json({
+            "status": "400",
+            "msg": "Delete fail",
+            "data": []
+        })
+    }
+})
+
+// post - add
+router.post('/post', async (req, res) => {
+    const data = req.body;
+    const loaiphong = new LoaiPhongModel({
+        tenLoaiPhong: data.tenLoaiPhong,
+        giuong: data.giuong,
+        soLuongKhach: data.soLuongKhach,
+        dienTich: data.dienTich,
+        giaTien: data.giaTien,
+        hinhAnh: data.hinhAnh,
+        moTa: data.moTa,
+        trangThai: data.trangThai,
+    })
+
+    const result = await loaiphong.save();
+
+    if (result) {
+        res.json({
+            status: 200,
+            msg: "Add success",
+            data: result
+        })
+    } else {
+        res.json({
+            status: 400,
+            msg: "Add fail",
+            data: []
+        })
+    }
+})
+
+// update - put 
+router.put('/put/:id', async (req, res) => {
+    const { id } = req.params;
+    const data = req.body;
+
+    // Sử dụng findByIdAndUpdate để tìm và cập nhật dữ liệu
+    const result = await LoaiPhongModel.findByIdAndUpdate(id, data, { new: true });
+
+    if (result) {
+        res.json({
+            status: 200,
+            msg: "Update success",
+            data: result
+        })
+    } else {
+        res.json({
+            status: 400,
+            msg: "Update fail",
+            data: []
+        })
+    }
+})
+
+module.exports = router;
