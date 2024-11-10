@@ -1,30 +1,31 @@
 const express = require('express');
 const router = express.Router();
 
-const ChiTietHoaDonModel = require('../model/chitiethoadons');
+const YeuThichModel = require('../model/yeuthichs');
 
 // get list
 router.get('/', async (req, res) => {
-    const {id_HoaDon} = req.query;
+    const { id_NguoiDung} = req.query;
 
-    const filter = {};
-    if(id_HoaDon){
-        filter.id_HoaDon = id_HoaDon
-    }
+     // Xây dựng điều kiện lọc dựa trên các tham số có sẵn
+     let filter = {};
+     if (id_NguoiDung) {
+         filter.id_NguoiDung = id_NguoiDung;
+     }
 
-    const chitiethoadons = await ChiTietHoaDonModel.find(filter).sort({createdAt : -1});
-    res.send(chitiethoadons);
+    const yeuthichs = await YeuThichModel.find(filter).sort({createdAt : -1});
+    res.send(yeuthichs);
 });
 
 
-// delete hdct
+// delete
 router.delete('/delete/:id', async (req, res) => {
     const { id } = req.params;
-    const result = await ChiTietHoaDonModel.findByIdAndDelete({ _id: id });
+    const result = await YeuThichModel.findByIdAndDelete({ _id: id });
     if (result) {
         res.json({
             "status": "200",
-            "msg": "Đã xóa phòng khỏi hóa đơn",
+            "msg": "Đã xóa yêu thích khỏi danh sách",
             "data": result
         })
     } else {
@@ -39,23 +40,31 @@ router.delete('/delete/:id', async (req, res) => {
 // post - add
 router.post('/post', async (req, res) => {
     const data = req.body;
-    const id_HoaDon = data.id_HoaDon;
-    if(id_HoaDon == null || id_HoaDon == undefined){
-        res.status(403).json({ msg: "Chưa tạo id hóa đơn" });
-    }
-    const chitiethoadon = new ChiTietHoaDonModel({
-        id_Phong: data.id_Phong,
-        id_HoaDon: data.id_HoaDon,
-        giaPhong: data.giaPhong,
-        buaSang: data.buaSang,
+
+    // Kiểm tra sự tồn tại của đánh giá trùng lặp
+    const existingReview = await YeuThichModel.findOne({
+        id_NguoiDung: data.id_NguoiDung,
+        id_LoaiPhong: data.id_LoaiPhong
+    });
+
+    if (existingReview) {
+        return res.json({
+            status: 303,
+            msg: "Loại phòng này bạn đã thêm vào yêu thích",
+        });
+    }       
+
+    const yeuthich = new YeuThichModel({
+        id_LoaiPhong: data.id_LoaiPhong,
+        id_NguoiDung: data.id_NguoiDung,
     })
 
-    const result = await chitiethoadon.save();
+    const result = await yeuthich.save();
 
     if (result) {
         res.json({
             status: 200,
-            msg: "Add success",
+            msg: "Đã thêm loại phòng vào yêu thích",
             data: result
         })
     } else {
@@ -73,7 +82,7 @@ router.put('/put/:id', async (req, res) => {
     const data = req.body;
 
     // Sử dụng findByIdAndUpdate để tìm và cập nhật dữ liệu
-    const result = await ChiTietHoaDonModel.findByIdAndUpdate(id, data, { new: true });
+    const result = await YeuThichModel.findByIdAndUpdate(id, data, { new: true });
 
     if (result) {
         res.json({

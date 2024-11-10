@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const NguoiDungModel = new Schema({
-    tenNguoiDung : { type : String , require : true},
-    soDienThoai : { type : String, require : true, unique : true, maxlength: 10 },
-    matKhau : { type : String, require : true},
+    tenNguoiDung : { type : String , required : true},
+    soDienThoai : { type : String, required : true, unique : true, maxlength: 10 },
+    matKhau : { type : String, required : true},
     email : { type : String},
     hinhAnh : { type : String},
     chucVu : { type : Number, default : 0}, 

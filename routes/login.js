@@ -16,7 +16,7 @@ router.post("/", async (req, res) => {
           .json({ msg: "Số điện thoại chưa đăng ký tài khoản!" });
       } else {
         if (nguoidung.matKhau != matKhau) {
-          return res.status(404).json({ msg: "Password chưa đúng" });
+          return res.status(404).json({ msg: "matKhau chưa đúng" });
         }
         nguoidung.matKhau = null;
         return res.json({
@@ -31,5 +31,36 @@ router.post("/", async (req, res) => {
     }
   }
 });
+
+router.put('/doimatkhau/:id', async (req,res) => {
+  const {id} = req.params;
+  const {matKhauCu, matKhauMoi} = req.body;
+  const nguoidung = await NguoiDungModel.findById(id);
+  if(nguoidung != null){
+
+      if(matKhauCu != nguoidung.matKhau){
+          return res
+        .status(404)
+        .json({ msg: "Mật khẩu không chính xác!" });
+      }
+
+      if(matKhauMoi == null || matKhauMoi == undefined){
+          return res
+        .status(403)
+        .json({ msg: "Chưa nhập mật khẩu mới" });
+      }
+
+      const result = await NguoiDungModel.findByIdAndUpdate(id,{matKhau: matKhauMoi}, {new : true});
+      if(result){
+          return res
+          .status(200)
+          .json({ msg: "Đổi mật khẩu thành công, vui lòng đăng nhập lại" });
+      }else{
+          return res
+          .status(404)
+          .json({ msg: "Đổi mật khẩu không thành công" });
+      } 
+  }
+})
 
 module.exports = router;

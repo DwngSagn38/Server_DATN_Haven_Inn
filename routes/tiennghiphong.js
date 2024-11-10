@@ -5,75 +5,98 @@ const TienNghiPhongModel = require('../model/tiennghiphongs');
 
 // get list
 router.get('/', async (req, res) => {
-    const tienNghiPhongs = await TienNghiPhongModel.find().sort({createdAt : -1});
-    res.send(tienNghiPhongs);
+    try {
+        const { id_LoaiPhong } = req.query;  // Sử dụng req.query để lấy id từ query string
+
+        // Nếu có id_LPhong, lọc theo id_LoaiPhong
+        if (id_LoaiPhong) {
+            const tienNghiLPhongs = await TienNghiPhongModel.find({ id_LoaiPhong: id_LoaiPhong }).sort({ createdAt: -1 });
+            return res.json({
+                status: 200,
+                msg: "Lấy danh sách tiện nghi cho loại phòng",
+                data: tienNghiLPhongs
+            });
+        }
+
+        // Nếu không có id_LPhong, trả về tất cả
+        const tienNghiPhongs = await TienNghiPhongModel.find().sort({ createdAt: -1 });
+        res.json({
+            status: 200,
+            msg: "Lấy danh sách tất cả tiện nghi phòng",
+            data: tienNghiPhongs
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: 500,
+            msg: "Lỗi khi lấy danh sách tiện nghi phòng",
+            error: error.message
+        });
+    }
 });
 
 // delete
 router.delete('/delete/:id', async (req, res) => {
-    const { id } = req.params;
-    const result = await TienNghiPhongModel.findByIdAndDelete({ _id: id });
-    if (result) {
-        res.json({
-            "status": "200",
-            "msg": "Đã xóa tiện nghi khỏi phòng",
-            "data": result
-        })
-    } else {
-        res.json({
-            "status": "400",
-            "msg": "Delete fail",
-            "data": []
-        })
+    try {
+        const { id } = req.params;
+        const result = await TienNghiPhongModel.findByIdAndDelete(id);
+        
+        if (result) {
+            res.json({
+                status: 200,
+                msg: "Đã xóa tiện nghi khỏi phòng",
+                data: result
+            });
+        } else {
+            res.status(404).json({
+                status: 404,
+                msg: "Không tìm thấy tiện nghi",
+                data: []
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: 500,
+            msg: "Lỗi khi xóa tiện nghi",
+            error: error.message
+        });
     }
-})
+});
 
 // post - add
 router.post('/post', async (req, res) => {
-    const data = req.body;
-    const tiennghiphong = new TienNghiPhongModel({
-        id_TienNghi: data.id_TienNghi,
-        id_Phong: data.id_Phong,
-    })
+    try {
+        const data = req.body;
 
-    const result = await tiennghiphong.save();
+        const tiennghiphong = new TienNghiPhongModel({
+            id_TienNghi: data.id_TienNghi,
+            id_LoaiPhong: data.id_LoaiPhong,
+        });
 
-    if (result) {
-        res.json({
-            status: 200,
-            msg: "Add success",
-            data: result
-        })
-    } else {
-        res.json({
-            status: 400,
-            msg: "Add fail",
-            data: []
-        })
+        const result = await tiennghiphong.save();
+
+        if (result) {
+            res.json({
+                status: 200,
+                msg: "Thêm tiện nghi thành công",
+                data: result
+            });
+        } else {
+            res.status(400).json({
+                status: 400,
+                msg: "Thêm tiện nghi thất bại",
+                data: []
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: 500,
+            msg: "Lỗi khi thêm tiện nghi phòng",
+            error: error.message
+        });
     }
-})
-
-// update - put
-router.put('/put/:id', async (req, res) => {
-    const { id } = req.params;
-    const data = req.body;
-
-    // Sử dụng findByIdAndUpdate để tìm và cập nhật dữ liệu
-    const result = await TienNghiPhongModel.findByIdAndUpdate(id, data, { new: true });
-
-    if (result) {
-        res.json({
-            status: 200,
-            msg: "Update success",
-            data: result
-        })
-    } else {
-        res.json({
-            status: 400,
-            msg: "Update fail",
-            data: []
-        })
-    }
-})
+});
 
 module.exports = router;

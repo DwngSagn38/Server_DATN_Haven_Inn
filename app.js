@@ -19,17 +19,18 @@ var phongRouter = require('./routes/phong');
 var thongbaoRouter = require('./routes/thongbao');
 var tiennghiRouter = require('./routes/tiennghi');
 var tiennghiphongRouter = require('./routes/tiennghiphong');
+var YeuThichRouter = require('./routes/yeuthich');
 
 var app = express();
 
 var database = require('./config/db')
 
-const PORT = 3000;
-const HOST = "192.168.100.3";  // dia chi wifi
+// const PORT = 3000;
+// const HOST = "192.168.100.3";  // dia chi wifi
 
-app.listen(PORT,HOST, () => { 
-  console.log(`Server is running on http://${HOST}:${PORT}`);
-});
+// app.listen(PORT,HOST, () => { 
+//   console.log(`Server is running on http://${HOST}:${PORT}`);
+// });
 
 
 // view engine setup
@@ -43,20 +44,21 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/amthuc', amthucRouter);
-app.use('/chitiethoadon', chitiethoadonRouter);
-app.use('/coupon', couponRouter);
-app.use('/danhgia', danhgiaRouter);
-app.use('/dichvu', dichvuRouter);
-app.use('/hoadon', hoadonRouter);
-app.use('/hotro', hotroRouter);
-app.use('/loaiphong', loaiphongRouter);
+app.use('/amthucs', amthucRouter);
+app.use('/chitiethoadons', chitiethoadonRouter);
+app.use('/coupons', couponRouter);
+app.use('/danhgias', danhgiaRouter);
+app.use('/dichvus', dichvuRouter);
+app.use('/hoadons', hoadonRouter);
+app.use('/hotros', hotroRouter);
+app.use('/loaiphongs', loaiphongRouter);
 app.use('/login', loginRouter);
-app.use('/nguoidung', nguoidungRouter);
-app.use('/phong', phongRouter);
-app.use('/thongbao', thongbaoRouter);
-app.use('/tiennghi', tiennghiRouter);
-app.use('/tiennghiphong', tiennghiphongRouter);
+app.use('/nguoidungs', nguoidungRouter);
+app.use('/phongs', phongRouter);
+app.use('/thongbaos', thongbaoRouter);
+app.use('/tiennghis', tiennghiRouter);
+app.use('/tiennghiphongs', tiennghiphongRouter);
+app.use('/yeuthichs', YeuThichRouter);
 
 database.connect();
 // catch 404 and forward to error handler

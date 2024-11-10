@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const DichVuModel = new Schema({
-    tenDichVu : { type : String , require : true},
+    tenDichVu : { type : String , required : true},
     hinhAnh : { type : String},
     moTa : { type : String}
 },{

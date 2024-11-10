@@ -5,7 +5,15 @@ const HoTroModel = require('../model/hotros');
 
 // get list
 router.get('/', async (req, res) => {
-    const hotros = await HoTroModel.find().sort({createdAt : -1});
+    const { id_NguoiDung} = req.query;
+
+    // Xây dựng điều kiện lọc dựa trên các tham số có sẵn
+    let filter = {};
+    if (id_NguoiDung) {
+        filter.id_NguoiDung = id_NguoiDung;
+    }
+
+    const hotros = await HoTroModel.find(filter).sort({createdAt : -1});
     res.send(hotros);
 });
 
@@ -53,28 +61,42 @@ router.post('/post', async (req, res) => {
         })
     }
 })
-
-// update - put
-router.put('/put/:id', async (req, res) => {
+// update trạng thái - put
+router.put('/update-status/:id', async (req, res) => {
     const { id } = req.params;
-    const data = req.body;
+    const { trangThai } = req.body;
 
-    // Sử dụng findByIdAndUpdate để tìm và cập nhật dữ liệu
-    const result = await HoTroModel.findByIdAndUpdate(id, data, { new: true });
-
-    if (result) {
-        res.json({
-            status: 200,
-            msg: "Update success",
-            data: result
-        })
-    } else {
-        res.json({
+    // Kiểm tra xem trangThai có được cung cấp trong body không
+    if (trangThai == null) {
+        return res.json({
             status: 400,
-            msg: "Update fail",
-            data: []
-        })
+            msg: "Trạng thái không được cung cấp"
+        });
     }
-})
+
+    try {
+        // Chỉ cập nhật trường trangThai
+        const result = await HoTroModel.findByIdAndUpdate(id, { trangThai: trangThai }, { new: true });
+
+        if (result) {
+            res.json({
+                status: 200,
+                msg: "Cập nhật trạng thái thành công",
+                data: result
+            });
+        } else {
+            res.json({
+                status: 404,
+                msg: "Không tìm thấy hỗ trợ để cập nhật"
+            });
+        }
+    } catch (error) {
+        res.json({
+            status: 500,
+            msg: "Có lỗi xảy ra trong quá trình cập nhật",
+            error: error.message
+        });
+    }
+});
 
 module.exports = router;

@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const HoTroModel = new Schema({
     id_NguoiDung: { type: Schema.Types.ObjectId, ref: 'nguoidung' },
-    vanDe : { type : String , require : true},
+    vanDe : { type : String , required : true},
     trangThai : { type : Number, default : 0} // 0 : chua xu ly, 1 : dang xu ly, 2 : da xu ly
 },{
     timestamps : true

@@ -5,7 +5,18 @@ const PhongModel = require('../model/phongs');
 
 // get list 
 router.get('/', async (req, res) => {
-    const phongs = await PhongModel.find().sort({createdAt : -1});
+    const { id_LoaiPhong, id } = req.query; 
+
+    let filter = {};
+    if (id) {
+        filter._id = id
+    }
+    if (id_LoaiPhong) {
+        filter.id_LoaiPhong = id_LoaiPhong
+    } else {
+        
+    }
+    const phongs = await PhongModel.find(filter).sort({ createdAt: -1 });
     res.send(phongs);
 });
 
@@ -34,6 +45,7 @@ router.post('/post', async (req, res) => {
     const phong = new PhongModel({
         soPhong: data.soPhong,
         id_LoaiPhong: data.id_LoaiPhong,
+        VIP: data.VIP,
         trangThai: data.trangThai,
     })
 
@@ -76,5 +88,5 @@ router.put('/put/:id', async (req, res) => {
         })
     }
 })
-
+ 
 module.exports = router;

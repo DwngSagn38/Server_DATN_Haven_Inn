@@ -1,80 +1,83 @@
 const express = require('express');
 const router = express.Router();
-
 const TienNghiModel = require('../model/tiennghis');
 
-// get list
+// GET list
 router.get('/', async (req, res) => {
-    const tienNghis = await TienNghiModel.find().sort({createdAt : -1});
-    res.send(tienNghis);
+    try {
+        const tienNghis = await TienNghiModel.find().sort({ createdAt: -1 });
+        res.status(200).json(tienNghis);
+    } catch (error) {
+        res.status(500).json({ status: 500, msg: "Error fetching data", error: error.message });
+    }
 });
 
-// delete
+// DELETE
 router.delete('/delete/:id', async (req, res) => {
-    const { id } = req.params;
-    const result = await TienNghiModel.findByIdAndDelete({ _id: id });
-    if (result) {
-        res.json({
-            "status": "200",
-            "msg": "Delete success",
-            "data": result
-        })
-    } else {
-        res.json({
-            "status": "400",
-            "msg": "Delete fail",
-            "data": []
-        })
+    try {
+        const { id } = req.params;
+        const result = await TienNghiModel.findByIdAndDelete(id);
+
+        if (result) {
+            res.status(200).json({
+                status: 200,
+                msg: "Delete success",
+                data: result
+            });
+        } else {
+            res.status(404).json({
+                status: 404,
+                msg: "Delete fail, item not found",
+                data: []
+            });
+        }
+    } catch (error) {
+        res.status(500).json({ status: 500, msg: "Error deleting data", error: error.message });
     }
-})
+});
 
-// post - add
+// POST - add
 router.post('/post', async (req, res) => {
-    const data = req.body;
-    const tiennghi = new TienNghiModel({
-        tenTienNghi: data.tenTienNghi,
-        moTa: data.moTa,
-        icon: data.icon,
-    })
+    try {
+        const { tenTienNghi, moTa, icon } = req.body;
+        const tiennghi = new TienNghiModel({ tenTienNghi, moTa, icon });
+        const result = await tiennghi.save();
 
-    const result = await tiennghi.save();
-
-    if (result) {
-        res.json({
-            status: 200,
+        res.status(201).json({
+            status: 201,
             msg: "Add success",
             data: result
-        })
-    } else {
-        res.json({
-            status: 400,
-            msg: "Add fail",
-            data: []
-        })
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, msg: "Add fail", error: error.message });
     }
-})
+});
 
-// update - put
+// PUT - update
 router.put('/put/:id', async (req, res) => {
-    const { id } = req.params;
-    const data = req.body;
+    try {
+        const { id } = req.params;
+        const data = req.body;
 
-    // Sử dụng findByIdAndUpdate để tìm và cập nhật dữ liệu
-    const result = await TienNghiModel.findByIdAndUpdate(id, data, { new: true });
+        // Tìm và cập nhật
+        const result = await TienNghiModel.findByIdAndUpdate(id, data, { new: true });
 
-    if (result) {
-        res.json({
-            status: 200,
-            msg: "Update success",
-            data: result
-        })
-    } else {
-        res.json({
-            status: 400,
-            msg: "Update fail",
-            data: []
-        })
+        if (result) {
+            res.status(200).json({
+                status: 200,
+                msg: "Update success",
+                data: result
+            });
+        } else {
+            res.status(404).json({
+                status: 404,
+                msg: "Update fail, item not found",
+                data: []
+            });
+        }
+    } catch (error) {
+        res.status(500).json({ status: 500, msg: "Update fail", error: error.message });
     }
-})
+});
 
 module.exports = router;

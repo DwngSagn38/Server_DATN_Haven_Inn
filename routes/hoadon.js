@@ -4,25 +4,36 @@ const router = express.Router();
 const HoadonModel = require('../model/hoadons');
 
 router.get('/', async (req, res) => {
-    const { trangThai } = req.query;
-    if (trangThai != null) {
-        const hoadons = await HoadonModel.find({ trangThai: trangThai }).sort({createdAt: -1});
-        res.send(hoadons);
-    } else {
-        const hoadons = await HoadonModel.find().sort({createdAt: -1});
-        res.send(hoadons)
-    }
-});
+    const { id_NguoiDung, trangThai} = req.query;
 
+     // Xây dựng điều kiện lọc dựa trên các tham số có sẵn
+     let filter = {};
+     if (id_NguoiDung) {
+         filter.id_NguoiDung = id_NguoiDung;
+     }
+     if (trangThai) {
+        filter.trangThai = trangThai;
+    }
+
+    const hoadons = await HoadonModel.find(filter).sort({createdAt: -1});
+    res.send(hoadons)
+});
+ 
 // post - thêm hóa đơn
 router.post('/post', async (req, res) => {
     try {
         const data = req.body;
         const hoadon = new HoadonModel({
             id_NguoiDung: data.id_NguoiDung,
+            id_Coupon: data.id_Coupon,
             ngayNhanPhong: data.ngayNhanPhong,
             ngayTraPhong : data.ngayTraPhong,
-            soLuongKhach : data.soLuongKhach
+            soLuongKhach : data.soLuongKhach,
+            soLuongPhong : data.soLuongPhong,
+            ngayThanhToan : data.ngayThanhToan,
+            phuongThucThanhToan : data.phuongThucThanhToan,
+            trangThai : data.trangThai,
+            ghiChu : data.ghiChu,
         })
 
         const result = await hoadon.save();
@@ -71,8 +82,8 @@ router.delete('/delete/:id', async (req, res) => {
 })
 
 
-// update - update-trangthai hóa đơn
-router.put('/update/:id', async (req, res) => {
+// put - update-trangthai hóa đơn
+router.put('/put/:id', async (req, res) => {
     const { id } = req.params;
     const data = req.body;
 

@@ -1,80 +1,128 @@
 const express = require('express');
 const router = express.Router();
-
+const fs = require('fs');
+const path = require('path');
 const DichVuModel = require('../model/dichvus');
+const upload = require('../config/common/upload');
 
-// get list dich vu và tìm kiếm dịch vụ theo id
+// GET list dịch vụ và tìm kiếm dịch vụ theo ID
 router.get('/', async (req, res) => {
-    const dichVus = await DichVuModel.find().sort({createdAt : -1});
-    res.send(dichVus);
+    try {
+        const dichVus = await DichVuModel.find().sort({ createdAt: -1 });
+        res.send(dichVus);
+    } catch (error) {
+        res.status(500).json({ status: 500, msg: "Error fetching data", error: error.message });
+    }
 });
 
-// delete dich vu
+// DELETE - xóa dịch vụ và ảnh
 router.delete('/delete/:id', async (req, res) => {
-    const { id } = req.params;
-    const result = await DichVuModel.deleteOne({ _id: id });
-    if (result) {
-        res.json({
-            "status": "200",
-            "msg": "Delete success",
-            "data": result
-        })
-    } else {
-        res.json({
-            "status": "400",
-            "msg": "Delete fail",
-            "data": []
-        })
+    try {
+        const { id } = req.params;
+
+        // Tìm dịch vụ theo ID để lấy đường dẫn ảnh
+        const dichvu = await DichVuModel.findById(id);
+        if (!dichvu) {
+            return res.status(404).json({
+                status: 404,
+                msg: "Dịch vụ không tồn tại"
+            });
+        }
+
+        // Kiểm tra sự tồn tại của file trước khi xóa
+        if (dichvu.hinhAnh) {
+            const imagePath = path.join(__dirname, '..', 'public', 'uploads', path.basename(dichvu.hinhAnh));
+            if (fs.existsSync(imagePath)) {
+                try {
+                    fs.unlinkSync(imagePath);
+                } catch (error) {
+                    console.error("Lỗi khi xóa ảnh:", error);
+                }
+            }
+        }
+
+        // Xóa bản ghi dịch vụ trong MongoDB
+        const result = await DichVuModel.findByIdAndDelete({ _id: id });
+        
+        if (result) {
+            res.status(200).json({
+                status: 200,
+                msg: "Xóa dịch vụ và ảnh thành công",
+                data: result
+            });
+        } else {
+            res.status(400).json({
+                status: 400,
+                msg: "Xóa dịch vụ thất bại",
+                data: []
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: 500,
+            msg: "Lỗi khi xóa dịch vụ",
+            error: error.message
+        });
     }
-})
+});
 
-// post - add dich vu
-router.post('/post', async (req, res) => {
-    const data = req.body;
-    const dichvu = new DichVuModel({
-        tenDichVu: data.tenDichVu,
-        moTa: data.moTa,
-        hinhAnh: data.hinhAnh,
-    })
+// POST - thêm dịch vụ
+router.post('/post', upload.single('hinhAnh'), async (req, res) => {
+    try {
+        const data = req.body;
+        const { file } = req;
 
-    const result = await dichvu.save();
+        const imageUrl = file ? `${req.protocol}://${req.get('host')}/uploads/${file.filename}` : "";
+        
+        const dichvu = new DichVuModel({
+            tenDichVu: data.tenDichVu,
+            moTa: data.moTa,
+            hinhAnh: imageUrl,
+        });
 
-    if (result) {
-        res.json({
-            status: 200,
+        const result = await dichvu.save();
+
+        res.status(201).json({
+            status: 201,
             msg: "Add success",
             data: result
-        })
-    } else {
-        res.json({
-            status: 400,
-            msg: "Add fail",
-            data: []
-        })
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, msg: "Add fail", error: error.message });
     }
-})
+});
 
-// update - put dichvu
-router.put('/put/:id', async (req, res) => {
-    const { id } = req.params;
-    const data = req.body;
+// PUT - cập nhật dịch vụ
+router.put('/put/:id', upload.single('hinhAnh'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = req.body;
 
-    // Sử dụng findByIdAndUpdate để tìm và cập nhật dữ liệu
-    const result = await DichVuModel.findByIdAndUpdate(id, data, { new: true });
+        const dichvu = await DichVuModel.findById(id);
+        if (!dichvu) {
+            return res.status(404).json({ status: 404, msg: "Dịch vụ không tồn tại" });
+        }
 
-    if (result) {
-        res.json({
+        // Xóa ảnh cũ nếu có ảnh mới
+        if (req.file) {
+            const oldImagePath = path.join(__dirname, '..', 'public', 'uploads', path.basename(dichvu.hinhAnh));
+            if (fs.existsSync(oldImagePath)) {
+                fs.unlinkSync(oldImagePath);
+            }
+            data.hinhAnh = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        }
+
+        const result = await DichVuModel.findByIdAndUpdate(id, data, { new: true });
+
+        res.status(200).json({
             status: 200,
             msg: "Update success",
             data: result
-        })
-    } else {
-        res.json({
-            status: 400,
-            msg: "Update fail",
-            data: []
-        })
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, msg: "Update fail", error: error.message });
     }
-})
+});
 
 module.exports = router;

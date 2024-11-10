@@ -5,7 +5,15 @@ const ThongBaoModel = require('../model/thongbaos');
 
 // get list
 router.get('/', async (req, res) => {
-    const thongbaos = await ThongBaoModel.find().sort({createdAt : -1});
+
+    const {id_NguoiDung} = req.query
+
+    let filter = {};
+    if(id_NguoiDung){
+        filter.id_NguoiDung = id_NguoiDung
+    }
+
+    const thongbaos = await ThongBaoModel.find(filter).sort({createdAt : -1});
     res.send(thongbaos);
 });
 
