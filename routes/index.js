@@ -1,4 +1,5 @@
 var express = require('express');
+const { default: routerImages } = require('../config/common/uploads');
 var router = express.Router();
 
 /* GET home page. */

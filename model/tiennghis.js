@@ -3,8 +3,8 @@ const Schema = mongoose.Schema;
 
 const TienNghiModel = new Schema({
     tenTienNghi : { type : String , required : true},
-    icon : { type : String},
-    moTa : { type : String}
+    image : { type : String},
+    imageId : { type : String},
 },{
     timestamps : true
 })

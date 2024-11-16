@@ -7,8 +7,9 @@ const NguoiDungModel = new Schema({
     matKhau : { type : String, required : true},
     email : { type : String},
     hinhAnh : { type : String},
+    hinhAnhID: { type : String},
     chucVu : { type : Number, default : 0}, 
-    trangThai : { type : Boolean},
+    trangThai : { type : Boolean, default : true},
 },{
     timestamps : true
 })
