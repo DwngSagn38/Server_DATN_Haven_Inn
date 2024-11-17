@@ -1,0 +1,35 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khách sạn Haven Inn</title>
+    <link rel="stylesheet" href="/public/stylesheets/style.css">
+
+</head>
+
+<body>
+    <h2>Đăng Nhập</h2>
+
+    <!-- Hiển thị thông báo lỗi nếu có -->
+    <% if (error) { %>
+        <p style="color: red;">
+            <%= error %>
+        </p>
+        <% } %>
+
+            <form action="/login" method="POST">
+                <label for="soDienThoai">Số điện thoại:</label>
+                <input type="text" name="soDienThoai" id="soDienThoai" required><br>
+
+                <label for="matKhau">Mật khẩu:</label>
+                <input type="password" name="matKhau" id="matKhau" required><br>
+
+                <button type="submit">Đăng Nhập</button>
+            </form>
+</body>
+
+</html>

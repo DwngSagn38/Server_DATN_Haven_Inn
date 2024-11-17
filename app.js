@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+require('dotenv').config();
 
 var indexRouter = require('./routes/index');
 var amthucRouter = require('./routes/amthuc');
@@ -25,18 +26,28 @@ var app = express();
 
 var database = require('./config/db')
 
-// const PORT = 3000;
-// const HOST = "192.168.100.3";  // dia chi wifi
+const methodOverride = require('method-override');
 
-// app.listen(PORT,HOST, () => { 
-//   console.log(`Server is running on http://${HOST}:${PORT}`);
-// });
+// Middleware để xử lý _method trong form
+app.use(methodOverride('_method'));
+
+const session = require('express-session');
+
+// Cấu hình session
+app.use(session({
+  secret: process.env.SESSION_SECRET, // Chìa khóa để mã hóa session
+  resave: false,  // Không lưu lại session nếu không có thay đổi
+  saveUninitialized: true,  // Lưu session ngay cả khi chưa thay đổi
+  cookie: { secure: false } // Chạy trên HTTP, nếu sử dụng HTTPS thì đặt secure: true
+}));
 
 const bodyParser = require('body-parser');
 
 // Cấu hình EJS
+app.set('views', path.join(__dirname, 'views')); // Đảm bảo đúng đường dẫn
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+
+
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));

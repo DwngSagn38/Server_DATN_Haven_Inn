@@ -21,7 +21,7 @@ exports.getById = async (req, res, next) => {
             return res.status(404).json({ message: "Am Thuc not found" });
         }
 
-        res.json({ success : 200, data : amthuc });
+        res.json(amthuc );
     } catch (error) {
         res.status(500).json({ message: "Error fetching Am Thuc", error });
     }
