@@ -5,7 +5,7 @@ const { uploadToCloudinary, deleteFromCloudinary } = require("../config/common/u
 exports.getList = async (req, res, next) => {
     try {
         let amthucs = await AmThucModel.find({}).sort({ createdAt: -1 });
-        res.status(200).json(amthucs);
+        res.send(amthucs);
     } catch (error) {
         res.json({ status: 400, result: error });
     }

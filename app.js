@@ -32,10 +32,16 @@ var database = require('./config/db')
 //   console.log(`Server is running on http://${HOST}:${PORT}`);
 // });
 
+const bodyParser = require('body-parser');
 
-// view engine setup
+// Cấu hình EJS
+app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'hbs');
+
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use('/public', express.static(path.join(__dirname, 'public')))
 
 app.use(logger('dev'));
 app.use(express.json());

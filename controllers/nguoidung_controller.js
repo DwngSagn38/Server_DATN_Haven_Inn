@@ -18,7 +18,7 @@ exports.getListorByID = async (req, res, next) => {
             return res.status(404).send({ message: 'Không tìm thấy' });
         }
 
-        res.json({ status: 200, data: nguoidungs });
+        res.send(nguoidungs);
     } catch (error) {
         console.error(error);
         res.status(500).json({ status: 500, message: "Error fetching data", error: error.message });

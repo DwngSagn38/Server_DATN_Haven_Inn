@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const tienNghiPhongController = require('../controllers/tiennghiphong_controller');
 
-router.get('/', tienNghiPhongController.getListorByID);
+router.get('/', tienNghiPhongController.getListorByIDLoaiPhong);
 router.post('/post', tienNghiPhongController.addTienNghiPhong);
 router.put('/put/:id', tienNghiPhongController.suaTienNghiPhong);
 router.delete('/delete/:id', tienNghiPhongController.xoaTienNghiPhong);
