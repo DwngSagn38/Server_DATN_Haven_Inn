@@ -60,70 +60,70 @@ exports.doimatkhau = async (req, res, next) => {
     }
 }
 
-// // Controller xử lý đăng nhập
-// exports.login = async (req, res, next) => {
-//     const { soDienThoai, matKhau } = req.body;  // Sử dụng req.body thay vì req.query
+// Controller xử lý đăng nhập
+exports.loginWeb = async (req, res, next) => {
+    const { soDienThoai, matKhau } = req.body;  // Sử dụng req.body thay vì req.query
 
-//     if (!soDienThoai || !matKhau) {
-//         return res.render('auth/login', { error: "Chưa nhập đầy đủ thông tin" });
-//     }
+    if (!soDienThoai || !matKhau) {
+        return res.render('auth/login', { error: "Chưa nhập đầy đủ thông tin" });
+    }
 
-//     try {
-//         const nguoidung = await NguoiDungModel.findOne({ soDienThoai });
-//         if (!nguoidung) {
-//             return res.render('auth/login', { error: "Số điện thoại chưa đăng ký tài khoản!" });
-//         }
+    try {
+        const nguoidung = await NguoiDungModel.findOne({ soDienThoai });
+        if (!nguoidung) {
+            return res.render('auth/login', { error: "Số điện thoại chưa đăng ký tài khoản!" });
+        }
 
-//         if (nguoidung.matKhau !== matKhau) {
-//             return res.render('auth/login', { error: "Mật khẩu chưa đúng" });
-//         }
+        if (nguoidung.matKhau !== matKhau) {
+            return res.render('auth/login', { error: "Mật khẩu chưa đúng" });
+        }
 
-//         // Đăng nhập thành công, điều hướng đến trang khác
-//         res.redirect('/');
-//         res.send(nguoidung)
-//     } catch (error) {
-//         console.error(error);
-//         res.render('auth/login', { error: "Lỗi server, vui lòng thử lại sau." });
-//     }
-// };
+        // Đăng nhập thành công, điều hướng đến trang khác
+        res.redirect('/');
+        res.send(nguoidung)
+    } catch (error) {
+        console.error(error);
+        res.render('auth/login', { error: "Lỗi server, vui lòng thử lại sau." });
+    }
+};
 
 
-// exports.doimatkhau = async (req, res, next) => {
-//     const { id } = req.params;
-//     const { matKhauCu, matKhauMoi } = req.body;
+exports.doimatkhauWeb = async (req, res, next) => {
+    const { id } = req.params;
+    const { matKhauCu, matKhauMoi } = req.body;
 
-//     try {
-//         const nguoidung = await NguoiDungModel.findById(id);
+    try {
+        const nguoidung = await NguoiDungModel.findById(id);
 
-//         if (!nguoidung) {
-//             return res.status(404).json({ msg: "Người dùng không tồn tại!" });
-//         }
+        if (!nguoidung) {
+            return res.status(404).json({ msg: "Người dùng không tồn tại!" });
+        }
 
-//         if (nguoidung.matKhau !== matKhauCu) {
-//             return res.render('../views/auth/change_password', { 
-//                 userId: id, 
-//                 title: 'Đổi mật khẩu', 
-//                 error: 'Mật khẩu cũ không chính xác!' 
-//             });
-//         }
+        if (nguoidung.matKhau !== matKhauCu) {
+            return res.render('../views/auth/change_password', { 
+                userId: id, 
+                title: 'Đổi mật khẩu', 
+                error: 'Mật khẩu cũ không chính xác!' 
+            });
+        }
 
-//         if (!matKhauMoi) {
-//             return res.render('../views/auth/change_password', { 
-//                 userId: id, 
-//                 title: 'Đổi mật khẩu', 
-//                 error: 'Vui lòng nhập mật khẩu mới!' 
-//             });
-//         }
+        if (!matKhauMoi) {
+            return res.render('../views/auth/change_password', { 
+                userId: id, 
+                title: 'Đổi mật khẩu', 
+                error: 'Vui lòng nhập mật khẩu mới!' 
+            });
+        }
 
-//         nguoidung.matKhau = matKhauMoi;
-//         await nguoidung.save();
+        nguoidung.matKhau = matKhauMoi;
+        await nguoidung.save();
 
-//         res.render('../views/auth/login', { 
-//             title: 'Đăng Nhập', 
-//             success: 'Đổi mật khẩu thành công! Vui lòng đăng nhập lại.' 
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).send('Đã xảy ra lỗi server');
-//     }
-// };
+        res.render('../views/auth/login', { 
+            title: 'Đăng Nhập', 
+            success: 'Đổi mật khẩu thành công! Vui lòng đăng nhập lại.' 
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Đã xảy ra lỗi server');
+    }
+};

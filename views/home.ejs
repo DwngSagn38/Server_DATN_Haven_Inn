@@ -1,0 +1,30 @@
+<%- include('main/header.ejs') %>
+
+<% if (message) { %>
+    <div class="alert alert-success" role="alert" id="successMessage">
+        <%= message %>
+    </div>
+
+    <script>
+        // Đặt thời gian hiển thị thông báo là 2 giây (2000ms)
+        setTimeout(function() {
+            var messageElement = document.getElementById("successMessage");
+            if (messageElement) {
+                messageElement.style.display = "none"; // Ẩn thông báo sau 2 giây
+            }
+        }, 2000);
+    </script>
+<% } %>
+
+<%- include('main/footer.ejs') %>
+
+<style>
+    #successMessage {
+        position: fixed; /* Định vị cố định */
+        bottom: 20px; /* Cách dưới 20px */
+        right: 20px; /* Cách phải 20px */
+        z-index: 1050; /* Đảm bảo thông báo không bị các phần tử khác che khuất */
+        opacity: 1; /* Đảm bảo rằng thông báo không trong suốt */
+        transition: opacity 0.5s ease-out; /* Thêm hiệu ứng mờ dần */
+    }
+</style>

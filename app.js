@@ -5,24 +5,11 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv').config();
 
-var indexRouter = require('./routes/index');
-var amthucRouter = require('./routes/amthuc');
-var chitiethoadonRouter = require('./routes/chitiethoadon');
-var couponRouter = require('./routes/coupon');
-var danhgiaRouter = require('./routes/danhgia');
-var dichvuRouter = require('./routes/dichvu');
-var hoadonRouter = require('./routes/hoadon');
-var hotroRouter = require('./routes/hotro');
-var loaiphongRouter = require('./routes/loaiphong');
-var loginRouter = require('./routes/login');
-var nguoidungRouter = require('./routes/nguoidung');
-var phongRouter = require('./routes/phong');
-var thongbaoRouter = require('./routes/thongbao');
-var tiennghiRouter = require('./routes/tiennghi');
-var tiennghiphongRouter = require('./routes/tiennghiphong');
-var YeuThichRouter = require('./routes/yeuthich');
+var indexAPIRouter = require('./routes/index_api');
+var indexWEBRouter = require('./routes/index_web');
 
 var app = express();
+const PORT = process.env.PORT || 3000;
 
 var database = require('./config/db')
 
@@ -47,12 +34,25 @@ const bodyParser = require('body-parser');
 app.set('views', path.join(__dirname, 'views')); // Đảm bảo đúng đường dẫn
 app.set('view engine', 'ejs');
 
-
-
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use('/public', express.static(path.join(__dirname, 'public')))
+
+// Route example
+app.get('/', (req, res) => {
+  res.render('index');
+});
+
+
+// Khởi động server
+app.listen(PORT, async () => {
+  console.log(`Server đang chạy tại: http://localhost:${PORT}`);
+
+  // // Sử dụng dynamic import để mở trình duyệt
+  // const open = (await import('open')).default;
+  // await open(`http://localhost:${PORT}/login`);
+});
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -60,22 +60,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/amthucs', amthucRouter);
-app.use('/chitiethoadons', chitiethoadonRouter);
-app.use('/coupons', couponRouter);
-app.use('/danhgias', danhgiaRouter);
-app.use('/dichvus', dichvuRouter);
-app.use('/hoadons', hoadonRouter);
-app.use('/hotros', hotroRouter);
-app.use('/loaiphongs', loaiphongRouter);
-app.use('/login', loginRouter);
-app.use('/nguoidungs', nguoidungRouter);
-app.use('/phongs', phongRouter);
-app.use('/thongbaos', thongbaoRouter);
-app.use('/tiennghis', tiennghiRouter);
-app.use('/tiennghiphongs', tiennghiphongRouter);
-app.use('/yeuthichs', YeuThichRouter);
+app.use('/api', indexAPIRouter);
+app.use('/web', indexWEBRouter);
 
 database.connect();
 // catch 404 and forward to error handler
