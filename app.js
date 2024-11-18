@@ -51,7 +51,7 @@ app.listen(PORT, async () => {
 
   // // Sử dụng dynamic import để mở trình duyệt
   // const open = (await import('open')).default;
-  // await open(`http://localhost:${PORT}/login`);
+  // await open(`http://localhost:${PORT}/web/auth/login`);
 });
 
 app.use(logger('dev'));

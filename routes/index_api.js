@@ -26,7 +26,7 @@ router.use('/dichvus', dichvuRouter);
 router.use('/hoadons', hoadonRouter);
 router.use('/hotros', hotroRouter);
 router.use('/loaiphongs', loaiphongRouter);
-router.use('/login', loginRouter);
+router.use('/auth', loginRouter);
 router.use('/nguoidungs', nguoidungRouter);
 router.use('/phongs', phongRouter);
 router.use('/thongbaos', thongbaoRouter);
