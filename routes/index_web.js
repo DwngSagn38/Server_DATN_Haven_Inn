@@ -3,10 +3,12 @@ var router = express.Router();
 
 var loginRouter = require('./login_web');
 var dichVuRouter = require('./dichvu_web');
+var tienNghiRouter = require('./tiennghi_web');
 
 
 router.use('/auth', loginRouter);
 router.use('/dichvus', dichVuRouter);
+router.use('/tiennghis', tienNghiRouter);
 
 
 router.get('/home', (req, res) => {

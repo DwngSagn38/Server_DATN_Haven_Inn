@@ -73,4 +73,9 @@ router.post('/change-password', async (req, res) => {
     }
 });
 
+// Route xử lý logout
+router.post('/logout', (req, res) => {
+    return res.render('auth/login', { title: 'Đăng Nhập', message: 'Đăng xuất thành công!' });
+});
+
 module.exports = router;
