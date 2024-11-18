@@ -17,6 +17,10 @@ router.post('/login', async (req, res) => {
         return res.render('auth/login', { message: "Chưa nhập đầy đủ thông tin" });
     }
 
+    if (soDienThoai.length !== 10 || soDienThoai[0] !== '0' || isNaN(soDienThoai)) {
+        return res.render('auth/login', { message: "Số điện thoại chưa chính xác" });
+    }
+
     try {
         const nguoidung = await NguoiDungModel.findOne({ soDienThoai });
         if (!nguoidung) {
@@ -25,6 +29,10 @@ router.post('/login', async (req, res) => {
 
         if (nguoidung.matKhau !== matKhau) {
             return res.render('auth/login', { message: "Mật khẩu chưa đúng" });
+        }
+
+        if (nguoidung.chucVu !== 2) {
+            return res.render('auth/login', { message: "Bạn không có quyền truy cập vào trang web này!" });
         }
 
         // Đăng nhập thành công, lưu thông báo vào session và điều hướng
