@@ -35,23 +35,21 @@
         </form>
     </main>
 
-    <!-- Modal for message alert -->
-    <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="messageModalLabel">Thông Báo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="modalMessage">
-                    <!-- Error or Success message will appear here -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                </div>
-            </div>
+    <% if (message) { %>
+        <div class="alert alert-success" role="alert" id="successMessage">
+            <%= message %>
         </div>
-    </div>
+    
+        <script>
+            // Đặt thời gian hiển thị thông báo là 2 giây (2000ms)
+            setTimeout(function() {
+                var messageElement = document.getElementById("successMessage");
+                if (messageElement) {
+                    messageElement.style.display = "none"; // Ẩn thông báo sau 2 giây
+                }
+            }, 3000);
+        </script>
+    <% } %>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
         integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
@@ -60,16 +58,16 @@
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
 
-    <% if (message) { %>
-        <script>
-            // Hiển thị modal khi có thông báo từ server
-            var modal = new bootstrap.Modal(document.getElementById('messageModal'));
-            var modalMessage = document.getElementById('modalMessage');
-            modalMessage.innerText = "<%= message %>";
-            modal.show(); // Mở modal
-        </script>
-        <% } %>
-
+        <style>
+            #successMessage {
+                position: fixed; /* Định vị cố định */
+                bottom: 20px; /* Cách dưới 20px */
+                right: 20px; /* Cách phải 20px */
+                z-index: 1050; /* Đảm bảo thông báo không bị các phần tử khác che khuất */
+                opacity: 1; /* Đảm bảo rằng thông báo không trong suốt */
+                transition: opacity 0.5s ease-out; /* Thêm hiệu ứng mờ dần */
+            }
+        </style>
 </body>
 
 </html>

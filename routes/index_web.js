@@ -11,9 +11,13 @@ router.use('/dichvus', dichVuRouter);
 router.use('/tiennghis', tienNghiRouter);
 
 
-router.get('/home', (req, res) => {
-    const message = req.session.message; // Lấy thông báo từ session
-    delete req.session.message; // Xóa thông báo sau khi đã sử dụng
+const authMiddleware = require('../middleware/authMiddleware');
+
+router.get('/home', authMiddleware('html'), (req, res) => {
+    // const message = req.session.message;
+    // delete req.session.message;
+
+    const message = req.flash('message');
     res.render('home', { message: message });
 });
 

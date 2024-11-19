@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 const thongBaoController = require('../controllers/thongbao_controller')
+const authMiddleware = require('../middleware/authMiddleware');
 
+router.use(authMiddleware('json'));
 router.get('/', thongBaoController.getListorByidNguoiDung);
 router.post('/post', thongBaoController.addThongBao);
 router.put('/put/:id', thongBaoController.suaThongBao);
