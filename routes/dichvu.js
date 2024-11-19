@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const dichvuController = require('../controllers/dichvu_controller');
 const { upload } = require('../config/common/uploads');
+const authMiddleware = require('../middleware/authMiddleware');
+
+router.use(authMiddleware('json'));
 
 router.get('/', dichvuController.getListorByID),
 router.delete('/delete/:id', dichvuController.xoaDichVu),

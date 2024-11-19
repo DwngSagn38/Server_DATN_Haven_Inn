@@ -7,7 +7,8 @@ const NguoiDungModel = require('../model/nguoidungs');
 
 // Route login Web
 router.get('/login', (req, res) => {
-    res.render('auth/login', { title: 'Đăng Nhập', message : null });
+    const message = req.session.message;
+    res.render('auth/login', { title: 'Đăng Nhập', message: message || null });
 });
 
 router.post('/login', async (req, res) => {
@@ -36,7 +37,13 @@ router.post('/login', async (req, res) => {
         }
 
         // Đăng nhập thành công, lưu thông báo vào session và điều hướng
-        req.session.message = "Đăng nhập thành công!";
+        // req.session.message = "Đăng nhập thành công!";
+        req.session.userId = nguoidung._id; // Lưu ID của người dùng để kiểm tra sau
+
+        // Trong `login` route:
+        req.flash('message', 'Đăng nhập thành công!');
+
+
         return res.redirect('/web/home');
     } catch (error) {
         console.error(error);
@@ -73,9 +80,24 @@ router.post('/change-password', async (req, res) => {
     }
 });
 
-// Route xử lý logout
 router.post('/logout', (req, res) => {
-    return res.render('auth/login', { title: 'Đăng Nhập', message: 'Đăng xuất thành công!' });
+    try {
+        // Kiểm tra nếu người dùng chưa đăng nhập
+        if (!req.session.userId) {
+            req.session.message = 'Bạn chưa đăng nhập';
+            return res.redirect('/login'); // Điều hướng tới trang đăng nhập
+        }   
+
+        req.session.message = 'Đăng xuất thành công,Bạn cần đăng nhập lại để tiếp tục sử dụng trang web!';
+        delete req.session.userId;
+        console.log(req.session)
+
+        return res.redirect('login'); // Điều hướng lại trang đăng nhập
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Lỗi server, vui lòng thử lại sau");
+    }
 });
+
 
 module.exports = router;

@@ -13,20 +13,27 @@ const PORT = process.env.PORT || 3000;
 
 var database = require('./config/db')
 
-const methodOverride = require('method-override');
 
-// Middleware để xử lý _method trong form
-app.use(methodOverride('_method'));
 
 const session = require('express-session');
 
 // Cấu hình session
 app.use(session({
-  secret: process.env.SESSION_SECRET, // Chìa khóa để mã hóa session
-  resave: false,  // Không lưu lại session nếu không có thay đổi
-  saveUninitialized: true,  // Lưu session ngay cả khi chưa thay đổi
-  cookie: { secure: false } // Chạy trên HTTP, nếu sử dụng HTTPS thì đặt secure: true
+  secret: process.env.SESSION_SECRET || 'sang',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+      secure: false, // Sử dụng cookie bảo mật nếu đang chạy production
+      httpOnly: true, // Bảo vệ khỏi XSS
+      maxAge: 3600000 // Thời gian hết hạn (1 giờ)
+  }
 }));
+
+const methodOverride = require('method-override');
+
+// Middleware để xử lý _method trong form
+app.use(methodOverride('_method'));
+
 
 const bodyParser = require('body-parser');
 
@@ -53,6 +60,9 @@ app.listen(PORT, async () => {
   // const open = (await import('open')).default;
   // await open(`http://localhost:${PORT}/web/auth/login`);
 });
+
+const flash = require('connect-flash');
+app.use(flash());
 
 app.use(logger('dev'));
 app.use(express.json());

@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const tienNghiPhongController = require('../controllers/tiennghiphong_controller');
+const authMiddleware = require('../middleware/authMiddleware');
 
+router.use(authMiddleware('json'));
 router.get('/', tienNghiPhongController.getListorByIDLoaiPhong);
 router.post('/post', tienNghiPhongController.addTienNghiPhong);
 router.put('/put/:id', tienNghiPhongController.suaTienNghiPhong);
