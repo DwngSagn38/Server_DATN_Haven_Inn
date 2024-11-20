@@ -4,11 +4,13 @@ var router = express.Router();
 var loginRouter = require('./login_web');
 var dichVuRouter = require('./dichvu_web');
 var tienNghiRouter = require('./tiennghi_web');
+var amThucRouter = require('./amthuc_web');
 
 
 router.use('/auth', loginRouter);
 router.use('/dichvus', dichVuRouter);
 router.use('/tiennghis', tienNghiRouter);
+router.use('/amthucs', amThucRouter);
 
 
 const authMiddleware = require('../middleware/authMiddleware');

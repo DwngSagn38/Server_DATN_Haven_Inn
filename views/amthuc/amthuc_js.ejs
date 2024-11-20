@@ -1,0 +1,124 @@
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Hiển thị thông tin chi tiết của nhà hàng
+        const detailButtons = document.querySelectorAll(".btn-detail-amthuc");
+        detailButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                const tenNhaHang = button.getAttribute("data-ten");
+                const moTa = button.getAttribute("data-mota");
+                const hinhAnh = button.getAttribute("data-hinhanh");
+                const hinhMenu = button.getAttribute("data-hinhmenu");
+                const gioMoCua = button.getAttribute("data-giomocua");
+                const gioDongCua = button.getAttribute("data-giodongcua");
+                const viTri = button.getAttribute("data-viTri");
+                const hotline = button.getAttribute("data-hotline");
+
+                // Gán thông tin vào modal chi tiết
+                document.getElementById("tenNhaHangDetail").textContent = tenNhaHang || "Chưa cập nhật";
+                document.getElementById("moTaDetail").textContent = moTa || "Chưa cập nhật";
+                document.getElementById("hinhAnhDetail").src = hinhAnh || 'Chưa có';
+                document.getElementById("gioMoCuaDetail").textContent = gioMoCua || "Chưa cập nhật";
+                document.getElementById("gioDongCuaDetail").textContent = gioDongCua || "Chưa cập nhật";
+                document.getElementById("viTriDetail").textContent = viTri || "Chưa cập nhật";
+                document.getElementById("hotlineDetail").textContent = hotline || "Chưa cập nhật";
+                document.getElementById("hinhMenuDetail").textContent = hinhMenu || "Chưa cập nhật";
+
+                // Gán danh sách hình menu nếu có
+                const hinhMenuDetail = document.getElementById("hinhMenuDetail");
+                hinhMenuDetail.innerHTML = ''; // Xóa nội dung cũ
+                if (hinhMenu) {
+                    try {
+                        // Parse JSON nếu là chuỗi JSON
+                        const images = typeof hinhMenu === 'string'
+                            ? JSON.parse(hinhMenu)
+                            : hinhMenu;
+
+                        // Kiểm tra nếu images là một mảng
+                        if (Array.isArray(images) && images.length > 0) {
+                            images.forEach(src => {
+                                if (src && src.trim()) {
+                                    const img = document.createElement("img");
+                                    img.src = src.trim();
+                                    img.alt = "Hình menu";
+                                    img.className = "img-fluid mb-2";
+                                    img.style.maxWidth = "300px";
+                                    img.style.objectFit = "cover";
+                                    img.onerror = function () {
+                                        // Nếu ảnh lỗi, hiển thị ảnh placeholder
+                                        this.src = '/images/placeholder.png';
+                                        this.alt = 'Ảnh lỗi';
+                                    };
+                                    hinhMenuDetail.appendChild(img);
+                                }
+                            });
+                        } else {
+                            hinhMenuDetail.innerHTML = "<p>Không có hình menu.</p>";
+                        }
+                    } catch (error) {
+                        console.error('Lỗi parse hình menu:', error);
+                        hinhMenuDetail.innerHTML = "<p>Lỗi xử lý hình menu.</p>";
+                    }
+                } else {
+                    hinhMenuDetail.innerHTML = "<p>Không có hình menu.</p>";
+                }
+            });
+        });
+
+        // Hiển thị thông tin trong modal Thêm/Sửa
+        const editButtons = document.querySelectorAll(".btn-edit-amthuc");
+        editButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                document.getElementById("amthucModalLabel").textContent = "Sửa Nhà Hàng";
+                document.getElementById("amthucForm").action = "/web/amthucs/update"; // Route cập nhật
+                document.getElementById("amthucId").value = button.getAttribute("data-id");
+                document.getElementById("tenNhaHang").value = button.getAttribute("data-ten");
+                document.getElementById("moTa").value = button.getAttribute("data-mota");
+                document.getElementById("gioMoCua").value = button.getAttribute("data-giomocua");
+                document.getElementById("viTri").value = button.getAttribute("data-viTri");
+                document.getElementById("gioDongCua").value = button.getAttribute("data-giodongcua");
+                document.getElementById("hotline").value = button.getAttribute("data-hotline");
+            });
+        });
+
+        // Nút Thêm Nhà Hàng (Reset Modal)
+        const addAmThucBtn = document.getElementById("addAmThucBtn");
+        addAmThucBtn.addEventListener("click", () => {
+            document.getElementById("amthucModalLabel").textContent = "Thêm Nhà Hàng";
+            document.getElementById("amthucForm").action = "/web/amthucs/post"; // Route thêm mới
+            document.getElementById("amthucForm").reset(); // Reset form
+        });
+
+        // Hiển thị thông tin trong modal Xác nhận Xóa
+        const deleteButtons = document.querySelectorAll(".btn-delete-amthuc");
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                const tenNhaHang = button.getAttribute("data-ten");
+                const id = button.getAttribute("data-id");
+
+                document.getElementById("amThucName").textContent = tenNhaHang;
+                const confirmDeleteForm = document.getElementById("confirmDeleteButton");
+                confirmDeleteForm.action = `/web/amthucs/delete/${id}?_method=DELETE`; // Route xóa
+            });
+        });
+
+        // Tự động ẩn thông báo sau 3 giây
+        const successMessage = document.getElementById("successMessage");
+        if (successMessage) {
+            setTimeout(() => {
+                successMessage.style.display = "none";
+            }, 3000);
+        }
+    });
+    document.getElementById('hinhAnhPhu').addEventListener('change', function (event) {
+        const files = event.target.files;
+        const maxFiles = 5;
+        const fileError = document.getElementById('fileError');
+
+        if (files.length > maxFiles) {
+            fileError.textContent = `Bạn chỉ có thể chọn tối đa ${maxFiles} ảnh.`;
+            event.target.value = ''; // Clear the input
+        } else {
+            fileError.textContent = ''; // Clear any previous error message
+        }
+    });
+</script>
