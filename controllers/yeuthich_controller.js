@@ -1,26 +1,38 @@
 const YeuThichModel = require('../model/yeuthichs')
+const LoaiPhongModel = require('../model/loaiphongs');
 
-exports.getListorByidNguoiDung = async (req, res, next) => {
+exports.getListLoaiPhongByidNguoiDung = async (req, res, next) => {
     try {
         const { id_NguoiDung } = req.query;
 
-        // Xây dựng điều kiện lọc dựa trên các tham số có sẵn
-        let filter = {};
-        if (id_NguoiDung) {
-            filter.id_NguoiDung = id_NguoiDung;
-        }
-        const yeuthichs = await YeuThichModel.find(filter).sort({ createdAt: -1 });
-
-        if (yeuthichs.length === 0) {
-            return res.status(404).send({ message: 'Không tìm thấy' });
+        if (!id_NguoiDung) {
+            return res.status(400).send({ message: 'Vui lòng cung cấp id_NguoiDung' });
         }
 
-        res.send(yeuthichs);
+        // Lấy danh sách yêu thích theo id_NguoiDung
+        const yeuThichs = await YeuThichModel.find({ id_NguoiDung }).select('id_LoaiPhong');
+
+        if (yeuThichs.length === 0) {
+            return res.status(404).send({ message: 'Không tìm thấy yêu thích nào' });
+        }
+
+        // Lấy danh sách id_LoaiPhong
+        const idLoaiPhongList = yeuThichs.map(item => item.id_LoaiPhong);
+
+        // Truy vấn danh sách loại phòng từ LoaiPhongModel
+        const loaiPhongs = await LoaiPhongModel.find({ _id: { $in: idLoaiPhongList } });
+
+        if (loaiPhongs.length === 0) {
+            return res.status(404).send({ message: 'Không tìm thấy loại phòng nào' });
+        }
+
+        res.send(loaiPhongs);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Error fetching data", error: error.message });
+        res.status(500).json({ message: "Lỗi khi lấy dữ liệu", error: error.message });
     }
-}
+};
+
 
 exports.addYeuThich = async (req, res, next) => {
     try {

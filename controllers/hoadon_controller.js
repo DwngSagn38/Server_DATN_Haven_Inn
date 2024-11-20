@@ -1,4 +1,5 @@
 const HoadonModel = require('../model/hoadons');
+const ChiTietHoaDonModel = require('../model/chitiethoadons')
 
 exports.getListorByIdUserorStatus = async (req, res, next) => {
     try {
@@ -13,18 +14,47 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
             filter.trangThai = trangThai;
         }
 
+        // Tìm hóa đơn theo điều kiện lọc
         const hoadons = await HoadonModel.find(filter).sort({ createdAt: -1 });
 
         if (hoadons.length === 0) {
-            return res.status(404).send({ message: 'Không tìm thấy' });
+            return res.status(404).send({ message: 'Không tìm thấy hóa đơn' });
         }
-        res.send(hoadons)
 
+        // Lặp qua từng hóa đơn và lấy chi tiết
+        const results = [];
+        for (let hoadon of hoadons) {
+            // Lấy chi tiết hóa đơn liên quan đến id_HoaDon
+            const chiTietHoaDons = await ChiTietHoaDonModel.find({ id_HoaDon: hoadon._id });
+
+            if (chiTietHoaDons.length > 0) {
+                // Tổng số phòng là số lượng phòng trong chi tiết hóa đơn
+                const tongPhong = chiTietHoaDons.length;
+
+                // Tổng số khách là tổng soLuongKhach trong chi tiết hóa đơn
+                const tongKhach = chiTietHoaDons.reduce((total, item) => total + item.soLuongKhach, 0);
+
+                // Tổng tiền
+                const tongTien = chiTietHoaDons.reduce((total, item) => total + item.giaPhong, 0);
+
+                // Cập nhật vào hóa đơn
+                results.push({
+                    ...hoadon.toObject(),
+                    tongPhong,
+                    tongKhach,
+                    tongTien
+                });
+            }
+        }
+
+        // Trả về kết quả
+        res.send(results);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Error fetching data", error: error.message });
     }
-}
+};
+
 
 exports.addHoaDon = async (req, res, next) => {
     try {
