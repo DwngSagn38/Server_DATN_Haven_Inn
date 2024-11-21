@@ -1,6 +1,11 @@
 const YeuThichModel = require('../model/yeuthichs')
 const LoaiPhongModel = require('../model/loaiphongs');
 
+exports.getList = async (req, res, next) =>{
+    const yeuthichs = await YeuThichModel.find();
+    return res.send(yeuthichs)
+}
+
 exports.getListLoaiPhongByidNguoiDung = async (req, res, next) => {
     try {
         const { id_NguoiDung } = req.query;
@@ -37,10 +42,11 @@ exports.getListLoaiPhongByidNguoiDung = async (req, res, next) => {
 exports.addYeuThich = async (req, res, next) => {
     try {
         const data = req.body;
+        const userId = req.session.userId;
 
         // Kiểm tra sự tồn tại của đánh giá trùng lặp
         const existingReview = await YeuThichModel.findOne({
-            id_NguoiDung: data.id_NguoiDung,
+            id_NguoiDung: userId,
             id_LoaiPhong: data.id_LoaiPhong
         });
 
@@ -53,7 +59,7 @@ exports.addYeuThich = async (req, res, next) => {
 
         const yeuthich = new YeuThichModel({
             id_LoaiPhong: data.id_LoaiPhong,
-            id_NguoiDung: data.id_NguoiDung,
+            id_NguoiDung: userId,
         })
 
         const result = await yeuthich.save();
@@ -106,23 +112,32 @@ exports.suaYeuThich = async (req, res, next) => {
 
 exports.xoaYeuThich = async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const result = await YeuThichModel.findByIdAndDelete({ _id: id });
+        // Lấy id_LoaiPhong và id_NguoiDung từ URL params
+        const userId = req.session.userId;
+        const phongId = req.params.id_LoaiPhong;
+        // const userId = req.params.id_NguoiDung;
+
+        console.log("id_LoaiPhong:", phongId);
+        console.log("id_NguoiDung:", userId);
+
+        // Tìm và xóa tài liệu theo điều kiện
+        const result = await YeuThichModel.findOneAndDelete({ id_LoaiPhong: phongId, id_NguoiDung: userId });
+        
         if (result) {
             res.json({
                 "status": "200",
                 "msg": "Đã xóa yêu thích khỏi danh sách",
                 "data": result
-            })
+            });
         } else {
             res.json({
                 "status": "400",
                 "msg": "Delete fail",
                 "data": []
-            })
+            });
         }
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Error fetching data", error: error.message });
     }
-}
+};
