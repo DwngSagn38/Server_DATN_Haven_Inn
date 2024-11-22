@@ -1,279 +1,321 @@
 const fs = require('fs');
-const AmThucModel = require('../model/amthucs'); // Đổi model tương ứng với 'amthuc'
+const AmThucModel = require('../model/amthucs');
 const { uploadToCloudinary, deleteFromCloudinary } = require("../config/common/uploads");
 
-exports.getListOrByID = async (req, res, next) => {
+// Lấy danh sách hoặc chi tiết nhà hàng
+exports.getListOrByID = async (req, res) => {
     try {
-        const { id } = req.query;
+        const { id } = req.query; // Kiểm tra có tham số `id` trong query
 
-        let filter = {};
         if (id) {
-            filter._id = id;
+            // Nếu có id, tìm nhà hàng theo ID
+            const amthuc = await AmThucModel.findById(id);
+
+            if (!amthuc) {
+                return res.status(404).render('error', { message: 'Nhà hàng không tìm thấy' });
+            }
+
+            return res.render('amthuc/amthucs.ejs', { amthucs: [amthuc], message: null });
         }
 
-        const amthucs = await AmThucModel.find(filter);
-
-        if (amthucs.length === 0) {
-            return res.render('../views/amthuc/amthucs', { message: 'Không tìm thấy nhà hàng', amthucs: [] });
-        }
-
-        const message = req.session.message; // Lấy thông báo từ session
-        delete req.session.message; // Xóa thông báo sau khi đã sử dụng
-
-        res.render('../views/amthuc/amthucs', { message: message || null, amthucs });
+        // Nếu không có id, trả về danh sách nhà hàng
+        const amthucs = await AmThucModel.find({}).sort({ createdAt: -1 });
+        res.render('amthuc/amthucs.ejs', { amthucs, message: null }); // Trả về danh sách nhà hàng
     } catch (error) {
-        console.error(error);
-        res.render('../views/amthuc/amthucs', { message: 'Lỗi khi lấy dữ liệu', amthucs: [] });
+        console.error('Lỗi khi lấy dữ liệu:', error);
+        res.status(500).render('error', { message: 'Lỗi khi lấy dữ liệu nhà hàng', error });
     }
 };
 
-// exports.addAmThuc = async (req, res, next) => {
+// Thêm nhà hàng
+// exports.addAmThuc = async (req, res) => {
+//     console.log("Files received in addAmThuc:", req.files);
+
+//     if (!req.files || Object.keys(req.files).length === 0) {
+//         return res.status(400).render('error', { message: 'Không có file nào được tải lên' });
+//     }
+
 //     try {
-//         let imageUrl = [];
-//         let imageId = [];
-//         const mainFile = req.files['hinhAnhChinh'] ? req.files['hinhAnhChinh'][0] : null;
+//         const imageUrls = [];
+//         const menuUrls = [];
+//         const imageIds = [];
+//         const menuIds = [];
 
-//         // Xử lý hình ảnh chính
-//         if (mainFile) {
-//             const result = await uploadToCloudinary(mainFile.path);
-//             imageUrl = result.secure_url;
-//             imageId = result.public_id;
-//             await fs.promises.unlink(mainFile.path);
-//         }
-
-//         // Xử lý hình ảnh menu
-//         const menuImages = [];
-//         if (req.files['hinhMenu']) {
-//             for (const menuFile of req.files['hinhMenu']) {
-//                 const result = await uploadToCloudinary(menuFile.path);
-//                 menuImages.push({
-//                     url: result.secure_url,
-//                     publicId: result.public_id
-//                 });
-//                 await fs.promises.unlink(menuFile.path);
+//         if (req.files.images) {
+//             const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+//             for (const file of files) {
+//                 const filePath = file.path;
+//                 const result = await uploadToCloudinary(filePath);
+//                 imageUrls.push(result.secure_url);
+//                 imageIds.push(result.public_id);
+//                 await fs.promises.unlink(filePath); 
 //             }
 //         }
 
-//         const amthuc = new AmThucModel({
-//             tenNhaHang: req.body.tenNhaHang,
-//             hinhAnh: imageUrl,
-//             hinhAnhID: imageId,
-//             moTa: req.body.moTa,
-//             hinhMenu: menuImages.map(img => img.url),
-//             hinhMenuID: menuImages.map(img => img.publicId),
-//             gioMoCua: req.body.gioMoCua,
-//             gioDongCua: req.body.gioDongCua,
-//             viTri: req.body.viTri,
-//             hotline: req.body.hotline
-//         });
+//         if (req.files.menu) {
+//             const files = Array.isArray(req.files.menu) ? req.files.menu : [req.files.menu];
+//             for (const file of files) {
+//                 const filePath = file.path;
+//                 const result = await uploadToCloudinary(filePath);
+//                 menuUrls.push(result.secure_url);
+//                 menuIds.push(result.public_id);
+//                 await fs.promises.unlink(filePath);
+//             }
+//         }
 
-//         await amthuc.save();
+//         const newAmThuc = {
+//             ...req.body,
+//             hinhAnh: imageUrls[0],
+//             hinhAnhID: imageIds[0],
+//             menu: menuUrls,
+//             menuIDs: menuIds,
+//         };
 
-//         req.session.message = "Thêm nhà hàng thành công!";
-//         res.redirect('/web/amthucs');
+//         await AmThucModel.create(newAmThuc);
+//         res.redirect('/web/amthucs'); // Điều hướng lại danh sách nhà hàng sau khi thêm
 //     } catch (error) {
-//         console.error('Error:', error);
-//         res.render('../views/amthuc/amthucs', { 
-//             message: 'Lỗi khi thêm nhà hàng', 
-//             amthucs: [] 
-//         });
+//         console.error('Lỗi khi tải lên file:', error);
+//         res.status(500).render('error', { message: 'Lỗi khi tải lên file', error });
 //     }
 // };
 
-// exports.suaAmThuc = async (req, res, next) => {
+exports.addAmThuc = async (req, res) => {
+    try {
+        const imageUrls = [];
+        const menuUrls = [];
+        const imageIds = [];
+        const menuIds = [];
+
+        // Kiểm tra và tải lên ảnh chính
+        if (req.files && req.files.images) {
+            const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+            for (const file of files) {
+                const filePath = file.path;
+                const result = await uploadToCloudinary(filePath);
+                imageUrls.push(result.secure_url);
+                imageIds.push(result.public_id);
+                await fs.promises.unlink(filePath);
+            }
+        }
+
+        // Kiểm tra và tải lên ảnh menu
+        if (req.files && req.files.menu) {
+            const files = Array.isArray(req.files.menu) ? req.files.menu : [req.files.menu];
+            for (const file of files) {
+                const filePath = file.path;
+                const result = await uploadToCloudinary(filePath);
+                menuUrls.push(result.secure_url);
+                menuIds.push(result.public_id);
+                await fs.promises.unlink(filePath);
+            }
+        }
+
+        // Tạo đối tượng mới cho nhà hàng
+        const newAmThuc = {
+            ...req.body,
+            hinhAnh: imageUrls[0] || "",  // Đảm bảo có giá trị mặc định
+            hinhAnhID: imageIds[0] || "",
+            menu: menuUrls,
+            menuIDs: menuIds,
+        };
+
+        await AmThucModel.create(newAmThuc);
+        res.redirect('/web/amthucs');
+    } catch (error) {
+        console.error('Lỗi khi tải lên file:', error);
+        res.status(500).render('error', { message: 'Lỗi khi tải lên file', error });
+    }
+};
+
+// Xóa nhà hàng
+// exports.deleteAmThuc = async (req, res) => {
 //     try {
-//         const { id } = req.params;
-//         const amthuc = await AmThucModel.findOne({ _id: id });
-//         if (!amthuc) {
-//             return res.render('../views/amthuc/amthucs', { 
-//                 message: 'Nhà hàng không tồn tại', 
-//                 amthucs: [] 
-//             });
-//         }
+//         const id = req.params.id;
+//         const amThuc = await AmThucModel.findById(id);
 
-//         // Xử lý hình ảnh chính
-//         let imageUrl = amthuc.hinhAnh;
-//         let imageId = amthuc.hinhAnhID;
-//         const mainFile = req.files['hinhAnhChinh'] ? req.files['hinhAnhChinh'][0] : null;
+//         if (amThuc) {
+//             const imageId = amThuc.hinhAnhID;
+//             const menuIds = amThuc.menuIDs;
 
-//         // Xóa hình ảnh cũ nếu có file mới
-//         if (mainFile) {
 //             if (imageId) {
 //                 await deleteFromCloudinary(imageId);
 //             }
-            
-//             const result = await uploadToCloudinary(mainFile.path);
-//             imageUrl = result.secure_url;
-//             imageId = result.public_id;
-//             await fs.promises.unlink(mainFile.path);
-//         }
 
-//         // Xử lý hình ảnh menu
-//         const menuImages = [];
-//         if (req.files['hinhMenu']) {
-//             // Xóa các hình menu cũ
-//             if (amthuc.hinhMenuID && amthuc.hinhMenuID.length > 0) {
-//                 for (const oldImageId of amthuc.hinhMenuID) {
-//                     await deleteFromCloudinary(oldImageId);
+//             if (menuIds && menuIds.length > 0) {
+//                 for (const publicId of menuIds) {
+//                     await deleteFromCloudinary(publicId);
 //                 }
 //             }
-
-//             // Tải lên hình menu mới
-//             for (const menuFile of req.files['hinhMenu']) {
-//                 const result = await uploadToCloudinary(menuFile.path);
-//                 menuImages.push({
-//                     url: result.secure_url,
-//                     publicId: result.public_id
-//                 });
-//                 await fs.promises.unlink(menuFile.path);
-//             }
 //         }
 
-//         // Cập nhật nhà hàng
-//         await AmThucModel.findByIdAndUpdate(id, {
-//             tenNhaHang: req.body.tenNhaHang,
-//             hinhAnh: imageUrl,
-//             hinhAnhID: imageId,
-//             moTa: req.body.moTa,
-//             hinhMenu: menuImages.length > 0 ? menuImages.map(img => img.url) : amthuc.hinhMenu,
-//             hinhMenuID: menuImages.length > 0 ? menuImages.map(img => img.publicId) : amthuc.hinhMenuID,
-//             gioMoCua: req.body.gioMoCua,
-//             gioDongCua: req.body.gioDongCua,
-//             viTri: req.body.viTri,
-//             hotline: req.body.hotline
-//         }, { new: true });
-
-//         req.session.message = "Sửa nhà hàng thành công!";
-//         res.redirect('/web/amthucs');
+//         await AmThucModel.findByIdAndDelete(id);
+//         res.redirect('/web/amthucs'); // Điều hướng lại danh sách nhà hàng sau khi xóa
 //     } catch (error) {
-//         console.error('Error:', error);
-//         res.render('../views/amthuc/amthucs', { 
-//             message: 'Lỗi khi sửa nhà hàng', 
-//             amthucs: [] 
-//         });
+//         console.error('Lỗi khi xóa nhà hàng:', error);
+//         res.status(500).render('error', { message: 'Lỗi khi xóa nhà hàng', error });
 //     }
 // };
 
-exports.xoaAmThuc = async (req, res, next) => {
+exports.deleteAmThuc = async (req, res) => {
     try {
         const { id } = req.params;
+        const amthuc = await AmThucModel.findById(id);
 
-        const amthuc = await AmThucModel.findOne({ _id: id });
         if (!amthuc) {
-            return res.render('../views/amthuc/amthucs', { message: 'Nhà hàng không tồn tại', amthucs: [] });
+            return res.status(404).send('Không tìm thấy nhà hàng');
         }
 
+        // Xóa ảnh cũ từ Cloudinary
         if (amthuc.hinhAnhID) {
             await deleteFromCloudinary(amthuc.hinhAnhID);
         }
 
-        await AmThucModel.findByIdAndDelete({ _id: id });
+        if (amthuc.menuIDs.length > 0) {
+            await Promise.all(amthuc.menuIDs.map(id => deleteFromCloudinary(id)));
+        }
 
-        req.session.message = "Xóa nhà hàng thành công!";
-        res.redirect('/web/amthucs'); // Chuyển hướng về danh sách
+        await AmThucModel.findByIdAndDelete(id);
+        res.redirect('/web/amthucs');
     } catch (error) {
-        console.error('Error:', error);
-        res.render('../views/amthuc/amthucs', { message: 'Lỗi khi xóa nhà hàng', amthucs: [] });
+        console.error('Lỗi khi xóa nhà hàng:', error);
+        res.status(500).render('error', { message: 'Lỗi khi xóa nhà hàng', error });
     }
 };
 
 
+// Sửa nhà hàng
+// exports.suaAmThuc = async (req, res) => {
+//     console.log("Files received in suaAmThuc:", req.files);
 
+//     try {
+//         const { id } = req.params;
+//         const amThuc = await AmThucModel.findById(id);
 
+//         if (!amThuc) {
+//             return res.status(404).render('error', { message: 'Nhà hàng không tìm thấy' });
+//         }
 
+//         let imageUrls = amThuc.hinhAnh ? [amThuc.hinhAnh] : [];
+//         let menuUrls = amThuc.menu || [];
+//         let imageIds = amThuc.hinhAnhID ? [amThuc.hinhAnhID] : [];
+//         let menuIds = amThuc.menuIDs || [];
 
+//         if (req.files && req.files.images && req.files.images.length > 0) {
+//             if (imageIds.length > 0) {
+//                 await deleteFromCloudinary(imageIds[0]);
+//             }
+//             imageUrls = [];
+//             imageIds = [];
 
+//             for (const file of req.files.images) {
+//                 const filePath = file.path;
+//                 const result = await uploadToCloudinary(filePath);
+//                 imageUrls.push(result.secure_url);
+//                 imageIds.push(result.public_id);
+//                 await fs.promises.unlink(filePath);
+//             }
+//         }
 
+//         if (req.files && req.files.menu && req.files.menu.length > 0) {
+//             for (const publicId of menuIds) {
+//                 await deleteFromCloudinary(publicId);
+//             }
+//             menuUrls = [];
+//             menuIds = [];
 
+//             for (const file of req.files.menu) {
+//                 const filePath = file.path;
+//                 const result = await uploadToCloudinary(filePath);
+//                 menuUrls.push(result.secure_url);
+//                 menuIds.push(result.public_id);
+//                 await fs.promises.unlink(filePath);
+//             }
+//         }
 
-// Thêm món ăn
-exports.addAmThuc = async (req, res) => {
-    // if (req.method === 'GET') {
-    //     res.render('/views/amthuc/amthucs.ejs'); // Hiển thị form thêm món ăn
-    // } else 
-    if (req.method === 'POST') {
-        try {
-            const { ten, moTa } = req.body;
-            const image = req.files && req.files.images ? req.files.images[0] : null;
+//         await AmThucModel.findByIdAndUpdate(
+//             id,
+//             {
+//                 ...req.body,
+//                 hinhAnh: imageUrls[0],
+//                 hinhAnhID: imageIds[0],
+//                 menu: menuUrls,
+//                 menuIDs: menuIds,
+//             },
+//             { new: true }
+//         );
 
-            let hinhAnhUrl = null;
-            let hinhAnhId = null;
+//         res.redirect('/web/amthucs'); // Điều hướng lại danh sách nhà hàng sau khi cập nhật
+//     } catch (error) {
+//         console.error('Lỗi khi cập nhật nhà hàng:', error);
+//         res.status(500).render('error', { message: 'Lỗi khi cập nhật nhà hàng', error });
+//     }
+// };
 
-            if (image) {
-                const result = await uploadToCloudinary(image.path);
-                hinhAnhUrl = result.secure_url;
-                hinhAnhId = result.public_id;
-                await fs.promises.unlink(image.path);
-            }
-
-             await AmThucModel.create({
-                ten,
-                moTa,
-                hinhAnh: hinhAnhUrl,
-                hinhAnhID: hinhAnhId,
-            });
-
-            res.redirect('/web/amthucs'); // Chuyển hướng về danh sách món ăn
-        } catch (error) {
-            res.render('error', { message: 'Error adding AmThuc', error });
-            console.log(error);
-            
-        }
-    }
-};
-
-// Sửa món ăn
 exports.suaAmThuc = async (req, res) => {
-    if (req.method === 'GET') {
-        try {
-            const { id } = req.params;
-            const amthuc = await AmThucModel.findById(id);
+    try {
+        const { id } = req.params;
+        const amthuc = await AmThucModel.findById(id);
 
-            if (!amthuc) {
-                return res.status(404).render('error', { message: 'AmThuc not found' });
-            }
-
-            res.render('/views/amthuc/amthucs.ejs', { amthuc });
-        } catch (error) {
-            res.render('error', { message: 'Error fetching AmThuc for editing', error });
+        if (!amthuc) {
+            return res.status(404).send('Không tìm thấy nhà hàng');
         }
-    } else if (req.method === 'POST') {
-        try {
-            const { id } = req.params;
-            const amthuc = await AmThucModel.findById(id);
 
-            if (!amthuc) {
-                return res.status(404).render('error', { message: 'AmThuc not found' });
+        const imageUrls = [];
+        const menuUrls = [];
+        const imageIds = [];
+        const menuIds = [];
+
+        // Kiểm tra và tải lên ảnh mới nếu có
+        if (req.files && req.files.images) {
+            if (amthuc.hinhAnhID) {
+                await deleteFromCloudinary(amthuc.hinhAnhID); // Xóa ảnh cũ
             }
 
-            const { ten, moTa } = req.body;
-            const image = req.files && req.files.images ? req.files.images[0] : null;
-
-            let hinhAnhUrl = amthuc.hinhAnh;
-            let hinhAnhId = amthuc.hinhAnhID;
-
-            if (image) {
-                if (hinhAnhId) {
-                    await deleteFromCloudinary(hinhAnhId); // Xóa ảnh cũ trên Cloudinary
-                }
-                const result = await uploadToCloudinary(image.path);
-                hinhAnhUrl = result.secure_url;
-                hinhAnhId = result.public_id;
-                await fs.promises.unlink(image.path);
+            const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+            for (const file of files) {
+                const filePath = file.path;
+                const result = await uploadToCloudinary(filePath);
+                imageUrls.push(result.secure_url);
+                imageIds.push(result.public_id);
+                await fs.promises.unlink(filePath);
             }
-
-            await AmThucModel.findByIdAndUpdate(id, {
-                ten,
-                moTa,
-                hinhAnh: hinhAnhUrl,
-                hinhAnhID: hinhAnhId,
-            });
-
-            res.redirect('/web/amthucs'); // Chuyển hướng về danh sách món ăn
-        } catch (error) {
-            res.render('error', { message: 'Error updating AmThuc', error });
+        } else {
+            imageUrls.push(amthuc.hinhAnh);
+            imageIds.push(amthuc.hinhAnhID);
         }
+
+        // Kiểm tra và tải lên menu mới nếu có
+        if (req.files && req.files.menu) {
+            if (amthuc.menuIDs.length > 0) {
+                await Promise.all(amthuc.menuIDs.map(id => deleteFromCloudinary(id))); // Xóa ảnh menu cũ
+            }
+
+            const files = Array.isArray(req.files.menu) ? req.files.menu : [req.files.menu];
+            for (const file of files) {
+                const filePath = file.path;
+                const result = await uploadToCloudinary(filePath);
+                menuUrls.push(result.secure_url);
+                menuIds.push(result.public_id);
+                await fs.promises.unlink(filePath);
+            }
+        } else {
+            menuUrls.push(...amthuc.menu);
+            menuIds.push(...amthuc.menuIDs);
+        }
+
+        // Cập nhật nhà hàng
+        await AmThucModel.findByIdAndUpdate(id, {
+            ...req.body,
+            hinhAnh: imageUrls[0],
+            hinhAnhID: imageIds[0],
+            menu: menuUrls,
+            menuIDs: menuIds,
+        });
+
+        res.redirect('/web/amthucs');
+    } catch (error) {
+        console.error('Lỗi khi sửa nhà hàng:', error);
+        res.status(500).render('error', { message: 'Lỗi khi sửa nhà hàng', error });
     }
 };
-
 
