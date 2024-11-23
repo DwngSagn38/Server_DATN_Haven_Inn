@@ -56,8 +56,13 @@ app.get('/', (req, res) => {
 app.listen(PORT, async () => {
   console.log(`Server đang chạy tại: http://localhost:${PORT}`);
 
+<<<<<<< HEAD
   // // // Sử dụng dynamic import để mở trình duyệt
   // const open = (await import('open')).default;
+=======
+  // // Sử dụng dynamic import để mở trình duyệt
+  const open = (await import('open')).default;
+>>>>>>> 4b3457142c8c279713409b8a92ca5666ed877570
   // await open(`http://localhost:${PORT}/web/auth/login`);
 });
 
