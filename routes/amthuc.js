@@ -5,7 +5,7 @@ const { upload } = require('../config/common/uploads');
 const amThucController = require('../controllers/amthuc_controller');
 const authMiddleware = require('../middleware/authMiddleware');
 
-router.use(authMiddleware('json'));
+// router.use(authMiddleware('json'));
 
 router.get('/', amThucController.getList);
 router.get('/getbyid', amThucController.getById);

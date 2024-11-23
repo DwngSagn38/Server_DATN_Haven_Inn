@@ -56,9 +56,14 @@ app.get('/', (req, res) => {
 app.listen(PORT, async () => {
   console.log(`Server đang chạy tại: http://localhost:${PORT}`);
 
-  // // Sử dụng dynamic import để mở trình duyệt
+  // // // Sử dụng dynamic import để mở trình duyệt
   // const open = (await import('open')).default;
   // await open(`http://localhost:${PORT}/web/auth/login`);
+});
+
+app.use((req, res, next) => {
+  console.log(`Request URL: ${req.url}, Method: ${req.method}`);
+  next();
 });
 
 const flash = require('connect-flash');
