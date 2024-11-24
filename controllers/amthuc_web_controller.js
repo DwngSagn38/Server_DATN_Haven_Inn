@@ -17,67 +17,16 @@ exports.getListOrByID = async (req, res) => {
 
             return res.render('amthuc/amthucs.ejs', { amthucs: [amthuc], message: null });
         }
-
+        const message = req.session.message; // Lấy thông báo từ session
+        delete req.session.message; // Xóa thông báo sau khi đã sử dụng
         // Nếu không có id, trả về danh sách nhà hàng
         const amthucs = await AmThucModel.find({}).sort({ createdAt: -1 });
-        res.render('amthuc/amthucs.ejs', { amthucs, message: null }); // Trả về danh sách nhà hàng
+        res.render('amthuc/amthucs.ejs', { amthucs, message: message || null }); // Trả về danh sách nhà hàng
     } catch (error) {
         console.error('Lỗi khi lấy dữ liệu:', error);
         res.status(500).render('error', { message: 'Lỗi khi lấy dữ liệu nhà hàng', error });
     }
 };
-
-// Thêm nhà hàng
-// exports.addAmThuc = async (req, res) => {
-//     console.log("Files received in addAmThuc:", req.files);
-
-//     if (!req.files || Object.keys(req.files).length === 0) {
-//         return res.status(400).render('error', { message: 'Không có file nào được tải lên' });
-//     }
-
-//     try {
-//         const imageUrls = [];
-//         const menuUrls = [];
-//         const imageIds = [];
-//         const menuIds = [];
-
-//         if (req.files.images) {
-//             const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-//             for (const file of files) {
-//                 const filePath = file.path;
-//                 const result = await uploadToCloudinary(filePath);
-//                 imageUrls.push(result.secure_url);
-//                 imageIds.push(result.public_id);
-//                 await fs.promises.unlink(filePath); 
-//             }
-//         }
-
-//         if (req.files.menu) {
-//             const files = Array.isArray(req.files.menu) ? req.files.menu : [req.files.menu];
-//             for (const file of files) {
-//                 const filePath = file.path;
-//                 const result = await uploadToCloudinary(filePath);
-//                 menuUrls.push(result.secure_url);
-//                 menuIds.push(result.public_id);
-//                 await fs.promises.unlink(filePath);
-//             }
-//         }
-
-//         const newAmThuc = {
-//             ...req.body,
-//             hinhAnh: imageUrls[0],
-//             hinhAnhID: imageIds[0],
-//             menu: menuUrls,
-//             menuIDs: menuIds,
-//         };
-
-//         await AmThucModel.create(newAmThuc);
-//         res.redirect('/web/amthucs'); // Điều hướng lại danh sách nhà hàng sau khi thêm
-//     } catch (error) {
-//         console.error('Lỗi khi tải lên file:', error);
-//         res.status(500).render('error', { message: 'Lỗi khi tải lên file', error });
-//     }
-// };
 
 exports.addAmThuc = async (req, res) => {
     try {
@@ -120,6 +69,7 @@ exports.addAmThuc = async (req, res) => {
         };
 
         await AmThucModel.create(newAmThuc);
+        req.session.message = "Thêm thành công!";
         res.redirect('/web/amthucs');
     } catch (error) {
         console.error('Lỗi khi tải lên file:', error);
@@ -175,6 +125,7 @@ exports.deleteAmThuc = async (req, res) => {
         }
 
         await AmThucModel.findByIdAndDelete(id);
+        req.session.message = "Xóa thành công!";
         res.redirect('/web/amthucs');
     } catch (error) {
         console.error('Lỗi khi xóa nhà hàng:', error);
@@ -182,74 +133,6 @@ exports.deleteAmThuc = async (req, res) => {
     }
 };
 
-
-// Sửa nhà hàng
-// exports.suaAmThuc = async (req, res) => {
-//     console.log("Files received in suaAmThuc:", req.files);
-
-//     try {
-//         const { id } = req.params;
-//         const amThuc = await AmThucModel.findById(id);
-
-//         if (!amThuc) {
-//             return res.status(404).render('error', { message: 'Nhà hàng không tìm thấy' });
-//         }
-
-//         let imageUrls = amThuc.hinhAnh ? [amThuc.hinhAnh] : [];
-//         let menuUrls = amThuc.menu || [];
-//         let imageIds = amThuc.hinhAnhID ? [amThuc.hinhAnhID] : [];
-//         let menuIds = amThuc.menuIDs || [];
-
-//         if (req.files && req.files.images && req.files.images.length > 0) {
-//             if (imageIds.length > 0) {
-//                 await deleteFromCloudinary(imageIds[0]);
-//             }
-//             imageUrls = [];
-//             imageIds = [];
-
-//             for (const file of req.files.images) {
-//                 const filePath = file.path;
-//                 const result = await uploadToCloudinary(filePath);
-//                 imageUrls.push(result.secure_url);
-//                 imageIds.push(result.public_id);
-//                 await fs.promises.unlink(filePath);
-//             }
-//         }
-
-//         if (req.files && req.files.menu && req.files.menu.length > 0) {
-//             for (const publicId of menuIds) {
-//                 await deleteFromCloudinary(publicId);
-//             }
-//             menuUrls = [];
-//             menuIds = [];
-
-//             for (const file of req.files.menu) {
-//                 const filePath = file.path;
-//                 const result = await uploadToCloudinary(filePath);
-//                 menuUrls.push(result.secure_url);
-//                 menuIds.push(result.public_id);
-//                 await fs.promises.unlink(filePath);
-//             }
-//         }
-
-//         await AmThucModel.findByIdAndUpdate(
-//             id,
-//             {
-//                 ...req.body,
-//                 hinhAnh: imageUrls[0],
-//                 hinhAnhID: imageIds[0],
-//                 menu: menuUrls,
-//                 menuIDs: menuIds,
-//             },
-//             { new: true }
-//         );
-
-//         res.redirect('/web/amthucs'); // Điều hướng lại danh sách nhà hàng sau khi cập nhật
-//     } catch (error) {
-//         console.error('Lỗi khi cập nhật nhà hàng:', error);
-//         res.status(500).render('error', { message: 'Lỗi khi cập nhật nhà hàng', error });
-//     }
-// };
 
 exports.suaAmThuc = async (req, res) => {
     try {
@@ -311,6 +194,7 @@ exports.suaAmThuc = async (req, res) => {
             menu: menuUrls,
             menuIDs: menuIds,
         });
+        req.session.message = "Sửa thành công!";
 
         res.redirect('/web/amthucs');
     } catch (error) {

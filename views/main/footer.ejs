@@ -13,6 +13,21 @@
   <script src="https://cdn.datatables.net/v/dt/dt-2.1.8/datatables.min.js"></script>
 
 
+  <% if (message) { %>
+
+
+    <script>
+        // Đặt thời gian hiển thị thông báo là 2 giây (2000ms)
+        setTimeout(function () {
+            var messageElement = document.getElementById("successMessage");
+            if (messageElement) {
+                messageElement.style.display = "none"; // Ẩn thông báo sau 2 giây
+            }
+        }, 2000);
+    </script>
+    <% } %>
+    
+
   <script>
     $(document).ready(function () {
         $('table').DataTable({

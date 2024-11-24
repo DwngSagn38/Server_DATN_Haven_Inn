@@ -1,56 +1,77 @@
 const LoaiPhongModel = require('../model/loaiphongs');
 const { uploadToCloudinary, deleteFromCloudinary } = require("../config/common/uploads");
 const fs = require('fs');
+const PhongModel = require('../model/phongs'); // Đường dẫn đến model phong
 const { formatCurrencyVND } = require('./utils');
+
 
 exports.getListorByID = async (req, res, next) => {
     try {
         const { id } = req.query;
-        
+
         // Xây dựng điều kiện lọc dựa trên các tham số có sẵn
         let filter = {};
         if (id) {
             filter._id = id;
         }
+
+        // Lấy danh sách loaiphongs
         const loaiphongs = await LoaiPhongModel.find(filter).sort({ createdAt: -1 });
 
         if (loaiphongs.length === 0) {
-            return res.status(404).send({ message: 'Không tìm thấy' });
+            return res.render('../views/loaiphong/loaiphongs', {
+                message: 'Không tìm thấy loại phòng',
+                loaiphongs: []
+            });
         }
 
-        // Format giá tiền cho từng loaiphong
-        const loaiphongsFormatted = loaiphongs.map((loaiphong) => {
+        // Tính tổng số phòng theo id_LoaiPhong
+        const phongCounts = await PhongModel.aggregate([
+            { $group: { _id: "$id_LoaiPhong", totalPhong: { $sum: 1 } } }
+        ]);
+
+        // Map tổng số phòng vào từng loaiphong
+        const loaiphongsWithCounts = loaiphongs.map((loaiphong) => {
+            const phongCount = phongCounts.find(
+                (count) => count._id.toString() === loaiphong._id.toString()
+            );
+
+             // Format giá tiền
+             const formattedGiaTien = formatCurrencyVND(loaiphong.giaTien);
+
+
             return {
                 ...loaiphong.toObject(),
-                giaTien: formatCurrencyVND(loaiphong.giaTien) // Áp dụng formatCurrencyVND
+                giaTien : formattedGiaTien,
+                totalPhong: phongCount ? phongCount.totalPhong : 0
             };
         });
 
-        res.send(loaiphongsFormatted);  // Gửi danh sách đã được format
+        const message = req.session.message; // Lấy thông báo từ session
+        delete req.session.message; // Xóa thông báo sau khi đã sử dụng
 
-    
+        res.render('../views/loaiphong/loaiphongs', {
+            message: message || null,
+            loaiphongs: loaiphongsWithCounts
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: 500, message: "Error fetching data", error: error.message });
+        res.render('../views/loaiphong/loaiphongs', {
+            message: 'Lỗi khi lấy dữ liệu',
+            loaiphongs: []
+        });
     }
 };
 
+
+
 exports.addLoaiPhong = async (req, res) => {
-
-    console.log("req.files:", req.files); // Log toàn bộ files
-
-    // Kiểm tra xem có file hay không
-    if (!req.files || Object.keys(req.files).length === 0) {
-        return res.status(400).json({ success: false, message: 'No files uploaded' });
-    }
-
     try {
         const imageUrls = [];
         const imageIds = []; // Mảng lưu public_id của ảnh chính
 
         // Truy cập đúng trường images trong req.files
         const images = req.files.filter(file => file.fieldname === 'images');
-        // console.log("Images array:", images);  // Log để kiểm tra mảng images
 
         // Kiểm tra và xử lý từng file trong mảng images
         if (images.length > 0) {  // Kiểm tra nếu có file images
@@ -71,31 +92,30 @@ exports.addLoaiPhong = async (req, res) => {
         });
 
         // Lưu vào database
-        const result = await newLoaiPhong.save();
-
+        await newLoaiPhong.save();
+        req.session.message = "Thêm thành công!";
         // Trả về kết quả
-        res.json({ status: 200, data: result });
+        res.redirect('/web/loaiphongs');
     } catch (error) {
         console.error('Error uploading files:', error);
-        res.status(500).json({ message: 'Error uploading files', error });
+        res.render('../views/loaiphong/loaiphongs', {
+            message: 'Lỗi khi lấy dữ liệu',
+            loaiphongs: []
+        });
     }
 };
 
 exports.suaLoaiPhong = async (req, res) => {
-    console.log("req.files:", req.files); // Log toàn bộ files
-
-    // Kiểm tra xem có file hay không
-    if (!req.files || Object.keys(req.files).length === 0) {
-        return res.status(400).json({ success: false, message: 'No files uploaded' });
-    }
-
     try {
         const { id } = req.params;
 
         // Tìm loại phòng theo ID
         const loaiphong = await LoaiPhongModel.findById(id);
         if (!loaiphong) {
-            return res.status(404).send({ message: 'Không tìm thấy loại phòng' });
+            return res.render('../views/loaiphong/loaiphongs', {
+                message: 'Không tìm thấy loại phòng',
+                loaiphongs: []
+            });
         }
 
         // Khởi tạo giá trị hình ảnh từ loại phòng hiện tại
@@ -127,21 +147,26 @@ exports.suaLoaiPhong = async (req, res) => {
         }
 
         // Cập nhật loại phòng
-        const result = await LoaiPhongModel.findByIdAndUpdate(
+        await LoaiPhongModel.findByIdAndUpdate(
             id,
             {
                 ...req.body,
-                hinhAnh: imageUrls,
-                hinhAnhIDs: imageIds,
+                hinhAnh: imageUrls || loaiphong.hinhAnh,
+                hinhAnhIDs: imageIds || loaiphong.hinhAnhIDs,
             },
             { new: true } // Trả về đối tượng đã cập nhật
         );
 
         // Trả về kết quả
-        res.send({ status: 200, data: result, message: "Update successfully" });
+        req.session.message = "Sửa thành công!";
+        // Trả về kết quả
+        res.redirect('/web/loaiphongs');
     } catch (error) {
         console.error('Error uploading files:', error);
-        res.status(500).json({ message: 'Error uploading files', error });
+        res.render('../views/loaiphong/loaiphongs', {
+            message: 'Lỗi khi lấy dữ liệu',
+            loaiphongs: []
+        });
     }
 };
 
@@ -160,12 +185,19 @@ exports.xoaLoaiPhong = async (req, res) => {
                     await deleteFromCloudinary(publicId);
                 }
             }
+
+            // if (LoaiPhong.hinhAnhIDs.length > 0) {
+            //     await Promise.all(LoaiPhong.hinhAnhIDs.map(id => deleteFromCloudinary(id)));
+            // }
         }
 
-        const result = await LoaiPhongModel.findByIdAndDelete(id);
-
-        res.status(200).json({ message: "Delete successfully", result: result });
+        await LoaiPhongModel.findByIdAndDelete(id);
+        req.session.message = "Xóa thành công!";
+        res.redirect('/web/loaiphongs');
     } catch (error) {
-        res.status(500).json({ message: "Delete failed", result: error });
+        res.render('../views/loaiphong/loaiphongs', {
+            message: 'Lỗi khi lấy dữ liệu',
+            loaiphongs: []
+        });
     }
 };

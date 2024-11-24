@@ -1,0 +1,117 @@
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const deleteButtons = document.querySelectorAll('.btn-delete-loaiphong');
+        const serviceNameElement = document.getElementById('deleteServiceName');
+        const confirmDeleteForm = document.getElementById('confirmDeleteButton'); // Đây là form, không phải link
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const serviceId = button.getAttribute('data-id');
+                const serviceName = button.getAttribute('data-ten');
+
+                console.log("Service ID:", serviceId); // Debug
+                console.log("Service Name:", serviceName); // Debug
+
+                if (serviceNameElement && confirmDeleteForm) {
+                    serviceNameElement.textContent = serviceName; // Hiển thị tên loại phòng
+                    confirmDeleteForm.action = `/web/loaiphongs/delete/${serviceId}?_method=DELETE`; // Cập nhật đường dẫn
+                }
+            });
+        });
+
+    });
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Nút thêm loại phòng
+        document.getElementById("addServiceBtn").addEventListener("click", function () {
+            const form = document.getElementById("serviceForm");
+            form.action = "/web/loaiphongs/post"; // Đường dẫn thêm mới
+            form.reset(); // Reset form
+            document.getElementById("serviceModalLabel").innerText = "Thêm loại phòng mới";
+            document.getElementById("currentImage").style.display = "none"; // Ẩn ảnh cũ
+            document.getElementById("currentImagePreviewContainer").innerHTML = ""; // Xóa ảnh cũ
+        });
+
+        // Nút sửa loại phòng
+        document.querySelectorAll(".btn-edit-loaiphong").forEach((button) => {
+            button.addEventListener("click", function () {
+                const form = document.getElementById("serviceForm");
+                form.action = `/web/loaiphongs/put/${this.dataset.id}?_method=PUT`; // Đường dẫn sửa
+                document.getElementById("serviceModalLabel").innerText = "Chỉnh sửa loại phòng";
+
+                // Đặt giá trị vào form
+                document.getElementById("tenLoaiPhong").value = this.dataset.ten;
+                document.getElementById("giuong").value = this.dataset.giuong;
+                document.getElementById("soLuongKhach").value = this.dataset.soluongkhach;
+                document.getElementById("dienTich").value = this.dataset.dientich;
+                document.getElementById("giaTien").value = this.dataset.giatien;
+                document.getElementById("moTa").value = this.dataset.mota;
+
+                if (this.dataset.hinhanh) {
+                    try {
+                        const images = JSON.parse(this.dataset.hinhanh); // Chuyển chuỗi JSON thành mảng
+                        const previewContainer = document.getElementById("currentImagePreview"); // Đúng ID
+                        previewContainer.innerHTML = ""; // Xóa nội dung cũ
+                        images.forEach((image) => {
+                            const imgElement = document.createElement("img");
+                            imgElement.src = image;
+                            imgElement.alt = "Hình ảnh hiện tại";
+                            imgElement.style.width = "100px";
+                            imgElement.style.marginRight = "10px";
+                            previewContainer.appendChild(imgElement);
+                        });
+                        document.getElementById("currentImagePreviewContainer").style.display = "block"; // Hiển thị container chứa ảnh
+                    } catch (error) {
+                        console.error("Lỗi khi parse JSON:", error);
+                    }
+                } else {
+                    document.getElementById("currentImagePreviewContainer").style.display = "none"; // Ẩn nếu không có ảnh
+                }
+
+            });
+        });
+
+        document.getElementById('serviceModal').addEventListener('hidden.bs.modal', () => {
+            const form = document.getElementById("serviceForm");
+            const previewContainer = document.getElementById("currentImagePreview");
+
+            // Reset form và ẩn container ảnh
+            form.reset();
+            previewContainer.innerHTML = ""; // Xóa nội dung ảnh cũ
+            document.getElementById("currentImagePreviewContainer").style.display = "none";
+        });
+
+
+    });
+</script>
+
+<script>
+    // Populate the details modal with dynamic data when 'View Details' is clicked
+    $('#detailsModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var tenLoaiPhong = button.data('ten');
+        var giuong = button.data('giuong');
+        var soLuongKhach = button.data('soluongkhach');
+        var dienTich = button.data('dientich');
+        var giaTien = button.data('giatien');
+        var moTa = button.data('mota');
+        var hinhAnh = button.data('hinhanh');
+
+        // Set the modal content dynamically
+        $('#detailName').text(tenLoaiPhong);
+        $('#detailBed').text(giuong);
+        $('#detailCapacity').text(soLuongKhach);
+        $('#detailSize').text(dienTich);
+        $('#detailPrice').text(giaTien);
+        $('#detailDescription').text(moTa);
+
+        // Display images dynamically
+        $('#detailImages').empty(); // Clear previous images
+        hinhAnh.forEach(function(image) {
+            $('#detailImages').append('<img src="' + image + '" class="img-fluid" style="max-width: 200px; max-height: 200px;">');
+        });
+    });
+</script>

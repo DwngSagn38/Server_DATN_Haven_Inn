@@ -51,13 +51,16 @@
                                             <% } %>
                                 </td>
                                 <td class="text-center">
-                                    <a href="javascript:void(0)" class="btn btn-primary btn-edit-dichvu btn-sm"
+                                    <a href="javascript:void(0)" class=" btn-edit-dichvu btn-sm"
                                         data-id="<%= dichvu._id %>" data-ten="<%= dichvu.tenDichVu %>"
                                         data-mota="<%= dichvu.moTa %>" data-hinhanh="<%= dichvu.hinhAnh %>"
-                                        data-bs-toggle="modal" data-bs-target="#serviceModal">Sửa</a>
-                                    <button class="btn btn-danger btn-sm btn-delete-dichvu" data-id="<%= dichvu._id %>"
+                                        data-bs-toggle="modal" data-bs-target="#serviceModal">
+                                        <img src="/public/images/edit.png" alt="Sửa" style="width: 24px; height: 24px;"></a>
+                                    <a class="btn-sm btn-delete-dichvu" data-id="<%= dichvu._id %>"
                                         data-ten="<%= dichvu.tenDichVu %>" data-bs-toggle="modal"
-                                        data-bs-target="#confirmDeleteModal">Xóa</button>
+                                        data-bs-target="#confirmDeleteModal">
+                                        <img src="/public/images/delete.png" alt="Xóa"
+                                        style="width: 24px; height: 24px;"></a>
                                 </td>
                             </tr>
                             <% }); %>
@@ -88,19 +91,7 @@
         </div>
     </div>
 
-    <% if (message) { %>
 
-
-        <script>
-            // Đặt thời gian hiển thị thông báo là 2 giây (2000ms)
-            setTimeout(function () {
-                var messageElement = document.getElementById("successMessage");
-                if (messageElement) {
-                    messageElement.style.display = "none"; // Ẩn thông báo sau 2 giây
-                }
-            }, 2000);
-        </script>
-        <% } %>
 
 
             <!-- Modal chung cho Thêm và Sửa dịch vụ -->

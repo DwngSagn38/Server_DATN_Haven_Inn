@@ -56,16 +56,18 @@
                         <% } %>
                     </td>
                     <td class="text-center">
-                        <button class="btn btn-primary btn-sm btn-edit-amthuc" data-id="<%= amthuc._id %>"
+                        <a class=" btn-sm btn-edit-amthuc" data-id="<%= amthuc._id %>"
                             data-ten="<%= amthuc.tenNhaHang %>" data-mota="<%= amthuc.moTa %>"
                             data-hinhanh="<%= amthuc.hinhAnh %>" data-hinhmenu="<%= amthuc.menu %>"
                             data-giomocua="<%= amthuc.gioMoCua %>"
                             data-giodongcua="<%= amthuc.gioDongCua %>" data-viTri="<%= amthuc.viTri %>"
                             data-hotline="<%= amthuc.hotline %>" data-bs-toggle="modal"
-                            data-bs-target="#amthucModal">Sửa</button>
-                        <button class="btn btn-danger btn-sm btn-delete-amthuc" data-id="<%= amthuc._id %>"
+                            data-bs-target="#amthucModal"><img src="/public/images/edit.png" alt="Sửa"
+                            style="width: 24px; height: 24px;"></a>
+                        <a class="btn-sm btn-delete-amthuc" data-id="<%= amthuc._id %>"
                             data-ten="<%= amthuc.tenNhaHang %>" data-bs-toggle="modal"
-                            data-bs-target="#confirmDeleteModal">Xóa</button>
+                            data-bs-target="#confirmDeleteModal"><img src="/public/images/delete.png" alt="Xóa"
+                            style="width: 24px; height: 24px;"></a>
                     </td>
                 </tr>
             <% }); %>
