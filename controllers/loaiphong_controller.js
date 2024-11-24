@@ -18,15 +18,7 @@ exports.getListorByID = async (req, res, next) => {
             return res.status(404).send({ message: 'Không tìm thấy' });
         }
 
-        // Format giá tiền cho từng loaiphong
-        const loaiphongsFormatted = loaiphongs.map((loaiphong) => {
-            return {
-                ...loaiphong.toObject(),
-                giaTien: formatCurrencyVND(loaiphong.giaTien) // Áp dụng formatCurrencyVND
-            };
-        });
-
-        res.send(loaiphongsFormatted);  // Gửi danh sách đã được format
+        res.send(loaiphongsFormatted);
 
     
     } catch (error) {
