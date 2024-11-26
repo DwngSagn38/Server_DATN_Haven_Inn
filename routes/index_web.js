@@ -7,6 +7,7 @@ var tienNghiRouter = require('./tiennghi_web');
 var amThucRouter = require('./amthuc_web');
 var hoTroRouter = require('./hotro_web');
 var loaiphongRouter = require('./loaiphong_web');
+var phongRouter = require('./phong_web');
 
 
 router.use('/auth', loginRouter);
@@ -15,6 +16,7 @@ router.use('/tiennghis', tienNghiRouter);
 router.use('/amthucs', amThucRouter);
 router.use('/hotros', hoTroRouter);
 router.use('/loaiphongs', loaiphongRouter);
+router.use('/phongs', phongRouter);
 
 
 const authMiddleware = require('../middleware/authMiddleware');

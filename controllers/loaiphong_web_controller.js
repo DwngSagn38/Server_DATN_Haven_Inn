@@ -1,4 +1,6 @@
 const LoaiPhongModel = require('../model/loaiphongs');
+const TienNghiModel = require('../model/tiennghis');
+const TienNghiPhongModel = require('../model/tiennghiphongs');
 const { uploadToCloudinary, deleteFromCloudinary } = require("../config/common/uploads");
 const fs = require('fs');
 const PhongModel = require('../model/phongs'); // Đường dẫn đến model phong
@@ -15,6 +17,7 @@ exports.getListorByID = async (req, res, next) => {
             filter._id = id;
         }
 
+        const tiennghis = await TienNghiModel.find({});
         // Lấy danh sách loaiphongs
         const loaiphongs = await LoaiPhongModel.find(filter).sort({ createdAt: -1 });
 
@@ -36,13 +39,13 @@ exports.getListorByID = async (req, res, next) => {
                 (count) => count._id.toString() === loaiphong._id.toString()
             );
 
-             // Format giá tiền
-             const formattedGiaTien = formatCurrencyVND(loaiphong.giaTien);
+            // Format giá tiền
+            const formattedGiaTien = formatCurrencyVND(loaiphong.giaTien);
 
 
             return {
                 ...loaiphong.toObject(),
-                giaTien : formattedGiaTien,
+                giaTien: formattedGiaTien,
                 totalPhong: phongCount ? phongCount.totalPhong : 0
             };
         });
@@ -52,7 +55,8 @@ exports.getListorByID = async (req, res, next) => {
 
         res.render('../views/loaiphong/loaiphongs', {
             message: message || null,
-            loaiphongs: loaiphongsWithCounts
+            loaiphongs: loaiphongsWithCounts,
+            tiennghis
         });
     } catch (error) {
         console.error(error);
@@ -84,26 +88,56 @@ exports.addLoaiPhong = async (req, res) => {
             }
         }
 
+
+        // Xử lý tiện nghi
+        let selectedTienNghi = [];
+        console.log("tien nghi select : ", req.body)
+        if (req.body.tienNghi) {
+            try {
+                selectedTienNghi = JSON.parse(req.body.tienNghi);
+                console.log("Parsed amenities:", selectedTienNghi);
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+                selectedTienNghi = [];
+            }
+        }
+
         // Tạo đối tượng mới cho LoaiPhong
         const newLoaiPhong = new LoaiPhongModel({
             ...req.body,
-            hinhAnh: imageUrls,  // Lưu URL ảnh chính
-            hinhAnhIDs: imageIds, // Lưu public_id ảnh chính
+            hinhAnh: imageUrls,
+            hinhAnhIDs: imageIds,
+            // tienNghi: selectedTienNghi, // Lưu danh sách tiện nghi đã chọn
         });
 
         // Lưu vào database
         await newLoaiPhong.save();
-        req.session.message = "Thêm thành công!";
-        // Trả về kết quả
+
+
+        // Cập nhật tiện nghi phòng trong database (nếu cần)
+        for (const tienNghiId of selectedTienNghi) {
+            const newTienNghiPhong = new TienNghiPhongModel({
+                id_LoaiPhong: newLoaiPhong._id,
+                id_TienNghi: tienNghiId,
+                moTa:"",
+            });
+            await newTienNghiPhong.save();
+
+            console.log("tiennghiphong : ", newTienNghiPhong)
+        }
+
+        // Đưa thông báo và chuyển hướng về trang loaiphongs
+        req.session.message = "Thêm loại phòng thành công!";
         res.redirect('/web/loaiphongs');
     } catch (error) {
         console.error('Error uploading files:', error);
         res.render('../views/loaiphong/loaiphongs', {
-            message: 'Lỗi khi lấy dữ liệu',
+            message: 'Lỗi khi thêm loại phòng.',
             loaiphongs: []
         });
     }
 };
+
 
 exports.suaLoaiPhong = async (req, res) => {
     try {
@@ -199,5 +233,44 @@ exports.xoaLoaiPhong = async (req, res) => {
             message: 'Lỗi khi lấy dữ liệu',
             loaiphongs: []
         });
+    }
+};
+
+
+exports.getLoaiPhongDetails = async (req, res) => {
+    try {
+        // Lấy thông tin loại phòng theo ID
+        const { id } = req.params;  // ID loại phòng được truyền từ frontend
+        const loaiPhong = await LoaiPhongModel.findById(id);
+
+        if (!loaiPhong) {
+            return res.status(404).send("LoaiPhong not found");
+        }
+
+        // Lấy thông tin tiện nghi cho loại phòng này
+        const tienNghiPhong = await TienNghiPhongModel.find({ id_LoaiPhong: id })
+            .populate('id_TienNghi'); // Lấy thông tin tiện nghi từ TienNghiModel
+
+        // Nếu không có tiện nghi cho loại phòng
+        const tienNghiDetails = tienNghiPhong.map(item => ({
+            tenTienNghi: item.id_TienNghi.tenTienNghi,
+            image: item.id_TienNghi.image,
+            moTa: item.moTa,
+        }));
+
+        // Trả về thông tin loại phòng và tiện nghi
+        res.json({
+            tenLoaiPhong: loaiPhong.tenLoaiPhong,
+            giuong: loaiPhong.giuong,
+            soLuongKhach: loaiPhong.soLuongKhach,
+            dienTich: loaiPhong.dienTich,
+            giaTien: loaiPhong.giaTien,
+            moTa: loaiPhong.moTa,
+            hinhAnh: loaiPhong.hinhAnh,
+            tienNghi: tienNghiDetails,  // Danh sách tiện nghi
+        });
+    } catch (error) {
+        console.error('Error fetching loaiPhong details:', error);
+        res.status(500).send('Internal Server Error');
     }
 };

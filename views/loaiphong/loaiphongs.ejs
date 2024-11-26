@@ -44,7 +44,7 @@
                                     <%= loaiphong.dienTich %>
                                 </td>
                                 <td>
-                                    <%= loaiphong.giaTien %>
+                                    <%= loaiphong.giaTien %> VNĐ
                                 </td>
                                 <td>
                                     <%= loaiphong.totalPhong %>
@@ -52,22 +52,19 @@
                                 <td>
                                     <% if (loaiphong.hinhAnh && loaiphong.hinhAnh.length> 0) { %>
                                         <img src="<%= loaiphong.hinhAnh[0] %>" class="img-fluid"
-                                            style="max-width: 120px; max-height: 120px;">
+                                            style="width: 100px; height: 60px;">
                                         <% } else { %>
                                             Không có ảnh
                                             <% } %>
                                 </td>
                                 <td class="text-center">
                                     <!-- Nút Xem Chi Tiết -->
-                                    <a class="" data-id="<%= loaiphong._id %>"
-                                        data-ten="<%= loaiphong.tenLoaiPhong %>" data-giuong="<%= loaiphong.giuong %>"
-                                        data-soluongkhach="<%= loaiphong.soLuongKhach %>"
-                                        data-dientich="<%= loaiphong.dienTich %>"
-                                        data-giatien="<%= loaiphong.giaTien %>" data-mota="<%= loaiphong.moTa %>"
-                                        data-hinhanh='<%= JSON.stringify(loaiphong.hinhAnh) %>' data-bs-toggle="modal"
-                                        data-bs-target="#detailsModal">
-                                        <img src="/public/images/eye.png" alt="Chi tiết" style="width: 24px; height: 24px;">
+                                    <a href="javascript:void(0)" onclick="getLoaiPhongDetails('<%= loaiphong._id %>')"
+                                        data-bs-toggle="modal" data-bs-target="#detailsModal">
+                                        <img src="/public/images/eye.png" alt="Chi tiết"
+                                            style="width: 24px; height: 24px;">
                                     </a>
+
                                     <!-- Nút Sửa -->
                                     <a class="btn-edit-loaiphong" data-id="<%= loaiphong._id %>"
                                         data-ten="<%= loaiphong.tenLoaiPhong %>" data-giuong="<%= loaiphong.giuong %>"
@@ -152,6 +149,28 @@
                             <label for="giaTien" class="form-label">Giá tiền (VND)</label>
                             <input type="number" class="form-control" id="giaTien" name="giaTien" required>
                         </div>
+
+                        <!-- Tiện nghi -->
+                        <div class="mb-3">
+                            <label for="tienNghi" class="form-label">Chọn tiện nghi phòng</label>
+                            <div id="tienNghiButtons">
+                                <% tiennghis.forEach(tiennghi=> { %>
+                                    <button type="button" class="btn btn-outline-primary tienNghiBtn"
+                                        data-id="<%= tiennghi._id %>" data-name="<%= tiennghi.tenTienNghi %>">
+                                        <%= tiennghi.tenTienNghi %>
+                                    </button>
+                                    <% }); %>
+                            </div>
+                        </div>
+
+                        <!-- Thẻ div để hiển thị các tiện nghi đã chọn -->
+                        <div class="mb-3">
+                            <label for="tienNghiSelected" class="form-label">Các tiện nghi đã chọn</label>
+                            <div id="tienNghiSelected" class="border p-2" style="min-height: 50px;">
+                                <!-- Các tiện nghi đã chọn sẽ hiển thị ở đây -->
+                            </div>
+                        </div>
+
                         <!-- Mô tả -->
                         <div class="mb-3">
                             <label for="moTa" class="form-label">Mô tả</label>
@@ -197,6 +216,11 @@
                     <div id="detailImages" style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <!-- Dynamic images will be added here -->
                     </div>
+
+                    <h5>Tiện nghi:</h5>
+                    <ul id="detailAmenities">
+                        <!-- Tiện nghi sẽ được hiển thị ở đây -->
+                    </ul>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -217,6 +241,51 @@
         }
     </style>
 
+    <script>
+        function getLoaiPhongDetails(id) {
+            // Gửi yêu cầu AJAX để lấy chi tiết loại phòng
+            fetch(`/web/loaiphongs/detail/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('LoaiPhong data:', data);
+                    // Điền thông tin vào các trường trong modal
+                    document.getElementById('detailName').innerText = data.tenLoaiPhong;
+                    document.getElementById('detailBed').innerText = data.giuong;
+                    document.getElementById('detailCapacity').innerText = data.soLuongKhach;
+                    document.getElementById('detailSize').innerText = data.dienTich;
+                    document.getElementById('detailPrice').innerText = data.giaTien;
+                    document.getElementById('detailDescription').innerText = data.moTa;
+
+                    // Xử lý và hiển thị ảnh
+                    const detailImages = document.getElementById('detailImages');
+                    detailImages.innerHTML = '';  // Xóa các ảnh cũ
+                    data.hinhAnh.forEach(imgUrl => {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = imgUrl;
+                        imgElement.style.width = '100px';
+                        imgElement.style.height = '100px';
+                        detailImages.appendChild(imgElement);
+                    });
+
+                    // Hiển thị tiện nghi
+                    const amenitiesList = document.getElementById('detailAmenities');
+                    amenitiesList.innerHTML = '';  // Xóa tiện nghi cũ
+                    if (data.tienNghi && data.tienNghi.length > 0) {
+                        data.tienNghi.forEach(tienNghi => {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = `${tienNghi.tenTienNghi} - ${tienNghi.moTa}`;
+                            amenitiesList.appendChild(listItem);
+                        });
+                    } else {
+                        amenitiesList.innerHTML = '<li>Không có tiện nghi nào</li>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching details:', error);
+                });
+        }
+
+    </script>
 
     <%- include('../main/footer.ejs') %>
         <%- include('./loaiphong_js.ejs') %>

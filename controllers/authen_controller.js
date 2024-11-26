@@ -53,7 +53,7 @@ exports.login = async (req, res, next) => {
                 console.log('Đăng nhập thành công, session:', req.session); // Debug session
                 return res.json({
                     status: 200,
-                    message: "Login success",
+                    message: "Đăng nhập thành công",
                     userId: req.session.userId,
                 });
             }
@@ -361,7 +361,7 @@ exports.setUpPass = async (req, res, next) => {
 };
 
 exports.changesPass = async (req, res, next) => {
-    const { id } = req.params;
+    const { id } = req.body;
     const { matKhauCu, matKhauMoi } = req.body;
     const nguoidung = await NguoiDungModel.findById(id);
     if (nguoidung != null) {

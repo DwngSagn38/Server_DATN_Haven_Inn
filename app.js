@@ -44,6 +44,7 @@ app.set('view engine', 'ejs');
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(express.json());
 app.use('/public', express.static(path.join(__dirname, 'public')))
 
 // Route example

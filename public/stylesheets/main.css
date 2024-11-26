@@ -47,3 +47,21 @@
     padding: .75rem 1rem;
   }
   
+/* Thêm các kiểu cho ngày hiện tại */
+.today-event {
+  font-weight: bold; /* Tô đậm ngày hiện tại */
+  background-color: #f8d7da; /* Thay đổi màu nền nếu cần */
+}
+
+/* Thêm kiểu cho ngày nhận phòng và trả phòng */
+.highlight-day {
+  font-weight: bold; /* Tô đậm ngày nhận phòng và trả phòng */
+  background-color: #ffeeba; /* Màu nền cho ngày nhận phòng và trả phòng */
+  color: #d39e00; /* Màu chữ cho ngày nhận phòng và trả phòng */
+}
+
+/* Đặc biệt cho các sự kiện */
+.event-highlight {
+  background-color: #f44336; /* Màu nền sự kiện */
+  color: white; /* Màu chữ của sự kiện */
+}

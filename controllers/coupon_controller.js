@@ -9,12 +9,14 @@ exports.getListorByidNguoiDung = async (req, res, next) => {
         if (id_NguoiDung) {
             filter.id_NguoiDung = id_NguoiDung;
         }
-
+        
         const coupons = await CouponModel.find(filter).sort({ createdAt: -1 });
 
         if (coupons.length === 0) {
             return res.status(404).send({ message: 'Không tìm thấy' });
         }
+
+
         res.send(coupons);
     } catch (error) {
         console.error(error);

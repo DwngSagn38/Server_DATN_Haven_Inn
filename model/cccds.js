@@ -8,6 +8,9 @@ const CccdModel  = new Schema({
         required: true
     },
     soCCCD : { type : String},
+    hoTen : { type : String},
+    ngaySinh : { type : String},
+    gioiTinh : { type : String},
     ngayCap : { type : String},
     noiCap : { type : String},
     anhMatTruoc : { type : String},
