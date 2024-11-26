@@ -26,7 +26,7 @@ exports.getListorByIDLoaiPhong = async (req, res, next) => {
             moTa: item.moTa
         }));
 
-        res.send(result);
+        res.send(tienNghiPhongs);
     } catch (error) {
         console.error(error);
         res.status(500).json({ status: 500, message: "Error fetching data", error: error.message });
