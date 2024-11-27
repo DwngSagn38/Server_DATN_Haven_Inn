@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const CouponModel = new Schema({
-    id_NguoiDung : {type: Schema.Types.ObjectId, ref: 'nguoidung', required : true},
     maGiamGia : { type : String , required : true, unique : true},
     giamGia : { type : Number, required : true},
     giamGiaToiDa : { type : Number},
