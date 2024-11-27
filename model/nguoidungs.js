@@ -10,10 +10,6 @@ const NguoiDungModel = new Schema({
     hinhAnhID: { type : String},
     chucVu : { type : Number, default : 0}, 
     trangThai : { type : Boolean, default : true},
-    cccd: { 
-        type: Schema.Types.ObjectId, 
-        ref: 'cccd' // Liên kết với bảng CCCD
-    }
 },{
     timestamps : true
 })

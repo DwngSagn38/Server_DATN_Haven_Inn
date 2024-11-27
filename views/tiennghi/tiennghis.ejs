@@ -27,22 +27,27 @@
                                 <td>
                                     <%= tiennghi.tenTienNghi %>
                                 </td>
-                            
+
                                 <td>
                                     <% if (tiennghi.image) { %>
-                                        <img src="<%= tiennghi.image %>" class="img-fluid" style="max-width: 120px; max-height: 120px;">
+                                        <img src="<%= tiennghi.image %>" class="img-fluid"
+                                            style="max-width: 120px; max-height: 120px;">
                                         <% } else { %>
                                             Không có ảnh
                                             <% } %>
                                 </td>
-                                <td class="text-center" >
-                                    <a href="javascript:void(0)" class="btn btn-primary btn-edit-tiennghi btn-sm"
-                                        data-id="<%= tiennghi._id %>" data-ten="<%= tiennghi.tenTienNghi %>"
-                                        data-hinhanh="<%= tiennghi.image %>"
-                                        data-bs-toggle="modal" data-bs-target="#serviceModal">Sửa</a>
-                                    <button class="btn btn-danger btn-sm btn-delete-tiennghi" data-id="<%= tiennghi._id %>"
+                                <td class="text-center">
+
+                                    <a class="btn-edit-tiennghi btn-sm" data-id="<%= tiennghi._id %>"
+                                        data-ten="<%= tiennghi.tenTienNghi %>" data-hinhanh="<%= tiennghi.image %>"
+                                        data-bs-toggle="modal" data-bs-target="#serviceModal">
+                                        <img src="/public/images/edit.png" alt="Sửa"
+                                            style="width: 24px; height: 24px;"></a>
+                                    <a class="btn-sm btn-delete-tiennghi" data-id="<%= tiennghi._id %>"
                                         data-ten="<%= tiennghi.tenTienNghi %>" data-bs-toggle="modal"
-                                        data-bs-target="#confirmDeleteModal">Xóa</button>
+                                        data-bs-target="#confirmDeleteModal">
+                                        <img src="/public/images/delete.png" alt="Xóa"
+                                            style="width: 24px; height: 24px;"></a>
                                 </td>
                             </tr>
                             <% }); %>
@@ -104,14 +109,14 @@
                                 <!-- Tên tiện nghi -->
                                 <div class="mb-3">
                                     <label for="tenTienNghi" class="form-label">Tên tiện nghi</label>
-                                    <input type="text" class="form-control" id="tenTienNghi" name="tenTienNghi" required>
+                                    <input type="text" class="form-control" id="tenTienNghi" name="tenTienNghi"
+                                        required>
                                 </div>
-                        
+
                                 <!-- Hình ảnh -->
                                 <div class="mb-3">
                                     <label for="hinhAnh" class="form-label">Hình Ảnh</label>
-                                    <input type="file" class="form-control" id="hinhAnh" name="image"
-                                        accept="image/*">
+                                    <input type="file" class="form-control" id="hinhAnh" name="image" accept="image/*">
                                 </div>
                                 <!-- Hiển thị ảnh cũ nếu có -->
                                 <div id="currentImage" class="mb-3" style="display: none;">

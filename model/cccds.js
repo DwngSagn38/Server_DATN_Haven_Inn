@@ -12,7 +12,7 @@ const CccdModel  = new Schema({
     ngaySinh : { type : String},
     gioiTinh : { type : String},
     ngayCap : { type : String},
-    noiCap : { type : String},
+    queQuan : { type : String},
     anhMatTruoc : { type : String},
     anhMatTruocId : { type : String},
     anhMatSau : { type : String},

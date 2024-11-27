@@ -9,7 +9,7 @@ exports.getCccdByUserId = async (req, res) => {
 
     try {
         // Tìm CCCD theo userId
-        const cccd = await CccdModel.findOne({ nguoiDung: userId }).populate('nguoiDung', 'tenNguoiDung email soDienThoai'); // Liên kết với bảng NguoiDung và lấy thông tin như tên, email
+        const cccd = await CccdModel.findOne({ nguoiDung: userId })// Liên kết với bảng NguoiDung và lấy thông tin như tên, email
 
         // Kiểm tra xem có tìm thấy CCCD không
         if (!cccd) {
@@ -29,10 +29,10 @@ exports.getCccdByUserId = async (req, res) => {
 exports.addCccd = async (req, res) => {
     console.log("Req Files :", req.files);  // Đảm bảo req.files được in ra
 
-    const { id_NguoiDung, soCCCD, ngayCap, noiCap } = req.body;
+    const { id_NguoiDung, soCCCD, hoTen, ngaySinh, gioiTinh, ngayCap, queQuan } = req.body;
 
     // Kiểm tra thông tin đầu vào
-    if (!id_NguoiDung || !soCCCD || !ngayCap || !noiCap) {
+    if (!id_NguoiDung || !soCCCD || !ngayCap || !queQuan || !hoTen || !ngaySinh || !gioiTinh) {
         return res.status(400).json({ message: "Vui lòng cung cấp đầy đủ thông tin" });
     }
 
@@ -44,6 +44,11 @@ exports.addCccd = async (req, res) => {
     const user = await NguoiDungModel.findById(id_NguoiDung);
     if (!user) {
         return res.status(400).json({ message: "Người dùng không tồn tại" });
+    }
+
+    const existingCCCD = await CccdModel.findOne({nguoiDung : user._id})
+    if(existingCCCD){
+        return res.status(400).json({ message: "Người dùng đã có cccd" });
     }
 
     try {
@@ -76,8 +81,11 @@ exports.addCccd = async (req, res) => {
         const cccd = new CccdModel({
             nguoiDung: id_NguoiDung, // Truyền userId vào trường nguoiDung
             soCCCD,
+            hoTen,
+            ngaySinh,
+            gioiTinh,
             ngayCap,
-            noiCap,
+            queQuan,
             anhMatTruoc: matTruocUrl || '',
             anhMatTruocId: matTruocId || '',
             anhMatSau: matSauUrl || '',

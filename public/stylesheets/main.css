@@ -65,3 +65,11 @@
   background-color: #f44336; /* Màu nền sự kiện */
   color: white; /* Màu chữ của sự kiện */
 }
+
+#customerImage img {
+  width: 150px;  /* Chiều rộng hình ảnh */
+  height: 150px; /* Chiều cao hình ảnh */
+  object-fit: cover; /* Đảm bảo hình ảnh không bị méo */
+  border-radius: 8px; /* Tạo bo góc cho hình ảnh */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ nhẹ cho hình ảnh */
+}

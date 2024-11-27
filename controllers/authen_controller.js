@@ -45,6 +45,9 @@ exports.login = async (req, res, next) => {
                     .status(404)
                     .json({ message: "Email chưa đăng ký tài khoản!" });
             } else {
+                if (!nguoidung.trangThai) {
+                    return res.status(404).json({ message: "Tài khoản của bạn đã bị chặn khỏi ứng dụng" });
+                }
                 if (nguoidung.matKhau != matKhau) {
                     return res.status(404).json({ message: "Mật khẩu chưa đúng" });
                 }

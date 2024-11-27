@@ -66,13 +66,28 @@
                                     Trang chủ
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2" href="web/home">
-                                    <img src="../../public/images/person.png" alt="Quản lý người dùng" width="24"
-                                        height="24" />
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="userDropdown" role="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="../../public/images/person.png" alt="Quản lý người dùng" width="24" height="24" />
                                     Quản lý người dùng
                                 </a>
+                                <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center gap-2" href="nguoidungs">
+                                            <img src="../../public/images/customer.png" alt="Quản lý khách hàng" width="24" height="24" />
+                                            Quản lý khách hàng
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center gap-2" href="nhanviens">
+                                            <img src="../../public/images/staff.png" alt="Quản lý nhân viên" width="24" height="24" />
+                                            Quản lý nhân viên
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
+                            
                             <li class="nav-item">
                                 <a class="nav-link d-flex align-items-center gap-2" href="loaiphongs">
                                     <img src="../../public/images/roomtype.png" alt="Quản lý loại phòng" width="24"

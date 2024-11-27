@@ -20,7 +20,7 @@
                     </thead>
                     <tbody>
                         <% hotros.forEach(hotro => { %>
-                            <tr <% if (hotro.trangThai == 2) { %> style="background-color: lightgreen !important;" <% } %>>
+                            <tr>
                                 <td>
                                     <%= hotro.id_NguoiDung.tenNguoiDung %>
                                 </td>
@@ -40,7 +40,7 @@
                                         data-id="<%= hotro._id %>" data-trangThai="<%= hotro.trangThai %>"
                                         data-tenNguoiDung="<%= hotro.id_NguoiDung.tenNguoiDung %>"
                                         data-vanDe="<%= hotro.vanDe %>" data-bs-toggle="modal"
-                                        data-bs-target="#serviceModal">Sửa</button>
+                                        data-bs-target="#serviceModal">Phản hồi</button>
                                 </td>                                    
                             </tr>
                         <% }); %>

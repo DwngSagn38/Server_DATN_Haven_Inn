@@ -58,24 +58,23 @@
                                     <a href="javascript:void(0)" onclick="getTrangThaiPhongDetails('<%= phong._id %>')"
                                         data-bs-toggle="modal" data-bs-target="#detailsModal">
                                         <img src="/public/images/eye.png" alt="Chi tiết"
-                                            style="width: 24px; height: 24px;">
-                                    </a>
+                                            style="width: 24px; height: 24px;"></a>
 
                                     <a class="btn-sm btn-edit-phong" data-id="<%= phong._id %>"
                                         data-ten="<%= phong.soPhong %>" data-idloaiPhong="<%=phong.id_LoaiPhong?._id%>"
                                         data-VIP="<%= phong.VIP %>" data-trangthai="<%= phong.trangThai %>"
                                         data-bs-toggle="modal"
                                         data-bs-target="#serviceModal">
-                                        <img src="/public/images/edit.png" alt="Sửa" style="width: 24px; height: 24px;">
-                                    </a>
+                                        <img src="/public/images/edit.png" alt="Sửa" style="width: 24px; height: 24px;"></a>
 
                                     <a class="btn-sm btn-delete-phong" data-id="<%= phong._id %>"
                                         data-soPhong="<%= phong.soPhong%>" data-bs-toggle="modal"
                                         data-bs-target="#confirmDeleteModal">
                                         <img src="/public/images/delete.png" alt="Xóa"
-                                            style="width: 24px; height: 24px;">
-                                    </a>
+                                            style="width: 24px; height: 24px;"></a>
                                 </td>
+
+                                
                             </tr>
                             <% }); %>
                     </tbody>

@@ -1,4 +1,5 @@
 const nguoiDungModel = require('../model/nguoidungs');
+const HoadonModel = require('../model/hoadons');
 const { uploadToCloudinary, deleteFromCloudinary } = require("../config/common/uploads");
 const fs = require('fs');
 
@@ -134,3 +135,81 @@ exports.xoaNguoiDung = async (req, res, next) => {
         res.status(500).json({ success: false, message: 'Lỗi khi xử lý xóa người dùng', error });
     }
 };
+
+const ChiTietHoaDonModel = require('../model/chitiethoadons');
+
+exports.PhongbyIdNguoidung = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const today = new Date();
+
+        // Tìm người dùng
+        const nguoidung = await nguoiDungModel.findById(id);
+        if (!nguoidung) {
+            return res.status(404).json({ message: 'Người dùng không tồn tại' });
+        }
+
+        // Lấy danh sách hóa đơn của người dùng trong khoảng ngày hiện tại
+        const hoadons = await HoadonModel.find({
+            id_NguoiDung: id,
+            ngayNhanPhong: { $lte: today },
+            ngayTraPhong: { $gte: today }
+        });
+
+        if (!hoadons.length) {
+            return res.status(200).json({ message: 'Không có phòng nào trong khoảng thời gian hiện tại' });
+        }
+
+        // Lấy danh sách ID hóa đơn
+        const hoadonIds = hoadons.map(hoadon => hoadon._id);
+
+        // Tìm các chi tiết hóa đơn liên quan đến các hóa đơn này
+        const chiTietHoaDons = await ChiTietHoaDonModel.find({
+            id_HoaDon: { $in: hoadonIds }
+        })
+            .populate({
+                path: 'id_Phong',
+                populate: { path: 'id_LoaiPhong', model: 'loaiphong' } // Populate thêm loại phòng
+            });
+
+        if (!chiTietHoaDons.length) {
+            return res.status(200).json({ message: 'Không tìm thấy chi tiết hóa đơn nào liên quan.' });
+        }
+
+        // Trả về danh sách phòng
+        const danhSachPhong = chiTietHoaDons.map(cthd => {
+            const phong = cthd.id_Phong;
+            const loaiPhong = phong.id_LoaiPhong;
+
+            return {
+                phong: {
+                    _id: phong._id,
+                    soPhong: phong.soPhong,
+                    loaiPhong: loaiPhong ? {
+                        _id: loaiPhong._id,
+                        tenLoaiPhong: loaiPhong.tenLoaiPhong,
+                        moTa: loaiPhong.moTa,
+                        giaTien: loaiPhong.giaTien,
+                        hinhAnh : loaiPhong.hinhAnh
+                    } : null,
+                    VIP: phong.VIP,
+                },
+                soLuongKhach: cthd.soLuongKhach,
+                giaPhong: cthd.giaPhong,
+                buaSang: cthd.buaSang,
+                ngayNhanPhong: hoadons.find(hd => String(hd._id) === String(cthd.id_HoaDon)).ngayNhanPhong,
+                ngayTraPhong: hoadons.find(hd => String(hd._id) === String(cthd.id_HoaDon)).ngayTraPhong,
+            };
+        });
+
+        res.status(200).json({
+            data : danhSachPhong,
+        });
+
+    } catch (error) {
+        console.error('Error fetching rooms by user ID:', error);
+        res.status(500).json({ success: false, message: 'Lỗi server', error });
+    }
+};
+
+

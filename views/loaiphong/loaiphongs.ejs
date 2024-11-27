@@ -57,34 +57,30 @@
                                             Không có ảnh
                                             <% } %>
                                 </td>
-                                <td class="text-center">
-                                    <!-- Nút Xem Chi Tiết -->
-                                    <a href="javascript:void(0)" onclick="getLoaiPhongDetails('<%= loaiphong._id %>')"
-                                        data-bs-toggle="modal" data-bs-target="#detailsModal">
-                                        <img src="/public/images/eye.png" alt="Chi tiết"
-                                            style="width: 24px; height: 24px;">
-                                    </a>
 
-                                    <!-- Nút Sửa -->
-                                    <a class="btn-edit-loaiphong" data-id="<%= loaiphong._id %>"
+                                <td class="text-center">
+                                    <a onclick="getLoaiPhongDetails('<%= loaiphong._id %>')"
+                                        data-bs-toggle="modal" data-bs-target="#detailsModal">
+                                        <img src="/public/images/eye.png"
+                                            alt="Xóa" style="width: 24px; height: 24px;"></a>
+
+                                    <a class="btn-sm btn-edit-loaiphong" data-id="<%= loaiphong._id %>"
                                         data-ten="<%= loaiphong.tenLoaiPhong %>" data-giuong="<%= loaiphong.giuong %>"
                                         data-soluongkhach="<%= loaiphong.soLuongKhach %>"
                                         data-dientich="<%= loaiphong.dienTich %>"
                                         data-giatien="<%= loaiphong.giaTien %>" data-mota="<%= loaiphong.moTa %>"
                                         data-hinhanh='<%= JSON.stringify(loaiphong.hinhAnh) %>' data-bs-toggle="modal"
                                         data-bs-target="#serviceModal">
-                                        <img src="/public/images/edit.png" alt="Sửa" style="width: 24px; height: 24px;">
-                                    </a>
+                                        <img src="/public/images/edit.png" alt="Sửa"
+                                            style="width: 24px; height: 24px;"></a>
 
-
-                                    <!-- Nút Xóa -->
-                                    <a class="btn-delete-loaiphong" data-id="<%= loaiphong._id %>"
+                                    <a class="btn-sm btn-delete-loaiphong" data-id="<%= loaiphong._id %>"
                                         data-ten="<%= loaiphong.tenLoaiPhong %>" data-bs-toggle="modal"
                                         data-bs-target="#confirmDeleteModal">
-                                        <img src="/public/images/delete.png" alt="Xóa"
-                                            style="width: 24px; height: 24px;">
-                                    </a>
+                                        <img src="/public/images/delete.png"
+                                            alt="Xóa" style="width: 24px; height: 24px;"></a>
                                 </td>
+                                
                             </tr>
                             <% }); %>
                     </tbody>
