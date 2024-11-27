@@ -56,16 +56,18 @@
                         <% } %>
                     </td>
                     <td class="text-center">
-                        <button class="btn btn-primary btn-sm btn-edit-amthuc" data-id="<%= amthuc._id %>"
+                        <a class=" btn-sm btn-edit-amthuc" data-id="<%= amthuc._id %>"
                             data-ten="<%= amthuc.tenNhaHang %>" data-mota="<%= amthuc.moTa %>"
                             data-hinhanh="<%= amthuc.hinhAnh %>" data-hinhmenu="<%= amthuc.menu %>"
                             data-giomocua="<%= amthuc.gioMoCua %>"
                             data-giodongcua="<%= amthuc.gioDongCua %>" data-viTri="<%= amthuc.viTri %>"
                             data-hotline="<%= amthuc.hotline %>" data-bs-toggle="modal"
-                            data-bs-target="#amthucModal">Sửa</button>
-                        <button class="btn btn-danger btn-sm btn-delete-amthuc" data-id="<%= amthuc._id %>"
+                            data-bs-target="#amthucModal"><img src="/public/images/edit.png" alt="Sửa"
+                            style="width: 24px; height: 24px;"></a>
+                        <a class="btn-sm btn-delete-amthuc" data-id="<%= amthuc._id %>"
                             data-ten="<%= amthuc.tenNhaHang %>" data-bs-toggle="modal"
-                            data-bs-target="#confirmDeleteModal">Xóa</button>
+                            data-bs-target="#confirmDeleteModal"><img src="/public/images/delete.png" alt="Xóa"
+                            style="width: 24px; height: 24px;"></a>
                     </td>
                 </tr>
             <% }); %>
@@ -104,68 +106,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-
-<!-- Modal Thêm / Sửa Nhà Hàng -->
-<div class="modal fade" id="amthucModal" tabindex="-1" aria-labelledby="amthucModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form id="amthucForm" action="/web/amthucs/post" method="POST" enctype="multipart/form-data">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="amthucModalLabel">Thêm/Sửa Nhà Hàng</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="amthucId" name="id" />
-                    <div class="mb-3">
-                        <label for="tenNhaHang" class="form-label">Tên Nhà Hàng</label>
-                        <input type="text" class="form-control" id="tenNhaHang" name="tenNhaHang" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="moTa" class="form-label">Mô Tả</label>
-                        <textarea class="form-control" id="moTa" name="moTa" rows="3" required></textarea>
-                    </div>
-                    
-                    <div class="mb-3 d-flex justify-content-between">
-                        <div class="w-48">
-                            <label for="images" class="form-label">Hình Ảnh Chính</label>
-                            <input type="file" class="form-control" id="images" name="images" accept="image/*" required>
-                        </div>
-                        <div class="w-48">
-                            <label for="menu" class="form-label">Hình Ảnh Phụ (Tối đa 5 ảnh)</label>
-                            <input type="file" class="form-control" id="menu" name="menu" accept="image/*" multiple>
-                            <div id="fileError" class="text-danger"></div>
-                        </div>
-                    </div>
-                    <div class="mb-3 d-flex justify-content-between">
-                        <div class="w-50 me-2">
-                            <label for="gioMoCua" class="form-label">Giờ Mở Cửa</label>
-                            <input type="text" class="form-control" id="gioMoCua" name="gioMoCua" required>
-                        </div>
-                        <div class="w-50 ms-2">
-                            <label for="gioDongCua" class="form-label">Giờ Đóng Cửa</label>
-                            <input type="text" class="form-control" id="gioDongCua" name="gioDongCua" required>
-                        </div>
-                    </div>
-                    <div class="mb-3 d-flex justify-content-between">
-                        <div class="w-50 me-2">
-                            <label for="viTri" class="form-label">Vị Trí</label>
-                            <input type="text" class="form-control" id="viTri" name="viTri" required>
-                        </div>
-                        <div class="w-50 ms-2">
-                            <label for="hotline" class="form-label">Hotline</label>
-                            <input type="text" class="form-control" id="hotline" name="hotline" required>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Lưu</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -256,6 +196,18 @@
         </div>
     </div>
 </div>
+<% if (message) { %>
 
+    <script>
+        // Đặt thời gian hiển thị thông báo là 2 giây (2000ms)
+        setTimeout(function () {
+            var messageElement = document.getElementById("successMessage");
+            if (messageElement) {
+                messageElement.style.display = "none"; // Ẩn thông báo sau 2 giây
+            }
+        }, 2000);
+    </script>
+    <% } %>
+    
 <%- include('./amthuc_js.ejs') %>
 <%- include('../main/footer.ejs') %>

@@ -6,13 +6,16 @@ var dichVuRouter = require('./dichvu_web');
 var tienNghiRouter = require('./tiennghi_web');
 var amThucRouter = require('./amthuc_web');
 var hoTroRouter = require('./hotro_web');
+var couponRouter = require('./coupon_web');
 
 
 router.use('/auth', loginRouter);
 router.use('/dichvus', dichVuRouter);
 router.use('/tiennghis', tienNghiRouter);
 router.use('/amthucs', amThucRouter);
+router.use('/coupons', couponRouter);
 router.use('/hotros', hoTroRouter);
+
 
 
 const authMiddleware = require('../middleware/authMiddleware');
