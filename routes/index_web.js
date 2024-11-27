@@ -10,6 +10,7 @@ var loaiphongRouter = require('./loaiphong_web');
 var phongRouter = require('./phong_web');
 var nguoidungRouter = require('./nguoidung_web');
 var hoadonRouter = require('./hoadon_web');
+var couponRouter = require('./coupon_web');
 
 
 router.use('/auth', loginRouter);
@@ -21,6 +22,7 @@ router.use('/loaiphongs', loaiphongRouter);
 router.use('/phongs', phongRouter);
 router.use('/nguoidungs', nguoidungRouter);
 router.use('/hoadons', hoadonRouter);
+router.use('/coupons', couponRouter);
 
 
 const authMiddleware = require('../middleware/authMiddleware');
