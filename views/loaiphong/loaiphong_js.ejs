@@ -1,0 +1,150 @@
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const deleteButtons = document.querySelectorAll('.btn-delete-loaiphong');
+        const serviceNameElement = document.getElementById('deleteServiceName');
+        const confirmDeleteForm = document.getElementById('confirmDeleteButton'); // Đây là form, không phải link
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const serviceId = button.getAttribute('data-id');
+                const serviceName = button.getAttribute('data-ten');
+
+                console.log("Service ID:", serviceId); // Debug
+                console.log("Service Name:", serviceName); // Debug
+
+                if (serviceNameElement && confirmDeleteForm) {
+                    serviceNameElement.textContent = serviceName; // Hiển thị tên loại phòng
+                    confirmDeleteForm.action = `/web/loaiphongs/delete/${serviceId}?_method=DELETE`; // Cập nhật đường dẫn
+                }
+            });
+        });
+
+    });
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Nút thêm loại phòng
+        document.getElementById("addServiceBtn").addEventListener("click", function () {
+            document.querySelector('form').addEventListener('submit', function (e) {
+                console.log('Form is being submitted...');
+                const tienNghiInput = document.createElement('input');
+                tienNghiInput.type = 'hidden';
+                tienNghiInput.name = 'tienNghi'; // Tên phải khớp với tên đọc trên server
+                tienNghiInput.value = JSON.stringify(selectedTienNghi.map(item => item.id));
+                console.log('Hidden input value:', tienNghiInput.value);
+                this.appendChild(tienNghiInput);
+            });
+            const form = document.getElementById("serviceForm");
+            form.action = "/web/loaiphongs/post"; // Đường dẫn thêm mới
+            form.reset(); // Reset form
+            document.getElementById("serviceModalLabel").innerText = "Thêm loại phòng mới";
+            document.getElementById("currentImage").style.display = "none"; // Ẩn ảnh cũ
+            document.getElementById("currentImagePreviewContainer").innerHTML = ""; // Xóa ảnh cũ
+        });
+
+        // Nút sửa loại phòng
+        document.querySelectorAll(".btn-edit-loaiphong").forEach((button) => {
+            button.addEventListener("click", function () {
+                const form = document.getElementById("serviceForm");
+                form.action = `/web/loaiphongs/put/${this.dataset.id}?_method=PUT`; // Đường dẫn sửa
+                document.getElementById("serviceModalLabel").innerText = "Chỉnh sửa loại phòng";
+
+                // Đặt giá trị vào form
+                document.getElementById("tenLoaiPhong").value = this.dataset.ten;
+                document.getElementById("giuong").value = this.dataset.giuong;
+                document.getElementById("soLuongKhach").value = this.dataset.soluongkhach;
+                document.getElementById("dienTich").value = this.dataset.dientich;
+                document.getElementById("giaTien").value = this.dataset.giatien;
+                document.getElementById("moTa").value = this.dataset.mota;
+
+                if (this.dataset.hinhanh) {
+                    try {
+                        const images = JSON.parse(this.dataset.hinhanh); // Chuyển chuỗi JSON thành mảng
+                        const previewContainer = document.getElementById("currentImagePreview"); // Đúng ID
+                        previewContainer.innerHTML = ""; // Xóa nội dung cũ
+                        images.forEach((image) => {
+                            const imgElement = document.createElement("img");
+                            imgElement.src = image;
+                            imgElement.alt = "Hình ảnh hiện tại";
+                            imgElement.style.width = "100px";
+                            imgElement.style.marginRight = "10px";
+                            previewContainer.appendChild(imgElement);
+                        });
+                        document.getElementById("currentImagePreviewContainer").style.display = "block"; // Hiển thị container chứa ảnh
+                    } catch (error) {
+                        console.error("Lỗi khi parse JSON:", error);
+                    }
+                } else {
+                    document.getElementById("currentImagePreviewContainer").style.display = "none"; // Ẩn nếu không có ảnh
+                }
+
+            });
+        });
+
+        document.getElementById('serviceModal').addEventListener('hidden.bs.modal', () => {
+            const form = document.getElementById("serviceForm");
+            const previewContainer = document.getElementById("currentImagePreview");
+
+            // Reset form và ẩn container ảnh
+            form.reset();
+            previewContainer.innerHTML = ""; // Xóa nội dung ảnh cũ
+            document.getElementById("currentImagePreviewContainer").style.display = "none";
+        });
+
+
+
+        // Mảng để lưu các tiện nghi đã chọn
+        let selectedTienNghi = [];
+
+        // Xử lý sự kiện khi người dùng nhấn nút chọn tiện nghi
+        document.querySelectorAll('.tienNghiBtn').forEach(button => {
+            button.addEventListener('click', function () {
+                const tienNghiId = this.getAttribute('data-id');
+                const tienNghiName = this.getAttribute('data-name');
+
+                // Kiểm tra xem tiện nghi đã được chọn chưa
+                if (!selectedTienNghi.some(item => item.id === tienNghiId)) {
+                    // Thêm tiện nghi vào mảng đã chọn
+                    selectedTienNghi.push({ id: tienNghiId, name: tienNghiName });
+
+                    // Cập nhật giao diện hiển thị tiện nghi đã chọn
+                    updateSelectedTienNghi();
+                }
+            });
+        });
+
+        // Hàm để cập nhật giao diện hiển thị tiện nghi đã chọn
+        function updateSelectedTienNghi() {
+            const container = document.getElementById('tienNghiSelected');
+            container.innerHTML = ''; // Xóa danh sách tiện nghi cũ
+
+            selectedTienNghi.forEach(item => {
+                const div = document.createElement('div');
+                div.classList.add('selected-tienNghi');
+                div.innerHTML = `
+            <span>${item.name}</span>
+            <button type="button" class="btn btn-danger btn-sm removeBtn" data-id="${item.id}">Xóa</button>
+        `;
+                container.appendChild(div);
+            });
+
+            // Thêm sự kiện xóa cho các nút "Xóa"
+            document.querySelectorAll('.removeBtn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const tienNghiId = this.getAttribute('data-id');
+
+                    // Loại bỏ tiện nghi khỏi mảng đã chọn
+                    selectedTienNghi = selectedTienNghi.filter(item => item.id !== tienNghiId);
+
+                    // Cập nhật lại giao diện
+                    updateSelectedTienNghi();
+                });
+            });
+        }
+
+
+
+    });
+</script>

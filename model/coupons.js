@@ -6,8 +6,8 @@ const CouponModel = new Schema({
     giamGia : { type : Number, required : true},
     giamGiaToiDa : { type : Number},
     dieuKienToiThieu : { type : Number},
-    ngayBatDau : { type : Date},
-    ngayHetHan : { type : Date},
+    ngayBatDau : { type : String},
+    ngayHetHan : { type : String},
     trangThai : { type : Number}, // chua su dung, da su dung, het han
 },{
     timestamps : true

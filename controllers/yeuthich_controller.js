@@ -1,34 +1,52 @@
 const YeuThichModel = require('../model/yeuthichs')
+const LoaiPhongModel = require('../model/loaiphongs');
 
-exports.getListorByidNguoiDung = async (req, res, next) => {
+exports.getList = async (req, res, next) =>{
+    const yeuthichs = await YeuThichModel.find();
+    return res.send(yeuthichs)
+}
+
+exports.getListLoaiPhongByidNguoiDung = async (req, res, next) => {
     try {
         const { id_NguoiDung } = req.query;
 
-        // Xây dựng điều kiện lọc dựa trên các tham số có sẵn
-        let filter = {};
-        if (id_NguoiDung) {
-            filter.id_NguoiDung = id_NguoiDung;
-        }
-        const yeuthichs = await YeuThichModel.find(filter).sort({ createdAt: -1 });
-
-        if (yeuthichs.length === 0) {
-            return res.status(404).send({ message: 'Không tìm thấy' });
+        if (!id_NguoiDung) {
+            return res.status(400).send({ message: 'Vui lòng cung cấp id_NguoiDung' });
         }
 
-        res.send(yeuthichs);
+        // Lấy danh sách yêu thích theo id_NguoiDung
+        const yeuThichs = await YeuThichModel.find({ id_NguoiDung }).select('id_LoaiPhong');
+
+        if (yeuThichs.length === 0) {
+            return res.status(404).send({ message: 'Không tìm thấy yêu thích nào' });
+        }
+
+        // Lấy danh sách id_LoaiPhong
+        const idLoaiPhongList = yeuThichs.map(item => item.id_LoaiPhong);
+
+        // Truy vấn danh sách loại phòng từ LoaiPhongModel
+        const loaiPhongs = await LoaiPhongModel.find({ _id: { $in: idLoaiPhongList } });
+
+        if (loaiPhongs.length === 0) {
+            return res.status(404).send({ message: 'Không tìm thấy loại phòng nào' });
+        }
+
+        res.send(loaiPhongs);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Error fetching data", error: error.message });
+        res.status(500).json({ message: "Lỗi khi lấy dữ liệu", error: error.message });
     }
-}
+};
+
 
 exports.addYeuThich = async (req, res, next) => {
     try {
         const data = req.body;
+        const userId = req.session.userId;
 
         // Kiểm tra sự tồn tại của đánh giá trùng lặp
         const existingReview = await YeuThichModel.findOne({
-            id_NguoiDung: data.id_NguoiDung,
+            id_NguoiDung: userId,
             id_LoaiPhong: data.id_LoaiPhong
         });
 
@@ -41,7 +59,7 @@ exports.addYeuThich = async (req, res, next) => {
 
         const yeuthich = new YeuThichModel({
             id_LoaiPhong: data.id_LoaiPhong,
-            id_NguoiDung: data.id_NguoiDung,
+            id_NguoiDung: userId,
         })
 
         const result = await yeuthich.save();
@@ -94,23 +112,32 @@ exports.suaYeuThich = async (req, res, next) => {
 
 exports.xoaYeuThich = async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const result = await YeuThichModel.findByIdAndDelete({ _id: id });
+        // Lấy id_LoaiPhong và id_NguoiDung từ URL params
+        const userId = req.session.userId;
+        const phongId = req.params.id_LoaiPhong;
+        // const userId = req.params.id_NguoiDung;
+
+        console.log("id_LoaiPhong:", phongId);
+        console.log("id_NguoiDung:", userId);
+
+        // Tìm và xóa tài liệu theo điều kiện
+        const result = await YeuThichModel.findOneAndDelete({ id_LoaiPhong: phongId, id_NguoiDung: userId });
+        
         if (result) {
             res.json({
                 "status": "200",
                 "msg": "Đã xóa yêu thích khỏi danh sách",
                 "data": result
-            })
+            });
         } else {
             res.json({
                 "status": "400",
                 "msg": "Delete fail",
                 "data": []
-            })
+            });
         }
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Error fetching data", error: error.message });
     }
-}
+};

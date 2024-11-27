@@ -1,31 +1,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const deleteButtons = document.querySelectorAll('.btn-delete-dichvu');
-        const serviceNameElement = document.getElementById('serviceName');
-        const confirmDeleteForm = document.getElementById('confirmDeleteButton'); // Đây là form, không phải link
-
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const serviceId = button.getAttribute('data-id');
-                const serviceName = button.getAttribute('data-vanDe');
-                // Cập nhật tên dịch vụ trong modal
-                serviceNameElement.textContent = serviceName;
-
-                // Cập nhật action của form
-                confirmDeleteForm.action = `/web/hotros/delete/${serviceId}?_method=DELETE`;
-            });
-        });
-    });
-
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
         const editButtons = document.querySelectorAll('.btn-edit-dichvu');
         const serviceForm = document.getElementById('serviceForm');
         const serviceModalLabel = document.getElementById('serviceModalLabel');
-        const currentImageContainer = document.getElementById('currentImage');
-        const currentImagePreview = document.getElementById('currentImagePreview');
 
         // Khi nhấn nút "Sửa"
         editButtons.forEach(button => {
@@ -35,7 +12,6 @@
                 const tenNguoiDung = button.getAttribute('data-tenNguoiDung');
                 const vanDe = button.getAttribute('data-vanDe');
 
-
                 // Đặt action của form là PUT cho cập nhật dịch vụ
                 serviceForm.action = `/web/hotros/put/${serviceId}?_method=PUT`;
                 // Đặt tiêu đề modal là "Cập nhật dịch vụ"
@@ -43,8 +19,7 @@
 
                 // Điền các thông tin vào form
                 document.getElementById('trangThai').value = trangThai;
-            document.getElementById('vanDe').value = vanDe;
-
+                document.getElementById('vanDe').value = vanDe;
             });
         });
 
@@ -53,7 +28,6 @@
         serviceModal.addEventListener('hidden.bs.modal', () => {
             // Reset dữ liệu trong các trường nhập liệu và ảnh
             serviceForm.reset(); // Reset tất cả các trường input
-
         });
     });
 </script>

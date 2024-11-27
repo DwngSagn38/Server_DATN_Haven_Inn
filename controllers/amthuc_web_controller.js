@@ -77,6 +77,34 @@ exports.addAmThuc = async (req, res) => {
     }
 };
 
+// Xóa nhà hàng
+// exports.deleteAmThuc = async (req, res) => {
+//     try {
+//         const id = req.params.id;
+//         const amThuc = await AmThucModel.findById(id);
+
+//         if (amThuc) {
+//             const imageId = amThuc.hinhAnhID;
+//             const menuIds = amThuc.menuIDs;
+
+//             if (imageId) {
+//                 await deleteFromCloudinary(imageId);
+//             }
+
+//             if (menuIds && menuIds.length > 0) {
+//                 for (const publicId of menuIds) {
+//                     await deleteFromCloudinary(publicId);
+//                 }
+//             }
+//         }
+
+//         await AmThucModel.findByIdAndDelete(id);
+//         res.redirect('/web/amthucs'); // Điều hướng lại danh sách nhà hàng sau khi xóa
+//     } catch (error) {
+//         console.error('Lỗi khi xóa nhà hàng:', error);
+//         res.status(500).render('error', { message: 'Lỗi khi xóa nhà hàng', error });
+//     }
+// };
 
 exports.deleteAmThuc = async (req, res) => {
     try {

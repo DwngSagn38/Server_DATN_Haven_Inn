@@ -6,12 +6,13 @@ const HoaDonModel = new Schema({
     id_Coupon: { type: Schema.Types.ObjectId, ref: 'coupon' },
     ngayNhanPhong : { type : Date , required : true},
     ngayTraPhong : { type : Date , required : true},
-    soLuongKhach : { type : Number, required : true},
-    soLuongPhong : { type : Number, required : true},
-    ngayThanhToan : { type : Date, required : true},
-    phuongThucThanhToan : { type : String, required : true},
+    tongPhong : { type : Number, },
+    tongKhach : { type : Number, },
+    tongTien : { type : Number, },
+    ngayThanhToan : { type : Date, },
+    phuongThucThanhToan : { type : String, },
     trangThai : { type : Number, required : true}, // chua thanh toan, da thanh toan, bi huy
-    ghiChu : { type : String, required : true},
+    ghiChu : { type : String, },
 },{
     timestamps : true
 })

@@ -3,9 +3,9 @@ const Schema = mongoose.Schema;
 
 const NguoiDungModel = new Schema({
     tenNguoiDung : { type : String , required : true},
-    soDienThoai : { type : String, required : true, unique : true, maxlength: 10 },
+    soDienThoai : { type : String, maxlength: 10 },
     matKhau : { type : String, required : true},
-    email : { type : String},
+    email : { type : String, required : true},
     hinhAnh : { type : String},
     hinhAnhID: { type : String},
     chucVu : { type : Number, default : 0}, 
@@ -15,3 +15,4 @@ const NguoiDungModel = new Schema({
 })
 
 module.exports = mongoose.model('nguoidung',NguoiDungModel)
+

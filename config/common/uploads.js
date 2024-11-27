@@ -20,7 +20,7 @@ const uploadToCloudinary = async (filePath) => {
     try {
         console.log('Uploading file to Cloudinary:', filePath);
         const result = await cloudinary.uploader.upload(filePath, {
-            folder: 'Petify_Images', 
+            folder: 'Haven_Inn_Images', 
         });
         console.log('Upload result:', result);
         return result;

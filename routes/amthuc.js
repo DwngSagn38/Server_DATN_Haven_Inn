@@ -7,6 +7,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 router.use(authMiddleware('json'));
 
+// router.use(authMiddleware('json'));
+
 router.get('/', amThucController.getList);
 router.get('/getbyid', amThucController.getById);
 router.post('/post', upload.fields([{ name: 'images', maxCount: 1 }, { name: 'menu', maxCount: 5 }]), amThucController.addAmThuc);

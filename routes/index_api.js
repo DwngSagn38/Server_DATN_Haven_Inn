@@ -16,6 +16,7 @@ var thongbaoRouter = require('./thongbao');
 var tiennghiRouter = require('./tiennghi');
 var tiennghiphongRouter = require('./tiennghiphong');
 var YeuThichRouter = require('./yeuthich');
+var CCCDRouter = require('./cccd');
 
 
 router.use('/amthucs', amthucRouter);
@@ -33,5 +34,6 @@ router.use('/thongbaos', thongbaoRouter);
 router.use('/tiennghis', tiennghiRouter);
 router.use('/tiennghiphongs', tiennghiphongRouter);
 router.use('/yeuthichs', YeuThichRouter);
+router.use('/cccd', CCCDRouter);
 
 module.exports = router;
