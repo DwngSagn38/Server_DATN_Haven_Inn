@@ -73,3 +73,7 @@
   border-radius: 8px; /* Tạo bo góc cho hình ảnh */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ nhẹ cho hình ảnh */
 }
+
+.modal-lg-custom {
+  max-width: 90%; /* Tùy chỉnh chiều rộng (90% màn hình) */
+}

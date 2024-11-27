@@ -10,8 +10,17 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
         if (id_NguoiDung) {
             filter.id_NguoiDung = id_NguoiDung;
         }
+        // Lọc theo `trangThai` nếu có, nhưng kiểm tra trạng thái khác 3
         if (trangThai) {
-            filter.trangThai = trangThai;
+            const trangThaiInt = parseInt(trangThai, 10); // Đảm bảo kiểu số
+            if (trangThaiInt === 3) {
+                return res.status(404).send({ message: 'Lỗi' });
+            } else {
+                filter.trangThai = trangThaiInt; // Lọc chính xác trạng thái được yêu cầu
+            }
+        } else {
+            // Mặc định lấy tất cả hóa đơn có trạng thái khác 3
+            filter.trangThai = { $ne: 3 }; // MongoDB operator để kiểm tra "khác"
         }
 
         // Tìm hóa đơn theo điều kiện lọc
