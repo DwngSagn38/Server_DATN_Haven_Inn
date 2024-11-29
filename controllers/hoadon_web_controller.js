@@ -47,23 +47,22 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
                 }
 
                 // Tính tổng số phòng, khách và tiền
-                const tongPhong = chiTietHoaDons.length;
-                const tongKhach = chiTietHoaDons.reduce((total, item) => total + item.soLuongKhach, 0);
-                let tongTien = chiTietHoaDons.reduce((total, item) => total + item.giaPhong, 0);
-                const ngayThanhToan = hoadon.trangThai === 1 ? formatDate(hoadon.updatedAt) : ''
+                hoadon.tongPhong = chiTietHoaDons.length;
+                hoadon.tongKhach = chiTietHoaDons.reduce((total, item) => total + item.soLuongKhach, 0);
+                hoadon.tongTien = chiTietHoaDons.reduce((total, item) => total + item.giaPhong, 0);
 
                 // Kiểm tra mã giảm giá
                 if (hoadon.id_Coupon) {
                     const coupon = await CouponModel.findById(hoadon.id_Coupon).lean();
 
                     // Tính giảm giá
-                    let soTienGiam = tongTien * coupon.giamGia;
+                    let soTienGiam = hoadon.tongTien * coupon.giamGia;
                     if (coupon.giamGiaToiDa) {
                         soTienGiam = Math.min(soTienGiam, coupon.giamGiaToiDa);
                     }
 
                     // Áp dụng giảm giá vào tổng tiền
-                    tongTien -= soTienGiam;
+                    hoadon.tongTien -= soTienGiam;
 
                     // Cập nhật trạng thái mã giảm giá (nếu cần)
                     await CouponModel.findByIdAndUpdate(hoadon.id_Coupon, { trangThai: 1 }); // 1: đã sử dụng
@@ -77,11 +76,9 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
                 return {
                     ...hoadon.toObject(),
                     createdAt: formatDate(hoadon.createdAt),
-                    ngayThanhToan,
-                    tongPhong,
-                    tongKhach,
+                    ngayThanhToan : hoadon.ngayThanhToan ? formatDate(hoadon.ngayThanhToan) : '',
                     maHoaDon,
-                    tongTien: formatCurrencyVND(tongTien),
+                    tongTien: formatCurrencyVND(hoadon.tongTien),
                 };
             })
         );
@@ -169,7 +166,7 @@ exports.getDetailAPI = async (req, res) => {
             hoadon.giamGia = 0; // Không có mã giảm giá
         }
 
-        const ngayThanhToan = hoadon.trangThai === 1 ? formatDate(hoadon.updatedAt) : ''
+        const ngayThanhToan = hoadon.trangThai === 1 ? formatDate(hoadon.ngayThanhToan) : ''
         console.log('ngay thanh toán : ', ngayThanhToan)
         hoadon.ngayNhanPhong = formatDate(hoadon.ngayNhanPhong);
         hoadon.ngayTraPhong = formatDate(hoadon.ngayTraPhong);

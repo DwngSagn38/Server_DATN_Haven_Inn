@@ -77,3 +77,22 @@
 .modal-lg-custom {
   max-width: 90%; /* Tùy chỉnh chiều rộng (90% màn hình) */
 }
+
+
+.card-title i {
+  margin-right: 8px;
+}
+.card {
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.display-6 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+
+.card:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease-in-out;
+}
