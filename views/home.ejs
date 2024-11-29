@@ -1,30 +1,88 @@
 <%- include('main/header.ejs') %>
 
-<% if (message) { %>
-    <div class="alert alert-success" role="alert" id="successMessage">
-        <%= message %>
-    </div>
+    <!-- Include the statistics dashboard and pass the results object -->
+    <%- include('./thongke/thongso', { results: results }) %>
 
-    <script>
-        // Đặt thời gian hiển thị thông báo là 2 giây (2000ms)
-        setTimeout(function() {
-            var messageElement = document.getElementById("successMessage");
-            if (messageElement) {
-                messageElement.style.display = "none"; // Ẩn thông báo sau 2 giây
-            }
-        }, 2000);
-    </script>
-<% } %>
+        <% if (!bieuDoData || Object.keys(bieuDoData).length===0) { %>
+            <p>Không có dữ liệu để hiển thị biểu đồ.</p>
+            <% } else { %>
+                <canvas id="bieuDoDoanhThu"></canvas>
+                <% } %>
 
-<%- include('main/footer.ejs') %>
 
-<style>
-    #successMessage {
-        position: fixed; /* Định vị cố định */
-        bottom: 20px; /* Cách dưới 20px */
-        right: 20px; /* Cách phải 20px */
-        z-index: 1050; /* Đảm bảo thông báo không bị các phần tử khác che khuất */
-        opacity: 1; /* Đảm bảo rằng thông báo không trong suốt */
-        transition: opacity 0.5s ease-out; /* Thêm hiệu ứng mờ dần */
-    }
-</style>
+                    <% if (message) { %>
+                        <div class="alert alert-success" role="alert" id="successMessage">
+                            <%= message %>
+                        </div>
+
+                        <script>
+                            // Đặt thời gian hiển thị thông báo là 2 giây (2000ms)
+                            setTimeout(function () {
+                                var messageElement = document.getElementById("successMessage");
+                                if (messageElement) {
+                                    messageElement.style.display = "none"; // Ẩn thông báo sau 2 giây
+                                }
+                            }, 2000);
+
+                            const bieuDoData = <%= JSON.stringify(bieuDoData) %>; // Truyền từ backend
+
+                            const labels = Array.from({ length: 12 }, (_, i) => `Tháng ${i + 1}`);
+                            const datasets = Object.keys(bieuDoData).map((loaiPhong) => ({
+                                label: loaiPhong,
+                                data: bieuDoData[loaiPhong],
+                                borderColor: getRandomColor(), // Hàm tạo màu ngẫu nhiên
+                                backgroundColor: getRandomColor(0.5),
+                                fill: true,
+                            }));
+
+                            new Chart(document.getElementById("bieuDoDoanhThu"), {
+                                type: "line", // Hoặc "bar" cho biểu đồ cột
+                                data: {
+                                    labels,
+                                    datasets,
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: { position: "top" },
+                                    },
+                                },
+                            });
+
+                            function getRandomColor(opacity = 1) {
+                                try {
+                                    const r = Math.floor(Math.random() * 255);
+                                    const g = Math.floor(Math.random() * 255);
+                                    const b = Math.floor(Math.random() * 255);
+                                    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+                                } catch (err) {
+                                    console.error("Lỗi khi tạo màu sắc:", err);
+                                    return 'rgba(0, 0, 0, 1)'; // Trả về màu mặc định nếu xảy ra lỗi
+                                }
+                            }
+
+                            console.log("Dữ liệu được render vào biểu đồ:", bieuDoData);
+                            console.log('Datasets:', datasets);
+                            console.log('Labels:', labels);
+
+                        </script>
+                        <% } %>
+
+                            <%- include('main/footer.ejs') %>
+
+                                <style>
+                                    #successMessage {
+                                        position: fixed;
+                                        /* Định vị cố định */
+                                        bottom: 20px;
+                                        /* Cách dưới 20px */
+                                        right: 20px;
+                                        /* Cách phải 20px */
+                                        z-index: 1050;
+                                        /* Đảm bảo thông báo không bị các phần tử khác che khuất */
+                                        opacity: 1;
+                                        /* Đảm bảo rằng thông báo không trong suốt */
+                                        transition: opacity 0.5s ease-out;
+                                        /* Thêm hiệu ứng mờ dần */
+                                    }
+                                </style>

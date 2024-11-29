@@ -4,7 +4,7 @@ exports.getListorByIdUser = async (req, res, next) => {
     try {
         const { id_NguoiDung } = req.query;
 
-        // Build filter based on query parameters
+        // Xây dựng filter từ query parameters
         let filter = {};
         if (id_NguoiDung) {
             filter.id_NguoiDung = id_NguoiDung;
@@ -13,16 +13,15 @@ exports.getListorByIdUser = async (req, res, next) => {
         const hotros = await HoTroModel.find(filter).sort({ createdAt: -1 });
 
         if (hotros.length === 0) {
-            return res.render('notfound', { message: 'Không tìm thấy' }); // Render "notfound" view with message
+            return res.status(404).json({ status: 404, message: "Không tìm thấy hỗ trợ nào" });
         }
 
-        res.render('hoTroList', { hotros }); // Render 'hoTroList' view and pass the hotros data
-
+        res.status(200).json({ status: 200, message: "Lấy danh sách thành công", data: hotros });
     } catch (error) {
         console.error(error);
-        res.status(500).render('error', { message: "Error fetching data", error: error.message }); // Render error page
+        res.status(500).json({ status: 500, message: "Lỗi khi lấy dữ liệu", error: error.message });
     }
-}
+};
 
 exports.addHoTro = async (req, res, next) => {
     try {
@@ -36,40 +35,36 @@ exports.addHoTro = async (req, res, next) => {
         const result = await hotro.save();
 
         if (result) {
-            res.render('addSuccess', { status: 200, msg: "Add success", data: result }); // Render success page
+            res.status(200).json({ status: 200, message: "Thêm hỗ trợ thành công", data: result });
         } else {
-            res.render('addFail', { status: 400, msg: "Add fail", data: [] }); // Render failure page
+            res.status(400).json({ status: 400, message: "Thêm hỗ trợ thất bại", data: [] });
         }
-
     } catch (error) {
         console.error(error);
-        res.status(500).render('error', { message: "Error fetching data", error: error.message }); // Render error page
+        res.status(500).json({ status: 500, message: "Lỗi khi thêm dữ liệu", error: error.message });
     }
-}
+};
 
 exports.suaHoTro = async (req, res, next) => {
     const { id } = req.params;
     const { trangThai } = req.body;
 
-    // Check if 'trangThai' is provided in the body
     if (trangThai == null) {
-        return res.render('error', { status: 400, msg: "Trạng thái không được cung cấp" }); // Render error page
+        return res.status(400).json({ status: 400, message: "Trạng thái không được cung cấp" });
     }
 
     try {
-        // Only update the 'trangThai' field
         const result = await HoTroModel.findByIdAndUpdate(id, { trangThai: trangThai }, { new: true });
 
         if (result) {
-            res.render('updateSuccess', { status: 200, msg: "Cập nhật trạng thái thành công", data: result });
+            res.status(200).json({ status: 200, message: "Cập nhật trạng thái thành công", data: result });
         } else {
-            res.render('error', { status: 404, msg: "Không tìm thấy hỗ trợ để cập nhật" }); // Render error page if not found
+            res.status(404).json({ status: 404, message: "Không tìm thấy hỗ trợ để cập nhật" });
         }
-
     } catch (error) {
-        res.render('error', { status: 500, msg: "Có lỗi xảy ra trong quá trình cập nhật", error: error.message }); // Render error page
+        res.status(500).json({ status: 500, message: "Lỗi khi cập nhật dữ liệu", error: error.message });
     }
-}
+};
 
 exports.xoaHoTro = async (req, res, next) => {
     try {
@@ -77,13 +72,12 @@ exports.xoaHoTro = async (req, res, next) => {
         const result = await HoTroModel.findByIdAndDelete({ _id: id });
 
         if (result) {
-            res.render('deleteSuccess', { status: 200, msg: "Đã xóa hỗ trợ", data: result }); // Render success page
+            res.status(200).json({ status: 200, message: "Xóa hỗ trợ thành công", data: result });
         } else {
-            res.render('deleteFail', { status: 400, msg: "Delete fail", data: [] }); // Render failure page
+            res.status(400).json({ status: 400, message: "Xóa hỗ trợ thất bại", data: [] });
         }
-
     } catch (error) {
         console.error(error);
-        res.status(500).render('error', { message: "Error fetching data", error: error.message }); // Render error page
+        res.status(500).json({ status: 500, message: "Lỗi khi xóa dữ liệu", error: error.message });
     }
-}
+};

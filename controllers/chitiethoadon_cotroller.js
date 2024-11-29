@@ -134,6 +134,9 @@ exports.suaChiTietHoaDon = async (req, res, next) => {
         chiTietHoaDon.buaSang = buaSang !== undefined ? buaSang : chiTietHoaDon.buaSang; // Chỉ cập nhật nếu có giá trị mới
         chiTietHoaDon.soLuongKhach = soLuongKhach !== undefined ? soLuongKhach : chiTietHoaDon.soLuongKhach;
 
+        const giaTien = buaSang ? chiTietHoaDon.giaPhong + 150000 : chiTietHoaDon.giaPhong;
+        chiTietHoaDon.giaPhong = giaTien;
+
         // Lưu thay đổi
         const updatedChiTietHoaDon = await chiTietHoaDon.save();
 
