@@ -1,0 +1,30 @@
+<%- include('../main/header.ejs') %>
+
+<div class="container mt-4">
+    <h1>Danh sách Voucher</h1>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Tên Voucher</th>
+                <th>Mô Tả</th>
+                <th>Ngày Hết Hạn</th>
+                <th>Chức Năng</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% vouchers.forEach(voucher => { %>
+                <tr>
+                    <td><%= voucher.maGiamGia %></td>
+                    <td><%= voucher.giamGia %> VNĐ</td>
+                    <td><%= new Date(voucher.ngayHetHan).toLocaleDateString() %></td>
+                    <td><a href="guivouchers/<%= voucher._id %>" class="btn btn-primary">Gửi Voucher</a></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+  
+</div>
+
+<%- include('../main/footer.ejs') %>
