@@ -24,17 +24,11 @@ router.use('/nguoidungs', nguoidungRouter);
 router.use('/hoadons', hoadonRouter);
 router.use('/coupons', couponRouter);
 
+const thongKeController = require('../controllers/thongke_controller');
 
 const authMiddleware = require('../middleware/authMiddleware');
-
-router.get('/home', authMiddleware('html'), (req, res) => {
-    // const message = req.session.message;
-    // delete req.session.message;
-
-    const message = req.flash('message');
-    res.render('home', { message: message });
-});
-
+// Route để render trang dashboard
+router.get('/home', authMiddleware('html'), thongKeController.getDashboardData);
 
 
 module.exports = router;
