@@ -42,11 +42,11 @@ exports.getListLoaiPhongByidNguoiDung = async (req, res, next) => {
 exports.addYeuThich = async (req, res, next) => {
     try {
         const data = req.body;
-        const userId = req.session.userId;
+        
 
         // Kiểm tra sự tồn tại của đánh giá trùng lặp
         const existingReview = await YeuThichModel.findOne({
-            id_NguoiDung: userId,
+            id_NguoiDung: data.id_NguoiDung,
             id_LoaiPhong: data.id_LoaiPhong
         });
 
@@ -59,7 +59,7 @@ exports.addYeuThich = async (req, res, next) => {
 
         const yeuthich = new YeuThichModel({
             id_LoaiPhong: data.id_LoaiPhong,
-            id_NguoiDung: userId,
+            id_NguoiDung: data.id_NguoiDung,
         })
 
         const result = await yeuthich.save();
@@ -113,9 +113,10 @@ exports.suaYeuThich = async (req, res, next) => {
 exports.xoaYeuThich = async (req, res, next) => {
     try {
         // Lấy id_LoaiPhong và id_NguoiDung từ URL params
-        const userId = req.session.userId;
+        const userId = req.params.userId;
         const phongId = req.params.id_LoaiPhong;
         // const userId = req.params.id_NguoiDung;
+        
 
         console.log("id_LoaiPhong:", phongId);
         console.log("id_NguoiDung:", userId);

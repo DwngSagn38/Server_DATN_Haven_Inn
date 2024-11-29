@@ -9,6 +9,7 @@ var hoTroRouter = require('./hotro_web');
 var loaiphongRouter = require('./loaiphong_web');
 var phongRouter = require('./phong_web');
 var nguoidungRouter = require('./nguoidung_web');
+var hoadonRouter = require('./hoadon_web');
 var couponRouter = require('./coupon_web');
 var danhgiaRouter = require('./danhgia_web');
 var guiVoucherRouter = require('./guivoucher_web');
@@ -28,16 +29,11 @@ router.use('/guivouchers', guiVoucherRouter);
 
 
 
+const thongKeController = require('../controllers/thongke_controller');
+
 const authMiddleware = require('../middleware/authMiddleware');
-
-router.get('/home', authMiddleware('html'), (req, res) => {
-    // const message = req.session.message;
-    // delete req.session.message;
-
-    const message = req.flash('message');
-    res.render('home', { message: message });
-});
-
+// Route để render trang dashboard
+router.get('/home', authMiddleware('html'), thongKeController.getDashboardData);
 
 
 module.exports = router;
