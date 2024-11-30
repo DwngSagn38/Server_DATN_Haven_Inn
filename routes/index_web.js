@@ -11,6 +11,8 @@ var phongRouter = require('./phong_web');
 var nguoidungRouter = require('./nguoidung_web');
 var hoadonRouter = require('./hoadon_web');
 var couponRouter = require('./coupon_web');
+var danhgiaRouter = require('./danhgia_web');
+var guiVoucherRouter = require('./guivoucher_web');
 
 
 router.use('/auth', loginRouter);
@@ -21,8 +23,11 @@ router.use('/hotros', hoTroRouter);
 router.use('/loaiphongs', loaiphongRouter);
 router.use('/phongs', phongRouter);
 router.use('/nguoidungs', nguoidungRouter);
-router.use('/hoadons', hoadonRouter);
+router.use('/danhgias', danhgiaRouter);
 router.use('/coupons', couponRouter);
+router.use('/guivouchers', guiVoucherRouter);
+
+
 
 const thongKeController = require('../controllers/thongke_controller');
 
