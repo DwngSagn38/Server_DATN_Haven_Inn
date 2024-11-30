@@ -26,6 +26,7 @@ router.use('/nguoidungs', nguoidungRouter);
 router.use('/danhgias', danhgiaRouter);
 router.use('/coupons', couponRouter);
 router.use('/guivouchers', guiVoucherRouter);
+router.use('/hoadons', hoadonRouter);
 
 
 
