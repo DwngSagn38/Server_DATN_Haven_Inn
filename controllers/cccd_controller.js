@@ -5,11 +5,11 @@ const { uploadToCloudinary, deleteFromCloudinary } = require("../config/common/u
 
 // Phương thức lấy thông tin CCCD theo userId
 exports.getCccdByUserId = async (req, res) => {
-    const { userId } = req.params;  // Lấy userId từ tham số URL
+    const { id_NguoiDung } = req.params;  // Lấy userId từ tham số URL
 
     try {
         // Tìm CCCD theo userId
-        const cccd = await CccdModel.findOne({ nguoiDung: userId })// Liên kết với bảng NguoiDung và lấy thông tin như tên, email
+        const cccd = await CccdModel.findOne({ id_NguoiDung })// Liên kết với bảng NguoiDung và lấy thông tin như tên, email
 
         // Kiểm tra xem có tìm thấy CCCD không
         if (!cccd) {
@@ -33,22 +33,27 @@ exports.addCccd = async (req, res) => {
 
     // Kiểm tra thông tin đầu vào
     if (!id_NguoiDung || !soCCCD || !ngayCap || !queQuan || !hoTen || !ngaySinh || !gioiTinh) {
-        return res.status(400).json({ message: "Vui lòng cung cấp đầy đủ thông tin" });
+        return res.status(404).json({ message: "Vui lòng cung cấp đầy đủ thông tin!" });
     }
 
     if (soCCCD.length !== 12 || isNaN(soCCCD)) {
-        return res.status(400).json({ message: "CCCD không hợp lệ" });
+        return res.status(404).json({ message: "CCCD không hợp lệ!" });
+    }
+
+    const existingSoCCCD = await CccdModel.findOne({ soCCCD : soCCCD });
+    if (existingSoCCCD) {
+        return res.status(404).json({ message: "CCCD đã được liên kết tài khoản khác!" });
     }
 
     // Kiểm tra xem người dùng có tồn tại không
     const user = await NguoiDungModel.findById(id_NguoiDung);
     if (!user) {
-        return res.status(400).json({ message: "Người dùng không tồn tại" });
+        return res.status(404).json({ message: "Người dùng không tồn tại!" });
     }
 
-    const existingCCCD = await CccdModel.findOne({nguoiDung : user._id})
+    const existingCCCD = await CccdModel.findOne({id_NguoiDung : user._id})
     if(existingCCCD){
-        return res.status(400).json({ message: "Người dùng đã có cccd" });
+        return res.status(404).json({ message: "Người dùng đã có cccd!" });
     }
 
     try {
@@ -79,13 +84,13 @@ exports.addCccd = async (req, res) => {
 
         // Tạo đối tượng CCCD và lưu vào cơ sở dữ liệu
         const cccd = new CccdModel({
-            nguoiDung: id_NguoiDung, // Truyền userId vào trường nguoiDung
+            id_NguoiDung, // Truyền userId vào trường nguoiDung
             soCCCD,
             hoTen,
             ngaySinh,
             gioiTinh,
             ngayCap,
-            queQuan,
+            noiThuongTru,
             anhMatTruoc: matTruocUrl || '',
             anhMatTruocId: matTruocId || '',
             anhMatSau: matSauUrl || '',

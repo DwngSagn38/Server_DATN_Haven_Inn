@@ -80,51 +80,62 @@
     </div>
 
 
-    <!-- Modal Xem Chi Tiết -->
-    <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="detailsModalLabel">Thông tin khách hàng</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h5>Tên khách hàng: <span id="detailName"></span></h5>
+<!-- Modal Xem Chi Tiết -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsModalLabel">Thông tin khách hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5>Tên khách hàng: <span id="detailName"></span></h5>
+
+                <!-- Thông tin cá nhân -->
+                <div class="p-inline-container">
                     <p><strong>Số điện thoại:</strong> <span id="detailPhone"></span></p>
                     <p><strong>Email:</strong> <span id="detailEmail"></span></p>
-                    <p><strong>Trạng thái:</strong> <span id="detailStatus"></span></p>
+                </div>
+                <p><strong>Trạng thái:</strong> <span id="detailStatus"></span></p>
 
-                    <p><strong>Avatar:</strong></p>
-                    <div id="customerImage" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <!-- Hình ảnh khách hàng sẽ được chèn ở đây -->
-                    </div>
+                <!-- Avatar -->
+                <p><strong>Avatar:</strong></p>
+                <div id="customerImage" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <!-- Hình ảnh khách hàng sẽ được chèn ở đây -->
+                </div>
 
-                    <br>
-                    <h3>Thông tin CCCD</h3>
+                <br>
+                <h3>Thông tin CCCD</h3>
+
+                <!-- Thông tin CCCD -->
+                <div class="p-inline-container">
                     <p><strong>Số:</strong> <span id="detailCCCD"></span></p>
                     <p><strong>Họ và tên:</strong> <span id="detailFullName"></span></p>
+                </div>
+                <div class="p-inline-container">
                     <p><strong>Ngày sinh:</strong> <span id="detailDOB"></span></p>
                     <p><strong>Giới tính:</strong> <span id="detailGender"></span></p>
-                    <p><strong>Quê quán:</strong> <span id="detailHometown"></span></p>
-                    <p><strong>Ngày cấp:</strong> <span id="detailIssuedDate"></span></p>
+                </div>
+                <p><strong>Nơi thường trú:</strong> <span id="detailHometown"></span></p>
+                <p><strong>Ngày cấp:</strong> <span id="detailIssuedDate"></span></p>
 
-                    <p><strong>Ảnh mặt trước và mặt sau:</strong></p>
-                    <div style="display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap;">
-                        <div id="detailFrontImage" style="display: flex; flex-shrink: 0; width: 200px;">
-                            <!-- Ảnh mặt trước sẽ được chèn ở đây -->
-                        </div>
-                        <div id="detailBackImage" style="display: flex; flex-shrink: 0;  width: 200px;">
-                            <!-- Ảnh mặt sau sẽ được chèn ở đây -->
-                        </div>
+                <!-- Ảnh mặt trước và mặt sau -->
+                <p><strong>Ảnh mặt trước và mặt sau:</strong></p>
+                <div style="display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap;">
+                    <div id="detailFrontImage" style="display: flex; flex-shrink: 0; width: 200px;">
+                        <!-- Ảnh mặt trước sẽ được chèn ở đây -->
+                    </div>
+                    <div id="detailBackImage" style="display: flex; flex-shrink: 0; width: 200px;">
+                        <!-- Ảnh mặt sau sẽ được chèn ở đây -->
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
             </div>
         </div>
     </div>
-
+</div>
 
 
     <!-- Modal -->

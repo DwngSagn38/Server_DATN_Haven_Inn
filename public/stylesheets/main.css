@@ -96,3 +96,81 @@
   transform: scale(1.05);
   transition: transform 0.2s ease-in-out;
 }
+.bieudochung {
+  max-width: 100%;
+  justify-content: space-around;
+  height: 80vh;  
+  margin-left: 2px;
+     
+}
+.chart-container {
+  text-align: center;
+  justify-content: space-between; 
+  align-items: center;    /* Căn giữa theo chiều dọc */
+  height: 70vh;           /* Đặt chiều cao của container */
+}
+
+#bieuDoDoanhThu {
+  max-width: 100%;         /* Đặt giới hạn chiều rộng */
+  max-height: 100%;        /* Đặt giới hạn chiều cao */
+}
+
+#bieuDoLuotDat {
+  max-width: 100%;
+  max-height: 70%;
+}
+
+.p-inline-container {
+  display: flex;
+  gap: 20px; /* Khoảng cách giữa các thẻ */
+  align-items: center; /* Căn giữa dọc */
+  flex-wrap: wrap; /* Xuống dòng nếu không đủ không gian */
+}
+
+.p-inline-container p {
+  margin: 0; /* Xóa khoảng cách mặc định của <p> */
+}
+
+#customerImage {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Hình ảnh căn chỉnh */
+#detailFrontImage,
+#detailBackImage {
+  display: flex;
+  flex-shrink: 0;
+  width: 200px;
+}
+
+.messageLogin {
+  position: fixed; /* Định vị cố định */
+  bottom: 20px; /* Cách dưới 20px */
+  right: 20px; /* Cách phải 20px */
+  z-index: 1050; /* Đảm bảo thông báo không bị các phần tử khác che khuất */
+  opacity: 1; /* Đảm bảo rằng thông báo không trong suốt */
+  transition: opacity 0.5s ease-out; /* Thêm hiệu ứng mờ dần */
+}
+
+/* Tùy chỉnh thêm nếu cần */
+.modal-body h5 {
+  margin-bottom: 20px;
+}
+
+.thongso {
+  border: 2px solid rgba(0, 0, 0, 0.1); /* Đường viền mờ */
+  border-radius: 12px; /* Bo góc */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow nhẹ */
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.bieudo {
+  border: 2px solid rgba(0, 0, 0, 0.1); /* Đường viền mờ */
+  border-radius: 12px; /* Bo góc */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow nhẹ */
+  padding: 20px;
+  margin-top: 20px;
+}

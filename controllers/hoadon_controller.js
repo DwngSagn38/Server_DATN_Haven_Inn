@@ -162,11 +162,11 @@ exports.suaHoaDon = async (req, res, next) => {
             const updatedHoadon = await HoadonModel.findByIdAndUpdate(
                 id,
                 {
+                    ...req.body,
                     trangThai,
                     tongPhong,
                     tongKhach,
                     tongTien,
-                    ngayThanhToan,
                     id_Coupon,
                     giamGia,
                 },
