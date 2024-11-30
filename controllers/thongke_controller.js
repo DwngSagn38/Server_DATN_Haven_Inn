@@ -92,8 +92,8 @@ exports.getDashboardData = async (req, res, next) => {
 
         const rawData = await getBieuDoData();
         const processedData = processBieuDoData(rawData);
-        console.log(" doan thu ", processedData.doanhThuTheoThang)
-        console.log(" luot dat ", processedData.luotDatLoaiPhong)
+        // console.log(" doan thu ", processedData.doanhThuTheoThang)
+        // console.log(" luot dat ", processedData.luotDatLoaiPhong)
         res.render('home', {
             results,
             bieuDoData: processedData.doanhThuTheoThang,

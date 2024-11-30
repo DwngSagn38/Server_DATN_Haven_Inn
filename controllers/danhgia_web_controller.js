@@ -31,8 +31,12 @@ exports.getListLoaiPhong = async (req, res) => {
                 : 'Rất tệ';
         }
 
+        const message = req.session.message; // Lấy thông báo từ session
+        delete req.session.message; // Xóa thông báo sau khi đã sử dụng
+
+
         // Chuyển message nếu có
-        res.render('danhgia/danhgias', { roomTypes, message: 'Đây là thông báo của hệ thống' });
+        res.render('../views/danhgia/danhgias', { roomTypes, message: message || null });
     } catch (err) {
         console.error(err);
         res.status(500).send('Lỗi khi tải danh sách loại phòng');
@@ -53,7 +57,7 @@ exports.getDanhGiaByLoaiPhong = async (req, res) => {
         const reviews = await DanhGia.find({ id_LoaiPhong: roomId }).populate('id_NguoiDung', 'tenNguoiDung');
 
         // Render view với thông tin loại phòng và bình luận
-        res.render('danhgia/chitietdanhgias', { roomType, reviews, message: "Bình luận đã được tải thành công" });
+        res.render('../views/danhgia/chitietdanhgias', { roomType, reviews, message: "Bình luận đã được tải thành công" });
     } catch (err) {
         console.error(err);
         res.status(500).send('Lỗi khi tải bình luận');

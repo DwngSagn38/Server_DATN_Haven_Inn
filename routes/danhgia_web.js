@@ -7,7 +7,7 @@ const danhgiaController = require('../controllers/danhgia_web_controller');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // middleware kiểm tra auth (nếu cần thiết, có thể mở dòng này)
-// router.use(authMiddleware('json'));
+router.use(authMiddleware('html'));
 
 // Lấy danh sách các loại phòng
 router.get('/', danhgiaController.getListLoaiPhong);
