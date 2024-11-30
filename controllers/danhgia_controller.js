@@ -14,17 +14,30 @@ exports.getListorByIdUserorIdLPhong = async (req, res, next) => {
         }
 
         // Lấy danh sách đánh giá theo điều kiện lọc
-        const danhgias = await DanhGiaModel.find(filter).sort({ createdAt: -1 });
+        const danhgias = await DanhGiaModel.find(filter).sort({ createdAt: -1 }).populate('id_NguoiDung', 'hinhAnh tenNguoiDung');
         if (danhgias.length === 0) {
             return res.status(404).send({ message: 'Không tìm thấy' });
         }
 
-        res.send(danhgias);
+        // Format kết quả nếu cần
+        const formattedDanhgias = danhgias.map(danhgia => ({
+            _id: danhgia._id,
+            id_LoaiPhong: danhgia.id_LoaiPhong,
+            binhLuan: danhgia.binhLuan,
+            soDiem: danhgia.soDiem,
+            createdAt: danhgia.createdAt,
+            hinhAnh: danhgia.id_NguoiDung.hinhAnh, // Lấy avatar từ người dùng
+            tenNguoiDung: danhgia.id_NguoiDung.tenNguoiDung // Lấy ten người dùng
+        }));
+
+        res.send(formattedDanhgias);
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Error fetching data", error: error.message });
     }
 }
+
 
 
 exports.addDanhGia = async (req, res, next) => {
