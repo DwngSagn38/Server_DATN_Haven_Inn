@@ -1,4 +1,5 @@
 const NguoiDungModel = require('../model/nguoidungs');
+const CCCDModel = require('../model/cccds');
 
 const nodemailer = require('nodemailer');
 const { insertOtp, vertifyOtp } = require('./otp_controllor');
@@ -54,10 +55,17 @@ exports.login = async (req, res, next) => {
                 nguoidung.matKhau = null;
                 req.session.userId = nguoidung._id; // Lưu ID của người dùng để kiểm tra sau
                 console.log('Đăng nhập thành công, session:', req.session); // Debug session
+
+                const CheckXacMinh = await CCCDModel.findOne({ id_NguoiDung : nguoidung._id});
+
+                if (CheckXacMinh) {
+                    nguoidung.xacMinh = true;
+                }
                 return res.json({
                     status: 200,
                     message: "Đăng nhập thành công",
                     userId: req.session.userId,
+                    xacMinh : CheckXacMinh ? true : false,
                 });
             }
         } catch (error) {
@@ -91,18 +99,18 @@ exports.logout = async (req, res, next) => {
 }
 
 exports.sendOtp = async (req, res) => {
-    const { email } = req.body;
+    const { email } = req.query;
 
     if (!email) {
-        return res.status(400).json({ message: "Email là bắt buộc" });
+        return res.status(404).json({ message: "Email là bắt buộc" });
     }
     if (!email || !isValidEmail(email)) {
-        return res.status(400).json({ message: "Email không hợp lệ" });
+        return res.status(404).json({ message: "Email không hợp lệ" });
     }
 
     const existingUser = await NguoiDungModel.findOne({ email });
     if (existingUser) {
-        return res.status(400).json({ message: "Email đã đăng ký tài khoản!" });
+        return res.status(404).json({ message: "Email đã đăng ký tài khoản!" });
     }
     try {
         // Tạo OTP
@@ -161,7 +169,7 @@ exports.verifyOtp = async (req, res) => {
     const { email, otpCode } = req.body;
 
     if (!email || !otpCode) {
-        return res.status(400).json({ message: "Email và OTP là bắt buộc" });
+        return res.status(404).json({ message: "Email và OTP là bắt buộc" });
     }
 
     try {
@@ -169,14 +177,14 @@ exports.verifyOtp = async (req, res) => {
         const otps = await OtpModel.find({ email });
 
         if (!otps) {
-            return res.status(400).json({ message: "OTP đã hết hạn" });
+            return res.status(404).json({ message: "OTP đã hết hạn" });
         }
 
         const lastOtp = otps[otps.length - 1];
         const isValid = await vertifyOtp(otpCode, lastOtp.otp);
 
         if (!isValid) {
-            return res.status(400).json({ message: "OTP không hợp lệ hoặc đã hết hạn" });
+            return res.status(404).json({ message: "OTP không hợp lệ hoặc đã hết hạn" });
         }
 
         if (isValid && email === lastOtp.email) {
@@ -193,12 +201,12 @@ exports.register = async (req, res) => {
     const { email, matKhau, tenNguoiDung } = req.body;
 
     if (!email || !matKhau || !tenNguoiDung) {
-        return res.status(400).json({ message: "Vui lòng cung cấp đầy đủ thông tin" });
+        return res.status(404).json({ message: "Vui lòng cung cấp đầy đủ thông tin" });
     }
 
     const existingUser = await NguoiDungModel.findOne({ email });
     if (existingUser) {
-        return res.status(400).json({ message: "Email đã đăng ký tài khoản!" });
+        return res.status(404).json({ message: "Email đã đăng ký tài khoản!" });
     }
 
     try {
@@ -263,15 +271,15 @@ exports.forgotPass = async (req, res) => {
         const { email } = req.body;
 
         if (!email) {
-            return res.status(400).json({ message: "Email là bắt buộc" });
+            return res.status(404).json({ message: "Email là bắt buộc" });
         }
         if (!email || !isValidEmail(email)) {
-            return res.status(400).json({ message: "Email không hợp lệ" });
+            return res.status(404).json({ message: "Email không hợp lệ" });
         }
 
         const existingUser = await NguoiDungModel.findOne({ email });
         if (!existingUser) {
-            return res.status(400).json({ message: "Email chưa đăng ký tài khoản!" });
+            return res.status(404).json({ message: "Email chưa đăng ký tài khoản!" });
         }
 
         // Tạo OTP
@@ -326,16 +334,16 @@ exports.setUpPass = async (req, res, next) => {
 
         // Kiểm tra email và mật khẩu
         if (!email) {
-            return res.status(400).json({ message: "Email là bắt buộc" });
+            return res.status(404).json({ message: "Email là bắt buộc" });
         }
         if (!isValidEmail(email)) {
-            return res.status(400).json({ message: "Email không hợp lệ" });
+            return res.status(404).json({ message: "Email không hợp lệ" });
         }
         if (!matKhauMoi) {
-            return res.status(400).json({ message: "Mật khẩu mới là bắt buộc" });
+            return res.status(404).json({ message: "Mật khẩu mới là bắt buộc" });
         }
         if (!isValidPassword(matKhauMoi)) {
-            return res.status(400).json({
+            return res.status(404).json({
                 message:
                     "Mật khẩu phải có ít nhất 8 ký tự và bao gồm cả chữ và số",
             });

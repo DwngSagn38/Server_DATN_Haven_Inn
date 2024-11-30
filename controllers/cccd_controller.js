@@ -29,10 +29,10 @@ exports.getCccdByUserId = async (req, res) => {
 exports.addCccd = async (req, res) => {
     console.log("Req Files :", req.files);  // Đảm bảo req.files được in ra
 
-    const { id_NguoiDung, soCCCD, hoTen, ngaySinh, gioiTinh, ngayCap, queQuan } = req.body;
+    const { id_NguoiDung, soCCCD, hoTen, ngaySinh, gioiTinh, ngayCap, noiThuongTru } = req.body;
 
     // Kiểm tra thông tin đầu vào
-    if (!id_NguoiDung || !soCCCD || !ngayCap || !queQuan || !hoTen || !ngaySinh || !gioiTinh) {
+    if (!id_NguoiDung || !soCCCD || !ngayCap || !noiThuongTru || !hoTen || !ngaySinh || !gioiTinh) {
         return res.status(404).json({ message: "Vui lòng cung cấp đầy đủ thông tin!" });
     }
 
@@ -98,6 +98,9 @@ exports.addCccd = async (req, res) => {
         });
 
         const result = await cccd.save();
+
+        await NguoiDungModel.findByIdAndUpdate(id_NguoiDung, { xacMinh : true});
+
         res.json({ status: 200, message: "Thêm thành công", data: result });
 
     } catch (error) {

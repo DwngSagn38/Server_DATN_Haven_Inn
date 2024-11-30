@@ -9,6 +9,7 @@ const NguoiDungModel = new Schema({
     hinhAnh : { type : String},
     hinhAnhID: { type : String},
     chucVu : { type : Number, default : 0}, 
+    xacMinh : { type : Boolean, default : false},
     trangThai : { type : Boolean, default : true},
 },{
     timestamps : true
