@@ -30,5 +30,4 @@ const authMiddleware = require('../middleware/authMiddleware');
 // Route để render trang dashboard
 router.get('/home', authMiddleware('html'), thongKeController.getDashboardData);
 
-
 module.exports = router;

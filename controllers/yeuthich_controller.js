@@ -113,10 +113,9 @@ exports.suaYeuThich = async (req, res, next) => {
 exports.xoaYeuThich = async (req, res, next) => {
     try {
         // Lấy id_LoaiPhong và id_NguoiDung từ URL params
-        const userId = req.params.userId;
+        // const userId = req.session.userId;
         const phongId = req.params.id_LoaiPhong;
-        // const userId = req.params.id_NguoiDung;
-        
+        const userId = req.params.id_NguoiDung;
 
         console.log("id_LoaiPhong:", phongId);
         console.log("id_NguoiDung:", userId);
@@ -141,4 +140,4 @@ exports.xoaYeuThich = async (req, res, next) => {
         console.error(error);
         res.status(500).json({ message: "Error fetching data", error: error.message });
     }
-};
+}

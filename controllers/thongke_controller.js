@@ -68,9 +68,6 @@ exports.getDashboardData = async (req, res, next) => {
         const tongDoanhThuHoaDons = tongDoanhThuHoaDon.length > 0 ? tongDoanhThuHoaDon[0].total : 0;
         const doanhThuThangs = doanhThuThang.length > 0 ? doanhThuThang[0].total : 0;
 
-        console.log("doanh thu : ", tongDoanhThuHoaDons);
-        console.log("doanh thu tháng : ", doanhThuThangs)
-
         const results = {
             totalAmThuc,
             totalTienNghi,
@@ -90,16 +87,19 @@ exports.getDashboardData = async (req, res, next) => {
             doanhThuThang: formatCurrencyVND(doanhThuThangs)
         };
 
+        const message = req.session.message || null;
+        delete req.session.message;
+
         const rawData = await getBieuDoData();
-        console.log("Dữ liệu gốc từ MongoDB:", JSON.stringify(rawData, null, 2));
-
-        const bieuDoData = processBieuDoData(rawData);
-
-        console.log('====================================');
-        console.log(bieuDoData);
-        console.log('====================================');
-
-        res.render('home', { results, bieuDoData, getTopData, message: req.flash('message') });
+        const processedData = processBieuDoData(rawData);
+        console.log(" doan thu ", processedData.doanhThuTheoThang)
+        console.log(" luot dat ", processedData.luotDatLoaiPhong)
+        res.render('home', {
+            results,
+            bieuDoData: processedData.doanhThuTheoThang,
+            luotDatLoaiPhong: processedData.luotDatLoaiPhong, // Dữ liệu biểu đồ tròn
+            message
+        });
     } catch (error) {
         console.error("Lỗi khi lấy dữ liệu dashboard:", error);
         res.render('home', {
@@ -170,20 +170,75 @@ const getBieuDoData = async () => {
 };
 
 const processBieuDoData = (bieuDoData) => {
-    const processedData = {};
+    const processedData = {
+        doanhThuTheoThang: {}, // Dữ liệu cho biểu đồ doanh thu
+        luotDatLoaiPhong: {}, // Dữ liệu cho biểu đồ tròn
+    };
 
     bieuDoData.forEach((item) => {
         const { month, loaiPhong } = item._id;
-        if (!processedData[loaiPhong]) {
-            processedData[loaiPhong] = Array(12).fill(0); // Mỗi loại phòng có 12 tháng
+
+        // Xử lý doanh thu theo tháng
+        if (!processedData.doanhThuTheoThang[loaiPhong]) {
+            processedData.doanhThuTheoThang[loaiPhong] = Array(12).fill(0);
         }
-        processedData[loaiPhong][month - 1] = item.doanhThu; // Lưu doanh thu vào đúng tháng
+        processedData.doanhThuTheoThang[loaiPhong][month - 1] = item.doanhThu;
+
+        // Tính tổng số lượt đặt cho mỗi loại phòng
+        if (!processedData.luotDatLoaiPhong[loaiPhong]) {
+            processedData.luotDatLoaiPhong[loaiPhong] = 0;
+        }
+        processedData.luotDatLoaiPhong[loaiPhong] += item.soLuotDat;
     });
 
     return processedData;
 };
 
 
+const getLuotDatLoaiPhong = async () => {
+    const luotDatData = await HoadonModel.aggregate([
+        {
+            $match: {
+                trangThai: 1, // Chỉ lấy hóa đơn đã hoàn thành
+            },
+        },
+        {
+            $lookup: {
+                from: "chitiethoadons", // Tên collection chi tiết hóa đơn
+                localField: "_id",
+                foreignField: "id_HoaDon",
+                as: "chiTietHoaDon",
+            },
+        },
+        { $unwind: "$chiTietHoaDon" }, // Tách từng chi tiết hóa đơn
+        {
+            $lookup: {
+                from: "phongs", // Tên collection phòng
+                localField: "chiTietHoaDon.id_Phong",
+                foreignField: "_id",
+                as: "phong",
+            },
+        },
+        { $unwind: "$phong" }, // Tách thông tin phòng
+        {
+            $lookup: {
+                from: "loaiphongs", // Tên collection loại phòng
+                localField: "phong.id_LoaiPhong",
+                foreignField: "_id",
+                as: "loaiPhong",
+            },
+        },
+        { $unwind: "$loaiPhong" }, // Tách thông tin loại phòng
+        {
+            $group: {
+                _id: "$loaiPhong.tenLoaiPhong", // Gom nhóm theo loại phòng
+                soLuotDat: { $sum: 1 }, // Tính số lượt đặt
+            },
+        },
+    ]);
+
+    return luotDatData;
+};
 
 
 

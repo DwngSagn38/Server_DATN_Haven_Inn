@@ -1,11 +1,15 @@
-<div class="container">
-    <h1>Dashboard</h1>
-    <% if (message) { %>
-        <div class="alert alert-warning" id="successMessage">
-            <%= message %>
-        </div>
-        <% } %>
-            <div class="row g-3">
+<% if (message) { %>
+    <div class="alert alert-success messageLogin" id="successMessage" >
+        <%= message %>
+    </div>
+    <% } %>
+
+<h1>Dashboard</h1>
+
+<div class="container thongso">
+    <h2>Thống kê thông số</h2>
+
+            <div class="row g-3 mt-2">
                 <!-- Người dùng -->
                 <div class="col-md-3">
                     <div class="card bg-primary text-white">

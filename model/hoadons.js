@@ -4,8 +4,8 @@ const Schema = mongoose.Schema;
 const HoaDonModel = new Schema({
     id_NguoiDung: { type: Schema.Types.ObjectId, ref: 'nguoidung' },
     id_Coupon: { type: Schema.Types.ObjectId, ref: 'coupon' },
-    ngayNhanPhong : { type : Date , required : true},
-    ngayTraPhong : { type : Date , required : true},
+    ngayNhanPhong : { type : Date },
+    ngayTraPhong : { type : Date },
     tongPhong : { type : Number, },
     tongKhach : { type : Number, },
     tongTien : { type : Number, },

@@ -41,7 +41,7 @@ router.post('/login', async (req, res) => {
         req.session.userId = nguoidung._id; // Lưu ID của người dùng để kiểm tra sau
 
         // Trong `login` route:
-        req.flash('message', 'Đăng nhập thành công!');
+        req.session.message = 'Đăng nhập thành công!'
 
 
         return res.redirect('/web/home');

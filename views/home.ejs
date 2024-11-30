@@ -2,87 +2,125 @@
 
     <!-- Include the statistics dashboard and pass the results object -->
     <%- include('./thongke/thongso', { results: results }) %>
-
-        <% if (!bieuDoData || Object.keys(bieuDoData).length===0) { %>
-            <p>Không có dữ liệu để hiển thị biểu đồ.</p>
-            <% } else { %>
-                <canvas id="bieuDoDoanhThu"></canvas>
-                <% } %>
-
-
-                    <% if (message) { %>
-                        <div class="alert alert-success" role="alert" id="successMessage">
-                            <%= message %>
+        <div class="row mt-5 bieudochung">
+            <% if (!bieuDoData || Object.keys(bieuDoData).length===0) { %>
+                <p>Không có dữ liệu để hiển thị biểu đồ.</p>
+                <% } else { %>
+                    <!-- Biểu đồ doanh thu -->
+                    <div class="col-md-8 chart-container bieudo">
+                        <h5 class="mb-3">Biểu đồ doanh thu theo tháng của năm <span id="currentYear"></span></h5>
+                        <canvas id="bieuDoDoanhThu"></canvas>
+                    </div>
+                    <% } %>
+                        <!-- Biểu đồ tròn lượt đặt -->
+                        <div class="col-md-4 chart-container bieudo">
+                            <h5 class="mb-3">Tỉ lệ số lượt đặt theo loại phòng</h5>
+                            <canvas id="bieuDoLuotDat"></canvas>
                         </div>
+        </div>
 
-                        <script>
-                            // Đặt thời gian hiển thị thông báo là 2 giây (2000ms)
-                            setTimeout(function () {
-                                var messageElement = document.getElementById("successMessage");
-                                if (messageElement) {
-                                    messageElement.style.display = "none"; // Ẩn thông báo sau 2 giây
-                                }
-                            }, 2000);
 
-                            const bieuDoData = <%= JSON.stringify(bieuDoData) %>; // Truyền từ backend
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <script>
+            const bieuDoData = <%- JSON.stringify(bieuDoData || {}) %>;
+            const labels = Array.from({ length: 12 }, (_, i) => `Tháng ${i + 1}`);
 
-                            const labels = Array.from({ length: 12 }, (_, i) => `Tháng ${i + 1}`);
-                            const datasets = Object.keys(bieuDoData).map((loaiPhong) => ({
-                                label: loaiPhong,
-                                data: bieuDoData[loaiPhong],
-                                borderColor: getRandomColor(), // Hàm tạo màu ngẫu nhiên
-                                backgroundColor: getRandomColor(0.5),
-                                fill: true,
-                            }));
+            // Kiểm tra dữ liệu trước khi vẽ biểu đồ
+            console.log("Dữ liệu từ backend:", bieuDoData);
 
-                            new Chart(document.getElementById("bieuDoDoanhThu"), {
-                                type: "line", // Hoặc "bar" cho biểu đồ cột
-                                data: {
-                                    labels,
-                                    datasets,
+            const datasets = Object.keys(bieuDoData).map((loaiPhong) => ({
+                label: loaiPhong,
+                data: bieuDoData[loaiPhong],
+                borderColor: getRandomColor(),
+                backgroundColor: getRandomColor(0.5),
+                tension: 0.4, // Làm mượt đường (giá trị từ 0 đến 1, càng cao càng mượt)
+                fill: true,
+            }));
+
+            // Đảm bảo dữ liệu đúng trước khi vẽ
+            console.log("Datasets:", datasets);
+            console.log("Labels:", labels);
+
+            new Chart(document.getElementById("bieuDoDoanhThu"), {
+                type: "line",
+                data: {
+                    labels,
+                    datasets,
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: "top" },
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Tháng",
+                            },
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: "Doanh thu (VNĐ)",
+                            },
+                        },
+                    },
+                    elements: {
+                        line: {
+                            tension: 0.4, // Tùy chọn làm mượt đường toàn cục
+                        },
+                        point: {
+                            radius: 4, // Kích thước điểm
+                            hoverRadius: 6, // Kích thước điểm khi hover
+                        },
+                    },
+                },
+            });
+
+            const luotDatLoaiPhong = <%- JSON.stringify(luotDatLoaiPhong || {}) %>;
+
+            // Chuẩn bị dữ liệu cho biểu đồ tròn
+            const pieLabels = Object.keys(luotDatLoaiPhong);
+            const pieData = Object.values(luotDatLoaiPhong);
+
+            // Tính tổng số lượt đặt
+            const totalBookings = pieData.reduce((acc, value) => acc + value, 0);
+
+            // Vẽ biểu đồ tròn
+            new Chart(document.getElementById("bieuDoLuotDat"), {
+                type: "pie",
+                data: {
+                    labels: pieLabels,
+                    datasets: [{
+                        data: pieData,
+                        backgroundColor: pieLabels.map(() => getRandomColor()),
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const value = context.raw;
+                                    const percentage = ((value / totalBookings) * 100).toFixed(2);
+                                    return `${context.label}: ${value} lượt (${percentage}%)`;
                                 },
-                                options: {
-                                    responsive: true,
-                                    plugins: {
-                                        legend: { position: "top" },
-                                    },
-                                },
-                            });
+                            },
+                        },
+                    },
+                },
+            });
 
-                            function getRandomColor(opacity = 1) {
-                                try {
-                                    const r = Math.floor(Math.random() * 255);
-                                    const g = Math.floor(Math.random() * 255);
-                                    const b = Math.floor(Math.random() * 255);
-                                    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-                                } catch (err) {
-                                    console.error("Lỗi khi tạo màu sắc:", err);
-                                    return 'rgba(0, 0, 0, 1)'; // Trả về màu mặc định nếu xảy ra lỗi
-                                }
-                            }
+            function getRandomColor(opacity = 1) {
+                const r = Math.floor(Math.random() * 255);
+                const g = Math.floor(Math.random() * 255);
+                const b = Math.floor(Math.random() * 255);
+                return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+            }
 
-                            console.log("Dữ liệu được render vào biểu đồ:", bieuDoData);
-                            console.log('Datasets:', datasets);
-                            console.log('Labels:', labels);
+            document.getElementById("currentYear").textContent = new Date().getFullYear();
+        </script>
 
-                        </script>
-                        <% } %>
-
-                            <%- include('main/footer.ejs') %>
-
-                                <style>
-                                    #successMessage {
-                                        position: fixed;
-                                        /* Định vị cố định */
-                                        bottom: 20px;
-                                        /* Cách dưới 20px */
-                                        right: 20px;
-                                        /* Cách phải 20px */
-                                        z-index: 1050;
-                                        /* Đảm bảo thông báo không bị các phần tử khác che khuất */
-                                        opacity: 1;
-                                        /* Đảm bảo rằng thông báo không trong suốt */
-                                        transition: opacity 0.5s ease-out;
-                                        /* Thêm hiệu ứng mờ dần */
-                                    }
-                                </style>
+                <%- include('main/footer.ejs') %>

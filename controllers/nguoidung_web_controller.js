@@ -21,11 +21,11 @@ exports.getListorByID = async (req, res, next) => {
 
         // Lấy thông tin CCCD
         const nguoiDungIds = nguoidungs.map(user => user._id);
-        const cccds = await CCCDModel.find({ nguoiDung: { $in: nguoiDungIds } }).lean();
+        const cccds = await CCCDModel.find({ id_NguoiDung: { $in: nguoiDungIds } }).lean();
 
         // Gắn CCCD vào từng người dùng
         nguoidungs.forEach(user => {
-            user.cccd = cccds.find(cccd => String(cccd.nguoiDung) === String(user._id)) || null;
+            user.cccd = cccds.find(cccd => String(cccd.id_NguoiDung) === String(user._id)) || null;
         });
 
         const message = req.session.message || null;
@@ -172,7 +172,7 @@ exports.getDetail = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
         }
 
-        const cccd = await CCCDModel.findOne({ nguoiDung: id }).lean();
+        const cccd = await CCCDModel.findOne({ id_NguoiDung: id }).lean();
         user.cccd = cccd || null;
 
         res.json({ success: true, user });
