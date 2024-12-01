@@ -7,6 +7,7 @@ const ChiTietHoaDonModel = new Schema({
     soLuongKhach : { type : Number, required : true},
     giaPhong : {type: Number, required: true},
     buaSang : {type: Boolean, required: true},
+    tongTien : {type : Number}
 })
 
 module.exports = mongoose.model("chitiethoadon",ChiTietHoaDonModel);

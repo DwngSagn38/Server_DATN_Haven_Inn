@@ -27,21 +27,25 @@
     document.addEventListener("DOMContentLoaded", function () {
         // Nút thêm loại phòng
         document.getElementById("addServiceBtn").addEventListener("click", function () {
-            document.querySelector('form').addEventListener('submit', function (e) {
-                console.log('Form is being submitted...');
-                const tienNghiInput = document.createElement('input');
-                tienNghiInput.type = 'hidden';
-                tienNghiInput.name = 'tienNghi'; // Tên phải khớp với tên đọc trên server
-                tienNghiInput.value = JSON.stringify(selectedTienNghi.map(item => item.id));
-                console.log('Hidden input value:', tienNghiInput.value);
-                this.appendChild(tienNghiInput);
-            });
             const form = document.getElementById("serviceForm");
             form.action = "/web/loaiphongs/post"; // Đường dẫn thêm mới
             form.reset(); // Reset form
             document.getElementById("serviceModalLabel").innerText = "Thêm loại phòng mới";
             document.getElementById("currentImage").style.display = "none"; // Ẩn ảnh cũ
             document.getElementById("currentImagePreviewContainer").innerHTML = ""; // Xóa ảnh cũ
+        });
+
+        // Xử lý checkbox và ô nhập mô tả
+        document.querySelectorAll(".tiennghi-checkbox").forEach((checkbox) => {
+            checkbox.addEventListener("change", function () {
+                const descriptionField = document.getElementById(`mota-${this.value}`);
+                if (this.checked) {
+                    descriptionField.style.display = "block"; // Hiển thị ô mô tả
+                } else {
+                    descriptionField.style.display = "none"; // Ẩn ô mô tả
+                    descriptionField.value = ""; // Xóa giá trị trong ô mô tả
+                }
+            });
         });
 
         // Nút sửa loại phòng
@@ -80,6 +84,22 @@
                     document.getElementById("currentImagePreviewContainer").style.display = "none"; // Ẩn nếu không có ảnh
                 }
 
+                const selectedTienNghi = JSON.parse(this.dataset.tiennghi || "[]");
+                const moTaTienNghi = JSON.parse(this.dataset.motaTienNghi || "{}");
+
+                document.querySelectorAll(".tiennghi-checkbox").forEach((checkbox) => {
+                    const descriptionField = document.getElementById(`mota-${checkbox.value}`);
+                    if (selectedTienNghi.includes(checkbox.value)) {
+                        checkbox.checked = true;
+                        descriptionField.style.display = "block";
+                        descriptionField.value = moTaTienNghi[checkbox.value] || ""; // Điền mô tả
+                    } else {
+                        checkbox.checked = false;
+                        descriptionField.style.display = "none";
+                        descriptionField.value = "";
+                    }
+                });
+
             });
         });
 
@@ -93,56 +113,10 @@
             document.getElementById("currentImagePreviewContainer").style.display = "none";
         });
 
-
-
-        // Mảng để lưu các tiện nghi đã chọn
-        let selectedTienNghi = [];
-
-        // Xử lý sự kiện khi người dùng nhấn nút chọn tiện nghi
-        document.querySelectorAll('.tienNghiBtn').forEach(button => {
-            button.addEventListener('click', function () {
-                const tienNghiId = this.getAttribute('data-id');
-                const tienNghiName = this.getAttribute('data-name');
-
-                // Kiểm tra xem tiện nghi đã được chọn chưa
-                if (!selectedTienNghi.some(item => item.id === tienNghiId)) {
-                    // Thêm tiện nghi vào mảng đã chọn
-                    selectedTienNghi.push({ id: tienNghiId, name: tienNghiName });
-
-                    // Cập nhật giao diện hiển thị tiện nghi đã chọn
-                    updateSelectedTienNghi();
-                }
-            });
+        const selectedTienNghi = JSON.parse(this.dataset.tiennghi || "[]"); // Tiện nghi của phòng hiện tại
+        document.querySelectorAll("#tienNghiCheckboxes .form-check-input").forEach((checkbox) => {
+            checkbox.checked = selectedTienNghi.includes(checkbox.value); // Đánh dấu checkbox
         });
-
-        // Hàm để cập nhật giao diện hiển thị tiện nghi đã chọn
-        function updateSelectedTienNghi() {
-            const container = document.getElementById('tienNghiSelected');
-            container.innerHTML = ''; // Xóa danh sách tiện nghi cũ
-
-            selectedTienNghi.forEach(item => {
-                const div = document.createElement('div');
-                div.classList.add('selected-tienNghi');
-                div.innerHTML = `
-            <span>${item.name}</span>
-            <button type="button" class="btn btn-danger btn-sm removeBtn" data-id="${item.id}">Xóa</button>
-        `;
-                container.appendChild(div);
-            });
-
-            // Thêm sự kiện xóa cho các nút "Xóa"
-            document.querySelectorAll('.removeBtn').forEach(button => {
-                button.addEventListener('click', function () {
-                    const tienNghiId = this.getAttribute('data-id');
-
-                    // Loại bỏ tiện nghi khỏi mảng đã chọn
-                    selectedTienNghi = selectedTienNghi.filter(item => item.id !== tienNghiId);
-
-                    // Cập nhật lại giao diện
-                    updateSelectedTienNghi();
-                });
-            });
-        }
 
 
 

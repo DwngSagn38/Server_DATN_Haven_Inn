@@ -88,20 +88,6 @@ exports.addLoaiPhong = async (req, res) => {
             }
         }
 
-
-        // Xử lý tiện nghi
-        let selectedTienNghi = [];
-        console.log("tien nghi select : ", req.body)
-        if (req.body.tienNghi) {
-            try {
-                selectedTienNghi = JSON.parse(req.body.tienNghi);
-                console.log("Parsed amenities:", selectedTienNghi);
-            } catch (error) {
-                console.error("Error parsing JSON:", error);
-                selectedTienNghi = [];
-            }
-        }
-
         // Tạo đối tượng mới cho LoaiPhong
         const newLoaiPhong = new LoaiPhongModel({
             ...req.body,
@@ -114,17 +100,28 @@ exports.addLoaiPhong = async (req, res) => {
         await newLoaiPhong.save();
 
 
-        // Cập nhật tiện nghi phòng trong database (nếu cần)
-        for (const tienNghiId of selectedTienNghi) {
-            const newTienNghiPhong = new TienNghiPhongModel({
-                id_LoaiPhong: newLoaiPhong._id,
-                id_TienNghi: tienNghiId,
-                moTa:"",
-            });
-            await newTienNghiPhong.save();
+        // Kiểm tra và xử lý tiện nghi
+        const selectedTienNghi = Array.isArray(req.body.tienNghi)
+            ? req.body.tienNghi
+            : req.body.tienNghi ? [req.body.tienNghi] : []; // Đảm bảo luôn là mảng
+        const moTaTienNghi = req.body.motaTienNghi || {}; // Dữ liệu mô tả từ form
 
-            console.log("tiennghiphong : ", newTienNghiPhong)
+        if (selectedTienNghi.length === 0) {
+            console.log("Không có tiện nghi nào được chọn.");
+        } else {
+            for (const tienNghiId of selectedTienNghi) {
+                if (!tienNghiId) continue; // Bỏ qua giá trị null hoặc undefined
+
+                const newTienNghiPhong = new TienNghiPhongModel({
+                    id_LoaiPhong: newLoaiPhong._id,
+                    id_TienNghi: tienNghiId,
+                    moTa: moTaTienNghi[tienNghiId] || "", // Lấy mô tả hoặc để trống
+                });
+                await newTienNghiPhong.save();
+            }
         }
+
+
 
         // Đưa thông báo và chuyển hướng về trang loaiphongs
         req.session.message = "Thêm loại phòng thành công!";
@@ -190,6 +187,22 @@ exports.suaLoaiPhong = async (req, res) => {
             },
             { new: true } // Trả về đối tượng đã cập nhật
         );
+
+        // Xử lý tiện nghi và mô tả
+        const selectedTienNghi = Array.isArray(req.body.tienNghi) ? req.body.tienNghi : [req.body.tienNghi];
+        const moTaTienNghi = req.body.motaTienNghi || {}; // Dữ liệu mô tả từ form
+
+        await TienNghiPhongModel.deleteMany({ id_LoaiPhong: id }); // Xóa tiện nghi cũ
+
+        for (const tienNghiId of selectedTienNghi) {
+            const newTienNghiPhong = new TienNghiPhongModel({
+                id_LoaiPhong: req.params.id,
+                id_TienNghi: tienNghiId,
+                moTa: moTaTienNghi[tienNghiId] || "", // Lấy mô tả
+            });
+            await newTienNghiPhong.save();
+        }
+
 
         // Trả về kết quả
         req.session.message = "Sửa thành công!";
