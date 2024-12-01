@@ -121,7 +121,7 @@ exports.getDetailAPI = async (req, res) => {
         // Tính tổng số phòng, khách và tổng tiền từ chi tiết hóa đơn
         hoadon.tongPhong = chiTietHoaDons.length;
         hoadon.tongKhach = chiTietHoaDons.reduce((total, item) => total + item.soLuongKhach, 0);
-        hoadon.tongTien = chiTietHoaDons.reduce((total, item) => total + item.giaPhong, 0);
+        hoadon.tongTien = chiTietHoaDons.reduce((total, item) => total + item.tongTien, 0);
 
         // Kiểm tra mã giảm giá
         if (hoadon.id_Coupon) {
@@ -177,10 +177,10 @@ exports.getDetailAPI = async (req, res) => {
         hoadon.chiTiet = chiTietHoaDons.map((ct) => ({
             soPhong: ct.id_Phong.soPhong,
             tenLoaiPhong: ct.id_Phong.id_LoaiPhong?.tenLoaiPhong || 'Không xác định',
-            giaPhong: ct.id_Phong.id_LoaiPhong?.giaTien || 'Không xác định',
+            giaPhong: ct.giaPhong,
             VIP: ct.id_Phong.VIP,
             soLuongKhach: ct.soLuongKhach,
-            tongTien: ct.giaPhong,
+            tongTien: ct.tongTien,
             buaSang: ct.buaSang,
         }));
 

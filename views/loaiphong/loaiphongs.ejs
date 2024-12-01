@@ -59,10 +59,10 @@
                                 </td>
 
                                 <td class="text-center">
-                                    <a onclick="getLoaiPhongDetails('<%= loaiphong._id %>')"
-                                        data-bs-toggle="modal" data-bs-target="#detailsModal">
-                                        <img src="/public/images/eye.png"
-                                            alt="Xóa" style="width: 24px; height: 24px;"></a>
+                                    <a onclick="getLoaiPhongDetails('<%= loaiphong._id %>')" data-bs-toggle="modal"
+                                        data-bs-target="#detailsModal">
+                                        <img src="/public/images/eye.png" alt="Xóa"
+                                            style="width: 24px; height: 24px;"></a>
 
                                     <a class="btn-sm btn-edit-loaiphong" data-id="<%= loaiphong._id %>"
                                         data-ten="<%= loaiphong.tenLoaiPhong %>" data-giuong="<%= loaiphong.giuong %>"
@@ -77,10 +77,10 @@
                                     <a class="btn-sm btn-delete-loaiphong" data-id="<%= loaiphong._id %>"
                                         data-ten="<%= loaiphong.tenLoaiPhong %>" data-bs-toggle="modal"
                                         data-bs-target="#confirmDeleteModal">
-                                        <img src="/public/images/delete.png"
-                                            alt="Xóa" style="width: 24px; height: 24px;"></a>
+                                        <img src="/public/images/delete.png" alt="Xóa"
+                                            style="width: 24px; height: 24px;"></a>
                                 </td>
-                                
+
                             </tr>
                             <% }); %>
                     </tbody>
@@ -148,24 +148,26 @@
 
                         <!-- Tiện nghi -->
                         <div class="mb-3">
-                            <label for="tienNghi" class="form-label">Chọn tiện nghi phòng</label>
-                            <div id="tienNghiButtons">
+                            <label class="form-label">Chọn tiện nghi phòng</label>
+                            <div id="tienNghiCheckboxes" class="border-bottom py-2">
                                 <% tiennghis.forEach(tiennghi=> { %>
-                                    <button type="button" class="btn btn-outline-primary tienNghiBtn"
-                                        data-id="<%= tiennghi._id %>" data-name="<%= tiennghi.tenTienNghi %>">
-                                        <%= tiennghi.tenTienNghi %>
-                                    </button>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input tiennghi-checkbox" type="checkbox"
+                                            value="<%= tiennghi._id %>" id="tiennghi-<%= tiennghi._id %>"
+                                            data-name="<%= tiennghi.tenTienNghi %>">
+                                        <label class="form-check-label" for="tiennghi-<%= tiennghi._id %>">
+                                            <%= tiennghi.tenTienNghi %>
+                                        </label>
+                                        <!-- Ô nhập mô tả, ẩn mặc định -->
+                                        <input type="text" class="form-control mt-2 tiennghi-description"
+                                            id="mota-<%= tiennghi._id %>" name="motaTienNghi[<%= tiennghi._id %>]"
+                                            placeholder="Nhập mô tả cho <%= tiennghi.tenTienNghi %>"
+                                            style="display: none;">
+                                    </div>
                                     <% }); %>
                             </div>
                         </div>
 
-                        <!-- Thẻ div để hiển thị các tiện nghi đã chọn -->
-                        <div class="mb-3">
-                            <label for="tienNghiSelected" class="form-label">Các tiện nghi đã chọn</label>
-                            <div id="tienNghiSelected" class="border p-2" style="min-height: 50px;">
-                                <!-- Các tiện nghi đã chọn sẽ hiển thị ở đây -->
-                            </div>
-                        </div>
 
                         <!-- Mô tả -->
                         <div class="mb-3">

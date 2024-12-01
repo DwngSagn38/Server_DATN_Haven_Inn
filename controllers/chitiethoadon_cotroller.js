@@ -73,15 +73,19 @@ exports.addChiTietHoaDon = async (req, res, next) => {
             return res.status(404).json({ message: "Không tìm thấy loại phòng với id_LoaiPhong của phòng" });
         }
 
-        const giaVIP = phong.VIP ? loaiPhong.giaTien + 300000 : null;
-
+        const tongTien = phong.VIP && data.buaSang 
+        ? loaiPhong.giaTien + 450000 
+        :  phong.VIP ? loaiPhong.giaTien + 300000 
+        : (data.buaSang ? loaiPhong.giaTien + 150000 : loaiPhong.giaTien);
+        
         // Tạo mới chi tiết hóa đơn
         const chitiethoadon = new ChiTietHoaDonModel({
             id_Phong: data.id_Phong,
             id_HoaDon: data.id_HoaDon,
             soLuongKhach: 1,
-            giaPhong: phong.VIP ? giaVIP : loaiPhong.giaTien, // Nếu là phòng VIP thì lấy giá VIP, ngược lại giá thường
+            giaPhong: loaiPhong.giaTien, // Nếu là phòng VIP thì lấy giá VIP, ngược lại giá thường
             buaSang: data.buaSang || false, // Mặc định là false nếu không được cung cấp
+            tongTien : tongTien,
         });
 
         // Lưu chi tiết hóa đơn vào database
@@ -103,7 +107,8 @@ exports.addChiTietHoaDon = async (req, res, next) => {
 exports.suaChiTietHoaDon = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { buaSang, soLuongKhach } = req.body;
+        const { soLuongKhach } = req.body;
+        const buaSang = req.body.buaSang === "true" || req.body.buaSang === true;
 
         // Lấy thông tin chi tiết hóa đơn
         const chiTietHoaDon = await ChiTietHoaDonModel.findById(id);
@@ -131,11 +136,16 @@ exports.suaChiTietHoaDon = async (req, res, next) => {
         }
 
         // Cập nhật chi tiết hóa đơn
-        chiTietHoaDon.buaSang = buaSang !== undefined ? buaSang : chiTietHoaDon.buaSang; // Chỉ cập nhật nếu có giá trị mới
         chiTietHoaDon.soLuongKhach = soLuongKhach !== undefined ? soLuongKhach : chiTietHoaDon.soLuongKhach;
 
-        const giaTien = buaSang ? chiTietHoaDon.giaPhong + 150000 : chiTietHoaDon.giaPhong;
-        chiTietHoaDon.giaPhong = giaTien;
+        if (buaSang === true && !chiTietHoaDon.buaSang) {
+            // Thêm phí nếu cập nhật từ không bao gồm bữa sáng sang có
+            chiTietHoaDon.tongTien += 150000;
+        } else if (buaSang === false && chiTietHoaDon.buaSang) {
+            // Giảm phí nếu cập nhật từ có bữa sáng sang không
+            chiTietHoaDon.tongTien -= 150000;
+        }
+        chiTietHoaDon.buaSang = buaSang;
 
         // Lưu thay đổi
         const updatedChiTietHoaDon = await chiTietHoaDon.save();

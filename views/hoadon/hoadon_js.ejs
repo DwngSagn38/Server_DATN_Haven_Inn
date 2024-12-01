@@ -65,11 +65,22 @@
                 .join('');
 
             const modalContent = `
-            <p><strong>Khách hàng:</strong> ${hoadon.id_NguoiDung.tenNguoiDung}</p>
-            <p><strong>Tổng số phòng:</strong> ${hoadon.tongPhong}</p>
-            <p><strong>Tổng số khách:</strong> ${hoadon.tongKhach}</p>
-            <p><strong>Ngày nhận phòng:</strong> ${hoadon.ngayNhanPhong}</p>
-            <p><strong>Ngày trả phòng:</strong> ${hoadon.ngayTraPhong}</p>
+
+            <div class="p-inline-container">
+                <p><strong>Khách hàng:</strong> ${hoadon.id_NguoiDung.tenNguoiDung}</p>
+                <p><strong>Email:</strong> ${hoadon.id_NguoiDung.email}</p>
+            </div> 
+
+            <div class="p-inline-container">
+                <p><strong>Tổng số phòng:</strong> ${hoadon.tongPhong}</p>
+                <p><strong>Tổng số khách:</strong> ${hoadon.tongKhach}</p>
+            </div> 
+
+            <div class="p-inline-container">
+                <p><strong>Ngày nhận phòng:</strong> ${hoadon.ngayNhanPhong}</p>
+                <p><strong>Ngày trả phòng:</strong> ${hoadon.ngayTraPhong}</p>
+            </div> 
+
             <p><strong>Ngày tạo đơn:</strong> ${hoadon.createdAt}</p>
             <p style="color: ${hoadon.trangThai === 1 ? 'green' : 'red'}"
             ><strong>Trạng thái thanh toán: ${hoadon.trangThai === 1 ? 'Đã thanh toán' : 'Chưa thanh toán'} </strong></p>
