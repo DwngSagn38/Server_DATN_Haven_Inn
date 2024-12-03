@@ -11,14 +11,10 @@ exports.getListorByID = async (req, res, next) => {
     try {
         const { id } = req.query;
 
-        // Xây dựng điều kiện lọc dựa trên các tham số có sẵn
         let filter = {};
-        if (id) {
-            filter._id = id;
-        }
+        if (id) filter._id = id;
 
-        const tiennghis = await TienNghiModel.find({});
-        // Lấy danh sách loaiphongs
+        const tiennghis = await TienNghiModel.find({}); // Lấy danh sách tiện nghi
         const loaiphongs = await LoaiPhongModel.find(filter).sort({ createdAt: -1 });
 
         if (loaiphongs.length === 0) {
@@ -28,34 +24,48 @@ exports.getListorByID = async (req, res, next) => {
             });
         }
 
-        // Tính tổng số phòng theo id_LoaiPhong
         const phongCounts = await PhongModel.aggregate([
             { $group: { _id: "$id_LoaiPhong", totalPhong: { $sum: 1 } } }
         ]);
 
-        // Map tổng số phòng vào từng loaiphong
-        const loaiphongsWithCounts = loaiphongs.map((loaiphong) => {
-            const phongCount = phongCounts.find(
-                (count) => count._id.toString() === loaiphong._id.toString()
-            );
+        const loaiphongsWithExtras = await Promise.all(
+            loaiphongs.map(async (loaiphong) => {
+                const loaiphongObj = loaiphong.toObject();
+        
+                // Lấy chi tiết các tiện nghi liên kết
+                const tienNghiDetails = await TienNghiPhongModel.find({ id_LoaiPhong: loaiphong._id })
+                    .populate('id_TienNghi', 'tenTienNghi')
+                    .lean();
+        
+                const formattedGiaTien = formatCurrencyVND(loaiphong.giaTien);
+        
+                // Chuyển dữ liệu tiện nghi thành danh sách và mô tả
+                const tienNghi = tienNghiDetails.map((detail) => detail.id_TienNghi._id.toString());
 
-            // Format giá tiền
-            const formattedGiaTien = formatCurrencyVND(loaiphong.giaTien);
-
-
-            return {
-                ...loaiphong.toObject(),
-                giaTien: formattedGiaTien,
-                totalPhong: phongCount ? phongCount.totalPhong : 0
-            };
-        });
-
-        const message = req.session.message; // Lấy thông báo từ session
-        delete req.session.message; // Xóa thông báo sau khi đã sử dụng
+                const moTaTienNghi = tienNghiDetails.reduce((acc, detail) => {
+                    acc[detail.id_TienNghi._id] = detail.moTa || "";
+                    return acc;
+                }, {});
+        
+                return {
+                    ...loaiphongObj,
+                    giaTien: loaiphong.giaTien,
+                    tienNghi,
+                    moTaTienNghi,
+                    totalPhong: phongCounts.find(
+                        (count) => count._id.toString() === loaiphong._id.toString()
+                    )?.totalPhong || 0
+                };
+            })
+        );
+        
+            
+        const message = req.session.message;
+        delete req.session.message;
 
         res.render('../views/loaiphong/loaiphongs', {
             message: message || null,
-            loaiphongs: loaiphongsWithCounts,
+            loaiphongs: loaiphongsWithExtras,
             tiennghis
         });
     } catch (error) {
@@ -66,6 +76,7 @@ exports.getListorByID = async (req, res, next) => {
         });
     }
 };
+
 
 
 
@@ -104,11 +115,14 @@ exports.addLoaiPhong = async (req, res) => {
         const selectedTienNghi = Array.isArray(req.body.tienNghi)
             ? req.body.tienNghi
             : req.body.tienNghi ? [req.body.tienNghi] : []; // Đảm bảo luôn là mảng
-        const moTaTienNghi = req.body.motaTienNghi || {}; // Dữ liệu mô tả từ form
+        const moTaTienNghi = req.body.motaTienNghi || {}; // Đảm bảo luôn là đối tượng
 
-        if (selectedTienNghi.length === 0) {
-            console.log("Không có tiện nghi nào được chọn.");
-        } else {
+        console.log("Received data:", req.body);
+        console.log("Selected tiện nghi:", selectedTienNghi);
+        console.log("Mô tả tiện nghi:", moTaTienNghi);
+
+
+        if (selectedTienNghi.length > 0) {
             for (const tienNghiId of selectedTienNghi) {
                 if (!tienNghiId) continue; // Bỏ qua giá trị null hoặc undefined
 
@@ -120,6 +134,7 @@ exports.addLoaiPhong = async (req, res) => {
                 await newTienNghiPhong.save();
             }
         }
+
 
 
 
@@ -264,6 +279,9 @@ exports.getLoaiPhongDetails = async (req, res) => {
         const tienNghiPhong = await TienNghiPhongModel.find({ id_LoaiPhong: id })
             .populate('id_TienNghi'); // Lấy thông tin tiện nghi từ TienNghiModel
 
+        // Lấy danh sách phòng theo id_LoaiPhong
+        const phongList = await PhongModel.find({ id_LoaiPhong: id });
+
         // Nếu không có tiện nghi cho loại phòng
         const tienNghiDetails = tienNghiPhong.map(item => ({
             tenTienNghi: item.id_TienNghi.tenTienNghi,
@@ -271,19 +289,28 @@ exports.getLoaiPhongDetails = async (req, res) => {
             moTa: item.moTa,
         }));
 
-        // Trả về thông tin loại phòng và tiện nghi
+        // Chuyển đổi trạng thái và VIP của phòng
+        const phongListDetails = phongList.map(phong => ({
+            soPhong: phong.soPhong,
+            VIP: phong.VIP, // Chuyển VIP từ boolean thành chuỗi
+            trangThai: phong.trangThai,
+        }));
+
+        // Trả về thông tin loại phòng, tiện nghi và hệ thống phòng
         res.json({
             tenLoaiPhong: loaiPhong.tenLoaiPhong,
             giuong: loaiPhong.giuong,
             soLuongKhach: loaiPhong.soLuongKhach,
             dienTich: loaiPhong.dienTich,
-            giaTien: loaiPhong.giaTien,
+            giaTien: formatCurrencyVND(loaiPhong.giaTien),
             moTa: loaiPhong.moTa,
             hinhAnh: loaiPhong.hinhAnh,
             tienNghi: tienNghiDetails,  // Danh sách tiện nghi
+            phongList: phongListDetails,  // Danh sách phòng đã chuyển trạng thái
         });
     } catch (error) {
         console.error('Error fetching loaiPhong details:', error);
         res.status(500).send('Internal Server Error');
     }
 };
+

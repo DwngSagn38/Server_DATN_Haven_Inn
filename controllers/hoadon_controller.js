@@ -96,11 +96,23 @@ exports.addHoaDon = async (req, res, next) => {
 
         const result = await hoadon.save();
 
+        // Lưu chi tiết hóa đơn với mã hóa đơn
+        // const chiTietHoaDon = req.body.chiTiet.map(item => ({
+        //     id_Phong: item.idPhong,
+        //     id_HoaDon: hoadon._id, // Liên kết qua mã hóa đơn
+        //     soLuongKhach: item.soLuongKhach,
+        //     giaPhong: item.giaPhong,
+        //     buaSang: item.buaSang,
+        //     tongTien: item.tongTien
+        // }));
+
+        // await ChiTietHoaDonModel.insertMany(chiTietHoaDon);
+
         if (result) {
             res.json({
                 status: 200,
-                message: "Add success",
-                data: result
+                message:  "Tạo hóa đơn thành công",
+                data: hoadon._id
             })
         } else {
             res.json({
@@ -139,7 +151,7 @@ exports.suaHoaDon = async (req, res, next) => {
             // Tính toán các giá trị cần cập nhật
             const tongPhong = chiTietHoaDons.length;
             const tongKhach = chiTietHoaDons.reduce((total, item) => total + item.soLuongKhach, 0);
-            let tongTien = chiTietHoaDons.reduce((total, item) => total + item.giaPhong, 0);
+            let tongTien = chiTietHoaDons.reduce((total, item) => total + item.tongTien, 0);
 
             // Nếu có mã giảm giá
             let giamGia = 0;
