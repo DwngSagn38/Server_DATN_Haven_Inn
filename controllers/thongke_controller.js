@@ -155,7 +155,7 @@ const getBieuDoData = async () => {
                     month: { $month: "$ngayThanhToan" }, // Gom nhóm theo tháng
                     loaiPhong: "$loaiPhong.tenLoaiPhong", // Gom nhóm theo tên loại phòng
                 },
-                doanhThu: { $sum: "$chiTietHoaDon.giaPhong" }, // Tính tổng doanh thu
+                doanhThu: { $sum: "$chiTietHoaDon.tongTien" }, // Tính tổng doanh thu
                 soLuotDat: { $sum: 1 }, // Tính tổng lượt đặt
             },
         },

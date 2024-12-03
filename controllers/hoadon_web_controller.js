@@ -49,7 +49,17 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
                 // Tính tổng số phòng, khách và tiền
                 hoadon.tongPhong = chiTietHoaDons.length;
                 hoadon.tongKhach = chiTietHoaDons.reduce((total, item) => total + item.soLuongKhach, 0);
-                hoadon.tongTien = chiTietHoaDons.reduce((total, item) => total + item.giaPhong, 0);
+                hoadon.tongTien = chiTietHoaDons.reduce((total, item) => {
+                    // Tính số đêm đặt phòng
+                    const soDem = Math.ceil(
+                        (new Date(hoadon.ngayTraPhong) - new Date(hoadon.ngayNhanPhong)) /
+                        (1000 * 60 * 60 * 24)
+                    );
+
+                    // Tổng tiền từng chi tiết hóa đơn * số đêm
+                    return total + item.tongTien * soDem;
+                }, 0);
+
 
                 // Kiểm tra mã giảm giá
                 if (hoadon.id_Coupon) {
@@ -76,7 +86,7 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
                 return {
                     ...hoadon.toObject(),
                     createdAt: formatDate(hoadon.createdAt),
-                    ngayThanhToan : hoadon.ngayThanhToan ? formatDate(hoadon.ngayThanhToan) : '',
+                    ngayThanhToan: hoadon.ngayThanhToan ? formatDate(hoadon.ngayThanhToan) : '',
                     maHoaDon,
                     tongTien: formatCurrencyVND(hoadon.tongTien),
                 };
@@ -107,8 +117,27 @@ exports.getDetailAPI = async (req, res) => {
             .lean();
 
         if (!hoadon) {
-            return res.status(404).json({ error: true, message: 'Không tìm thấy hóa đơn.' });
+            return res.render({ error: true, message: 'Không tìm thấy hóa đơn.' });
         }
+
+        const ngayNhanPhong = new Date(hoadon.ngayNhanPhong);
+        const ngayTraPhong = new Date(hoadon.ngayTraPhong);
+
+        if (isNaN(ngayNhanPhong.getTime()) || isNaN(ngayTraPhong.getTime())) {
+            return res.status(400).json({
+                error: true,
+                message: "Ngày nhận hoặc ngày trả không hợp lệ.",
+            });
+        }
+
+        const soDem = Math.ceil((ngayTraPhong - ngayNhanPhong) / (1000 * 60 * 60 * 24));
+        if (soDem <= 0) {
+            return res.status(400).json({
+                error: true,
+                message: "Ngày trả phòng phải sau ngày nhận phòng.",
+            });
+        }
+
 
         const chiTietHoaDons = await ChiTietHoaDonModel.find({ id_HoaDon: hoadon._id })
             .populate({
@@ -121,7 +150,13 @@ exports.getDetailAPI = async (req, res) => {
         // Tính tổng số phòng, khách và tổng tiền từ chi tiết hóa đơn
         hoadon.tongPhong = chiTietHoaDons.length;
         hoadon.tongKhach = chiTietHoaDons.reduce((total, item) => total + item.soLuongKhach, 0);
-        hoadon.tongTien = chiTietHoaDons.reduce((total, item) => total + item.tongTien, 0);
+        hoadon.tongTien = chiTietHoaDons.reduce((total, item) => {
+            const soDem = Math.ceil(
+                (new Date(hoadon.ngayTraPhong) - new Date(hoadon.ngayNhanPhong)) /
+                (1000 * 60 * 60 * 24)
+            );
+            return total + item.tongTien * soDem;
+        }, 0);
 
         // Kiểm tra mã giảm giá
         if (hoadon.id_Coupon) {

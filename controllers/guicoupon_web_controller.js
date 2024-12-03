@@ -22,7 +22,7 @@ const sendVoucherPage = async (req, res) => {
             return res.status(404).send('Voucher không tồn tại');
         }
 
-        const users = await User.find({ trangThai: true }); // Lấy danh sách người dùng (chỉ những người đang hoạt động)
+        const users = await User.find({ trangThai: true, chucVu: 0 }); // Lấy danh sách người dùng (chỉ những người đang hoạt động)
 
         res.render('guivoucher/guivouchers', { voucher, users, message: 'Có lỗi xảy ra' });
     } catch (err) {

@@ -58,9 +58,6 @@ exports.login = async (req, res, next) => {
 
                 const CheckXacMinh = await CCCDModel.findOne({ id_NguoiDung : nguoidung._id});
 
-                if (CheckXacMinh) {
-                    nguoidung.xacMinh = true;
-                }
                 return res.json({
                     status: 200,
                     message: "Đăng nhập thành công",
@@ -209,6 +206,10 @@ exports.register = async (req, res) => {
         return res.status(404).json({ message: "Email đã đăng ký tài khoản!" });
     }
 
+    if(!isValidPassword(matKhau)){
+        return res.status(404).json({ message : "Mật khẩu phải it nhất 8 ký tự, bao gồm cả chữ và số"})
+    }
+
     try {
         // Lưu người dùng mới vào cơ sở dữ liệu
         const newUser = new NguoiDungModel({
@@ -217,7 +218,7 @@ exports.register = async (req, res) => {
             tenNguoiDung,
         });
 
-        const savedUser = await newUser.save();
+        await newUser.save();
 
         // Nội dung email chào mừng
         const mailOptions = {
@@ -387,6 +388,10 @@ exports.changesPass = async (req, res, next) => {
             return res
                 .status(403)
                 .json({ message: "Chưa nhập mật khẩu mới" });
+        }
+
+        if(!isValidPassword(matKhauMoi)){
+            return res.status(404).json({ message : "Mật khẩu phải it nhất 8 ký tự, bao gồm cả chữ và số"})
         }
 
         const result = await NguoiDungModel.findByIdAndUpdate(id, { matKhau: matKhauMoi }, { new: true });

@@ -99,7 +99,7 @@ exports.addCccd = async (req, res) => {
 
         const result = await cccd.save();
 
-        await NguoiDungModel.findByIdAndUpdate(id_NguoiDung, { xacMinh : true});
+        await NguoiDungModel.findByIdAndUpdate(id_NguoiDung, { xacMinh : true}, { new : true });
 
         res.json({ status: 200, message: "Thêm thành công", data: result });
 

@@ -36,17 +36,12 @@ exports.getListorByIdorIdPhong = async (req, res, next) => {
                 phong.ngayTraPhong = chiTiet.id_HoaDon.ngayTraPhong;
 
                 // Kiểm tra trạng thái phòng dựa trên ngày nhận/trả phòng
-                if (
-                    phong.ngayNhanPhong &&
-                    phong.ngayTraPhong &&
-                    new Date(phong.ngayNhanPhong) > currentDate &&
-                    new Date(phong.ngayTraPhong) > currentDate
-                ) {
+                if (new Date(phong.ngayNhanPhong) > currentDate) {
                     phong.trangThai = 2; // Khách đã đặt
-                } else if (phong.ngayTraPhong && new Date(phong.ngayTraPhong) < currentDate) {
-                    phong.trangThai = 0; // Còn trống
-                    phong.ngayNhanPhong = null;
-                    phong.ngayTraPhong = null;
+                } else if (new Date(phong.ngayNhanPhong) <= currentDate && new Date(phong.ngayTraPhong) >= currentDate) {
+                    phong.trangThai = 1; // Đang sử dụng
+                }else{
+                    phong.trangThai = 0
                 }
 
                 // Cập nhật trạng thái phòng trong database
@@ -78,7 +73,6 @@ exports.getListorByIdorIdPhong = async (req, res, next) => {
         });
     }
 };
-
 
 
 exports.addPhong = async (req, res, next) => {
