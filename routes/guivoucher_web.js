@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { listVouchers, sendVoucherPage, sendVoucherToUsers } = require('../controllers/guicoupon_web_controller');
 
+const authMiddleware = require('../middleware/authMiddleware');
+
+router.use(authMiddleware('html'));
 // Hiển thị danh sách voucher
 router.get('/', listVouchers);
 

@@ -174,3 +174,40 @@
   padding: 20px;
   margin-top: 20px;
 }
+
+/* Lưới cho danh sách phòng */
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Tạo các cột tự động, tối thiểu mỗi cột 150px */
+  gap: 10px; /* Khoảng cách giữa các ô phòng */
+}
+
+.room-grid .room-item {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-size: 14px;
+}
+
+.room-grid .room-item span {
+  font-weight: bold;
+}
+
+.room-item {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.used-room {
+  background-color: #f8d7da;  /* Màu đỏ nhạt */
+  color: #e80a20;  /* Màu chữ đỏ */
+}
+
+.available-room {
+  background-color: #d4edda;  /* Màu xanh nhạt */
+  color: #11812b;  /* Màu chữ xanh */
+}
