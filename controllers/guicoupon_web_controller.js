@@ -13,6 +13,7 @@ const listVouchers = async (req, res) => {
 };
 
 // Hiển thị trang gửi voucher cho người dùng
+
 const sendVoucherPage = async (req, res) => {
     try {
         const voucherId = req.params.id; // Lấy ID voucher từ URL
@@ -22,9 +23,17 @@ const sendVoucherPage = async (req, res) => {
             return res.status(404).send('Voucher không tồn tại');
         }
 
-        const users = await User.find({ trangThai: true, chucVu: 0 }); // Lấy danh sách người dùng (chỉ những người đang hoạt động)
+        // Lấy danh sách ID người dùng đã có voucher này
+        const userIdsWithVoucher = await NguoiDungCoupon.find({ id_Coupon: voucherId }).select('id_NguoiDung');
 
-        res.render('guivoucher/guivouchers', { voucher, users, message: 'Có lỗi xảy ra' });
+        // Lấy danh sách người dùng chưa nhận voucher
+        const users = await User.find({
+            _id: { $nin: userIdsWithVoucher.map(record => record.id_NguoiDung) },
+            trangThai: true, // Chỉ lấy người dùng đang hoạt động
+            chucVu: 0 // Chỉ lấy người dùng thường (không phải admin)
+        });
+
+        res.render('guivoucher/guivouchers', { voucher, users, message: null });
     } catch (err) {
         console.error(err);
         res.status(500).send('Lỗi khi lấy thông tin voucher và người dùng');
@@ -75,5 +84,36 @@ const sendVoucherToUsers = async (req, res) => {
     }
 };
 
+const searchUsersForVoucher = async (req, res) => {
+    try {
+        const voucherId = req.params.id;
+        const searchQuery = req.query.q || ''; // Lấy từ khóa tìm kiếm
 
-module.exports = { listVouchers, sendVoucherPage, sendVoucherToUsers };
+        const voucher = await Coupon.findById(voucherId);
+        if (!voucher) {
+            return res.status(404).send('Voucher không tồn tại');
+        }
+
+        // Lấy danh sách ID người dùng đã có voucher
+        const userIdsWithVoucher = await NguoiDungCoupon.find({ id_Coupon: voucherId }).select('id_NguoiDung');
+
+        // Tìm kiếm người dùng chưa có voucher và phù hợp với từ khóa
+        const users = await User.find({
+            _id: { $nin: userIdsWithVoucher.map(record => record.id_NguoiDung) },
+            trangThai: true,
+            chucVu: 0,
+            $or: [
+                { tenNguoiDung: { $regex: searchQuery, $options: 'i' } },
+                { email: { $regex: searchQuery, $options: 'i' } }
+            ]
+        });
+
+        res.render('guivoucher/guivouchers', { voucher, users, message: null });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Lỗi khi tìm kiếm người dùng');
+    }
+};
+
+
+module.exports = { listVouchers, sendVoucherPage, sendVoucherToUsers, searchUsersForVoucher };
