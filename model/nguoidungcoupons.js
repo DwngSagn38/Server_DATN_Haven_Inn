@@ -19,7 +19,5 @@ const NguoiDungCouponModel = new Schema({
     }
 });
 
-// Tạo mô hình NguoiDungCoupon
-const NguoiDungCoupon = mongoose.model('nguoidungcoupon', NguoiDungCouponModel);
 
-module.exports = NguoiDungCoupon;
+module.exports = mongoose.model('nguoidungcoupon', NguoiDungCouponModel);
