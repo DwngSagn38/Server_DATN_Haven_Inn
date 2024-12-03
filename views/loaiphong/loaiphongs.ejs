@@ -22,7 +22,7 @@
                             <th class="text-center" style="width: 120px">Kiểu giường</th>
                             <th class="text-center" style="width: 120px">Sức chứa</th>
                             <th class="text-center" style="width: 120px">Diện tích</th>
-                            <th class="text-center" style="width: 120px">Giá tiền</th>
+                            <th class="text-center" style="width: 120px">Giá tiền (VNĐ)</th>
                             <th class="text-center" style="width: 120px">Tổng phòng</th>
                             <th class="text-center" style="width: 120px">Hình ảnh</th>
                             <th class="text-center" style="width: 120px">Hành động</th>
@@ -44,8 +44,10 @@
                                     <%= loaiphong.dienTich %>
                                 </td>
                                 <td>
-                                    <%= loaiphong.giaTien %> VNĐ
+                                    <%= Number(loaiphong.giaTien).toLocaleString('vi-VN', { style: 'currency' ,
+                                        currency: 'VND' }) %>
                                 </td>
+
                                 <td>
                                     <%= loaiphong.totalPhong %>
                                 </td>
@@ -69,10 +71,14 @@
                                         data-soluongkhach="<%= loaiphong.soLuongKhach %>"
                                         data-dientich="<%= loaiphong.dienTich %>"
                                         data-giatien="<%= loaiphong.giaTien %>" data-mota="<%= loaiphong.moTa %>"
-                                        data-hinhanh='<%= JSON.stringify(loaiphong.hinhAnh) %>' data-bs-toggle="modal"
-                                        data-bs-target="#serviceModal">
+                                        data-hinhanh='<%= JSON.stringify(loaiphong.hinhAnh) %>'
+                                        data-tiennghi='<%= JSON.stringify(loaiphong.tienNghi) %>'
+                                        data-motatiennghi='<%= JSON.stringify(loaiphong.moTaTienNghi) %>'
+                                        data-bs-toggle="modal" data-bs-target="#serviceModal">
                                         <img src="/public/images/edit.png" alt="Sửa"
                                             style="width: 24px; height: 24px;"></a>
+
+
 
                                     <a class="btn-sm btn-delete-loaiphong" data-id="<%= loaiphong._id %>"
                                         data-ten="<%= loaiphong.tenLoaiPhong %>" data-bs-toggle="modal"
@@ -128,8 +134,15 @@
                         <!-- Kiểu giường -->
                         <div class="mb-3">
                             <label for="giuong" class="form-label">Kiểu giường</label>
-                            <input type="text" class="form-control" id="giuong" name="giuong" required>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="giuong" name="giuong" required>
+                                <button type="button" class="btn btn-outline-secondary"
+                                    onclick="setGiuong('Một giường')">Một giường</button>
+                                <button type="button" class="btn btn-outline-secondary"
+                                    onclick="setGiuong('Hai giường')">Hai giường</button>
+                            </div>
                         </div>
+
                         <!-- Sức chứa -->
                         <div class="mb-3">
                             <label for="soLuongKhach" class="form-label">Sức chứa</label>
@@ -142,7 +155,8 @@
                         </div>
                         <!-- Giá tiền -->
                         <div class="mb-3">
-                            <label for="giaTien" class="form-label">Giá tiền (VND)</label>
+                            <label for="giaTien" class="form-label">Giá tiền (VND) <p id="giaTienDisplay"
+                                    class="form-text">0 VNĐ</p></label>
                             <input type="number" class="form-control" id="giaTien" name="giaTien" required>
                         </div>
 
@@ -153,12 +167,11 @@
                                 <% tiennghis.forEach(tiennghi=> { %>
                                     <div class="form-check mb-2">
                                         <input class="form-check-input tiennghi-checkbox" type="checkbox"
-                                            value="<%= tiennghi._id %>" id="tiennghi-<%= tiennghi._id %>"
-                                            data-name="<%= tiennghi.tenTienNghi %>">
+                                            name="tienNghi[]" value="<%= tiennghi._id %>"
+                                            id="tiennghi-<%= tiennghi._id %>" data-name="<%= tiennghi.tenTienNghi %>">
                                         <label class="form-check-label" for="tiennghi-<%= tiennghi._id %>">
                                             <%= tiennghi.tenTienNghi %>
                                         </label>
-                                        <!-- Ô nhập mô tả, ẩn mặc định -->
                                         <input type="text" class="form-control mt-2 tiennghi-description"
                                             id="mota-<%= tiennghi._id %>" name="motaTienNghi[<%= tiennghi._id %>]"
                                             placeholder="Nhập mô tả cho <%= tiennghi.tenTienNghi %>"
@@ -219,6 +232,11 @@
                     <ul id="detailAmenities">
                         <!-- Tiện nghi sẽ được hiển thị ở đây -->
                     </ul>
+
+                    <h5>Danh sách phòng:</h5>
+                    <div id="detailRooms" class="room-grid mt-3">
+                        <!-- Danh sách phòng sẽ được hiển thị ở đây dưới dạng lưới -->
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -264,6 +282,34 @@
                         imgElement.style.height = '100px';
                         detailImages.appendChild(imgElement);
                     });
+
+                    // Reset và hiển thị danh sách phòng
+                    const detailRooms = document.getElementById('detailRooms');
+                    detailRooms.innerHTML = '';  // Xóa các phòng cũ trước khi thêm mới
+                    if (data.phongList && data.phongList.length > 0) {
+                        data.phongList.forEach(phong => {
+                            const roomItem = document.createElement('div');
+                            roomItem.classList.add('room-item');
+
+                            // Thêm màu nền dựa trên trạng thái phòng
+                            if (phong.trangThai !== 0) {
+                                roomItem.classList.add('used-room');  // Đang sử dụng (màu đỏ)
+                            } else {
+                                roomItem.classList.add('available-room');  // Còn trống (màu xanh)
+                            }
+
+                            roomItem.innerHTML = `
+                        <p><span>Phòng ${phong.soPhong}</span></p>
+                        <p>${phong.VIP ? 'VIP' : 'Thường'}</p>
+                        <p>Trạng thái: ${phong.trangThai === 0 ? 'Còn trống' : 'Đang sử dụng'}</p>
+                    `;
+                            detailRooms.appendChild(roomItem);
+                        });
+                    } else {
+                        detailRooms.innerHTML = '<div class="room-item">Không có phòng nào</div>';
+                    }
+
+
 
                     // Hiển thị tiện nghi
                     const amenitiesList = document.getElementById('detailAmenities');

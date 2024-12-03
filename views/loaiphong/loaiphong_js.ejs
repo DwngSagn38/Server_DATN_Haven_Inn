@@ -52,73 +52,96 @@
         document.querySelectorAll(".btn-edit-loaiphong").forEach((button) => {
             button.addEventListener("click", function () {
                 const form = document.getElementById("serviceForm");
-                form.action = `/web/loaiphongs/put/${this.dataset.id}?_method=PUT`; // Đường dẫn sửa
+                form.action = `/web/loaiphongs/put/${this.dataset.id}?_method=PUT`;
                 document.getElementById("serviceModalLabel").innerText = "Chỉnh sửa loại phòng";
 
-                // Đặt giá trị vào form
+                // Điền dữ liệu vào các trường
                 document.getElementById("tenLoaiPhong").value = this.dataset.ten;
                 document.getElementById("giuong").value = this.dataset.giuong;
                 document.getElementById("soLuongKhach").value = this.dataset.soluongkhach;
                 document.getElementById("dienTich").value = this.dataset.dientich;
-                document.getElementById("giaTien").value = this.dataset.giatien;
                 document.getElementById("moTa").value = this.dataset.mota;
 
-                if (this.dataset.hinhanh) {
-                    try {
-                        const images = JSON.parse(this.dataset.hinhanh); // Chuyển chuỗi JSON thành mảng
-                        const previewContainer = document.getElementById("currentImagePreview"); // Đúng ID
-                        previewContainer.innerHTML = ""; // Xóa nội dung cũ
-                        images.forEach((image) => {
-                            const imgElement = document.createElement("img");
-                            imgElement.src = image;
-                            imgElement.alt = "Hình ảnh hiện tại";
-                            imgElement.style.width = "100px";
-                            imgElement.style.marginRight = "10px";
-                            previewContainer.appendChild(imgElement);
-                        });
-                        document.getElementById("currentImagePreviewContainer").style.display = "block"; // Hiển thị container chứa ảnh
-                    } catch (error) {
-                        console.error("Lỗi khi parse JSON:", error);
-                    }
-                } else {
-                    document.getElementById("currentImagePreviewContainer").style.display = "none"; // Ẩn nếu không có ảnh
-                }
+                // Đọc giá trị từ data-giatien
+                const giaTienRaw = this.dataset.giatien;
 
+                // Chuyển đổi sang định dạng VNĐ
+                const giaTienFormatted = formatCurrencyVND(giaTienRaw);
+
+                // Hiển thị giá tiền trên giao diện
+                document.getElementById("giaTienDisplay").innerText = giaTienFormatted;
+
+                // Điền giá trị gốc vào ô input nếu cần
+                document.getElementById("giaTien").value = giaTienRaw;
+
+                // Hiển thị hình ảnh hiện tại
+                const images = JSON.parse(this.dataset.hinhanh || "[]");
+                const previewContainer = document.getElementById("currentImagePreview");
+                previewContainer.innerHTML = "";
+                images.forEach((image) => {
+                    const imgElement = document.createElement("img");
+                    imgElement.src = image;
+                    imgElement.alt = "Hình ảnh hiện tại";
+                    imgElement.style.width = "100px";
+                    imgElement.style.marginRight = "10px";
+                    previewContainer.appendChild(imgElement);
+                });
+                document.getElementById("currentImagePreviewContainer").style.display = images.length > 0 ? "block" : "none";
+
+                // Hiển thị tiện nghi và mô tả tiện nghi
                 const selectedTienNghi = JSON.parse(this.dataset.tiennghi || "[]");
-                const moTaTienNghi = JSON.parse(this.dataset.motaTienNghi || "{}");
+                const moTaTienNghi = JSON.parse(this.dataset.motatiennghi || "{}");
+
+                console.log('selectedTienNghi', selectedTienNghi)
+                console.log('moTaTienNghi', moTaTienNghi)
 
                 document.querySelectorAll(".tiennghi-checkbox").forEach((checkbox) => {
                     const descriptionField = document.getElementById(`mota-${checkbox.value}`);
                     if (selectedTienNghi.includes(checkbox.value)) {
                         checkbox.checked = true;
                         descriptionField.style.display = "block";
-                        descriptionField.value = moTaTienNghi[checkbox.value] || ""; // Điền mô tả
+                        descriptionField.value = moTaTienNghi[checkbox.value] || "";
                     } else {
                         checkbox.checked = false;
                         descriptionField.style.display = "none";
                         descriptionField.value = "";
                     }
                 });
+            });
+        });
+        // Reset modal khi đóng
+        document.getElementById("serviceModal").addEventListener("hidden.bs.modal", () => {
+            const form = document.getElementById("serviceForm");
+            form.reset();
+            document.getElementById("currentImagePreview").innerHTML = "";
+            document.getElementById("currentImagePreviewContainer").style.display = "none";
 
+            document.querySelectorAll(".tiennghi-checkbox").forEach((checkbox) => {
+                const descriptionField = document.getElementById(`mota-${checkbox.value}`);
+                checkbox.checked = false;
+                descriptionField.style.display = "none";
+                descriptionField.value = "";
             });
         });
 
-        document.getElementById('serviceModal').addEventListener('hidden.bs.modal', () => {
-            const form = document.getElementById("serviceForm");
-            const previewContainer = document.getElementById("currentImagePreview");
-
-            // Reset form và ẩn container ảnh
-            form.reset();
-            previewContainer.innerHTML = ""; // Xóa nội dung ảnh cũ
-            document.getElementById("currentImagePreviewContainer").style.display = "none";
-        });
-
-        const selectedTienNghi = JSON.parse(this.dataset.tiennghi || "[]"); // Tiện nghi của phòng hiện tại
-        document.querySelectorAll("#tienNghiCheckboxes .form-check-input").forEach((checkbox) => {
-            checkbox.checked = selectedTienNghi.includes(checkbox.value); // Đánh dấu checkbox
-        });
-
-
-
     });
+
+    // Lắng nghe sự kiện khi người dùng nhập giá tiền
+    document.getElementById("giaTien").addEventListener("input", function () {
+        const giaTienRaw = this.value;
+        const giaTienFormatted = formatCurrencyVND(giaTienRaw);
+        document.getElementById("giaTienDisplay").innerText = giaTienFormatted;
+    });
+
+    function setGiuong(value) {
+        document.getElementById('giuong').value = value;
+    }
+
+    function formatCurrencyVND(amount) {
+        if (!amount) return "0 VNĐ";
+        return Number(amount).toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+        });
+    }
 </script>
