@@ -90,43 +90,69 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
 
 exports.addHoaDon = async (req, res, next) => {
     try {
+        // Lấy các thông tin cần thiết từ body
+        const { chiTiet, ...hoaDonData } = req.body;
+
+        console.log("Chi tiết hóa đơn : ",req.body)
+        // Kiểm tra chi tiết hóa đơn
+        if (!chiTiet || !Array.isArray(chiTiet) || chiTiet.length === 0) {
+            return res.status(400).json({
+                message: "Dữ liệu chi tiết hóa đơn không hợp lệ.",
+            });
+        }
+
+        // Tính tổng tiền dựa trên chi tiết hóa đơn
+        let tongTien = 0;
+        const ngayNhanPhong = new Date(hoaDonData.ngayNhanPhong);
+        const ngayTraPhong = new Date(hoaDonData.ngayTraPhong);
+
+        const soDem = Math.max(1, (ngayTraPhong - ngayNhanPhong) / (1000 * 60 * 60 * 24)); // Ít nhất là 1 đêm
+
+        // Tính tổng tiền từ chi tiết hóa đơn
+        const chiTietHoaDon = chiTiet.map(item => {
+            const tienPhong = item.giaPhong * soDem;
+            tongTien += tienPhong; // Cộng dồn vào tổng tiền
+            return {
+                id_Phong: item.idPhong,
+                id_HoaDon: null, // Sẽ gán sau khi hóa đơn được tạo
+                soLuongKhach: item.soLuongKhach,
+                giaPhong: item.giaPhong,
+                buaSang: item.buaSang,
+                tongTien: tienPhong // Lưu tổng tiền của từng phòng
+            };
+        });
+
+        // Tạo hóa đơn với tổng tiền
         const hoadon = new HoadonModel({
-            ...req.body
-        })
+            ...hoaDonData,
+            tongTien // Lưu tổng tiền vào hóa đơn
+        });
 
         const result = await hoadon.save();
 
-        // Lưu chi tiết hóa đơn với mã hóa đơn
-        // const chiTietHoaDon = req.body.chiTiet.map(item => ({
-        //     id_Phong: item.idPhong,
-        //     id_HoaDon: hoadon._id, // Liên kết qua mã hóa đơn
-        //     soLuongKhach: item.soLuongKhach,
-        //     giaPhong: item.giaPhong,
-        //     buaSang: item.buaSang,
-        //     tongTien: item.tongTien
-        // }));
-
-        // await ChiTietHoaDonModel.insertMany(chiTietHoaDon);
+        // Gắn ID của hóa đơn vào chi tiết hóa đơn và lưu chi tiết
+        chiTietHoaDon.forEach(item => (item.id_HoaDon = hoadon._id));
+        await ChiTietHoaDonModel.insertMany(chiTietHoaDon);
 
         if (result) {
             res.json({
                 status: 200,
-                message:  "Tạo hóa đơn thành công",
+                message: "Tạo hóa đơn thành công",
                 data: hoadon._id
-            })
+            });
         } else {
             res.json({
                 status: 400,
-                message: "Add fail",
+                message: "Thêm hóa đơn thất bại",
                 data: []
-            })
+            });
         }
-
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Error fetching data", error: error.message });
+        res.status(500).json({ message: "Lỗi khi tạo hóa đơn", error: error.message });
     }
-}
+};
+
 
 exports.suaHoaDon = async (req, res, next) => {
     try {
