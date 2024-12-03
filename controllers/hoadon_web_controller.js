@@ -57,27 +57,6 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
                 // Tính tổng số phòng, khách và tiền
                 hoadon.tongPhong = chiTietHoaDons.length;
                 hoadon.tongKhach = chiTietHoaDons.reduce((total, item) => total + item.soLuongKhach, 0);
-                hoadon.tongTien = chiTietHoaDons.reduce((total, item) => total + item.tongTien, 0);
-
-
-                // Kiểm tra mã giảm giá
-                if (hoadon.id_Coupon) {
-                    const coupon = await CouponModel.findById(hoadon.id_Coupon).lean();
-
-                    // Tính giảm giá
-                    let soTienGiam = hoadon.tongTien * coupon.giamGia;
-                    if (coupon.giamGiaToiDa) {
-                        soTienGiam = Math.min(soTienGiam, coupon.giamGiaToiDa);
-                    }
-
-                    // Áp dụng giảm giá vào tổng tiền
-                    hoadon.tongTien -= soTienGiam;
-
-                    // Cập nhật trạng thái mã giảm giá (nếu cần)
-                    await CouponModel.findByIdAndUpdate(hoadon.id_Coupon, { trangThai: 1 }); // 1: đã sử dụng
-                } else {
-                    hoadon.giamGia = 0; // Không có mã giảm giá
-                }
 
                 // Thêm mã hóa đơn từ 8 ký tự cuối của _id
                 const maHoaDon = hoadon._id.toString().slice(-8);
@@ -114,6 +93,7 @@ exports.getDetailAPI = async (req, res) => {
         // Tìm hóa đơn và chi tiết
         const hoadon = await HoadonModel.findById(id)
             .populate('id_NguoiDung', 'tenNguoiDung email')
+            .populate('id_Coupon', 'maGiamGia')
             .lean();
 
         if (!hoadon) {
@@ -147,53 +127,6 @@ exports.getDetailAPI = async (req, res) => {
             })
             .lean();
 
-        // Tính tổng số phòng, khách và tổng tiền từ chi tiết hóa đơn
-        hoadon.tongPhong = chiTietHoaDons.length;
-        hoadon.tongKhach = chiTietHoaDons.reduce((total, item) => total + item.soLuongKhach, 0);
-        hoadon.tongTien = chiTietHoaDons.reduce((total, item) => total + item.tongTien, 0);
-
-        // Kiểm tra mã giảm giá
-        if (hoadon.id_Coupon) {
-            const coupon = await CouponModel.findById(hoadon.id_Coupon).lean();
-
-            // if (!coupon) {
-            //     return res.status(404).json({ error: true, message: 'Không tìm thấy mã giảm giá.' });
-            // }
-
-            // const now = new Date();
-            // const ngayBatDau = new Date(coupon.ngayBatDau);
-            // const ngayHetHan = new Date(coupon.ngayHetHan);
-
-            // // Kiểm tra trạng thái mã giảm giá
-            // if (coupon.trangThai !== 0) { // 0: chưa sử dụng
-            //     return res.status(400).json({ error: true, message: 'Mã giảm giá đã được sử dụng hoặc không hợp lệ.' });
-            // }
-
-            // // Kiểm tra thời gian hợp lệ
-            // if (now < ngayBatDau || now > ngayHetHan) {
-            //     return res.status(400).json({ error: true, message: 'Mã giảm giá đã hết hạn hoặc chưa có hiệu lực.' });
-            // }
-
-            // // Kiểm tra điều kiện tối thiểu
-            // if (hoadon.tongTien < coupon.dieuKienToiThieu) {
-            //     return res.status(400).json({ error: true, message: `Hóa đơn chưa đạt điều kiện tối thiểu (${coupon.dieuKienToiThieu.toLocaleString()} VNĐ).` });
-            // }
-
-            // Tính giảm giá
-            let soTienGiam = hoadon.tongTien * coupon.giamGia;
-            if (coupon.giamGiaToiDa) {
-                soTienGiam = Math.min(soTienGiam, coupon.giamGiaToiDa);
-            }
-
-            // Áp dụng giảm giá vào tổng tiền
-            hoadon.tongTien -= soTienGiam;
-            hoadon.giamGia = soTienGiam;
-
-            // Cập nhật trạng thái mã giảm giá (nếu cần)
-            // await CouponModel.findByIdAndUpdate(hoadon.id_Coupon, { trangThai: 1 }); // 1: đã sử dụng
-        } else {
-            hoadon.giamGia = 0; // Không có mã giảm giá
-        }
 
         const ngayThanhToan = hoadon.trangThai === 1 ? formatDate(hoadon.ngayThanhToan) : ''
         console.log('ngay thanh toán : ', ngayThanhToan)
@@ -201,6 +134,12 @@ exports.getDetailAPI = async (req, res) => {
         hoadon.ngayTraPhong = formatDate(hoadon.ngayTraPhong);
         hoadon.createdAt = formatDate(hoadon.createdAt);
         hoadon.ngayThanhToan = ngayThanhToan;
+
+        
+
+        console.log('====================================');
+        console.log(hoadon.giamGia);
+        console.log('====================================');
 
         // Định dạng dữ liệu trả về
         hoadon.chiTiet = chiTietHoaDons.map((ct) => ({

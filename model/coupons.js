@@ -8,7 +8,7 @@ const CouponModel = new Schema({
     dieuKienToiThieu : { type : Number},
     ngayBatDau : { type : String},
     ngayHetHan : { type : String},
-    trangThai : { type : Number}, // chua su dung, da su dung, het han
+    trangThai : { type : Number}, // còn hạn, hết hạn
 },{
     timestamps : true
 })

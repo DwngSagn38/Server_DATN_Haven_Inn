@@ -24,30 +24,25 @@
     <header class="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow" data-bs-theme="dark">
         <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="#">Khách sạn Haven Inn</a>
 
-        <ul class="navbar-nav flex-row d-md-none">
-            <li class="nav-item text-nowrap">
-                <button class="nav-link px-3 text-white" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSearch" aria-controls="navbarSearch" aria-expanded="false"
-                    aria-label="Toggle search">
-                    <svg class="bi">
-                        <use xlink:href="#search" />
-                    </svg>
-                </button>
+
+        <!-- Phần các nút Thông báo, Cài đặt, Đăng xuất -->
+        <ul class="nav flex-row align-items-center me-3">
+            <li class="nav-item me-2">
+                <a class="nav-link text-white" href="#">
+                    <img src="../../public/images/thongbao.png" alt="Thông báo" width="24" height="24" />
+                </a>
             </li>
-            <li class="nav-item text-nowrap">
-                <button class="nav-link px-3 text-white" type="button" data-bs-toggle="offcanvas"
-                    data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false"
-                    aria-label="Toggle navigation">
-                    <svg class="bi">
-                        <use xlink:href="#list" />
-                    </svg>
-                </button>
+            <li class="nav-item me-2">
+                <a class="nav-link text-white" href="#">
+                    <img src="../../public/images/setting.png" alt="Cài đặt" width="24" height="24" />
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="#" data-bs-toggle="modal" data-bs-target="#confirmLogOutModal">
+                    <img src="../../public/images/logout.png" alt="Đăng xuất" width="24" height="24" />
+                </a>
             </li>
         </ul>
-
-        <div id="navbarSearch" class="navbar-search w-100 collapse">
-            <input class="form-control w-100 rounded-0 border-0" type="text" placeholder="Search" aria-label="Search">
-        </div>
     </header>
 
     <div class="container-fluid">
@@ -78,16 +73,14 @@
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="userDropdown">
                                     <li>
-                                        <a class="dropdown-item d-flex align-items-center gap-2"
-                                            href="/web/nguoidungs">
+                                        <a class="dropdown-item d-flex align-items-center gap-2" href="/web/nguoidungs">
                                             <img src="../../public/images/customer.png" alt="Quản lý khách hàng"
                                                 width="24" height="24" />
                                             Quản lý khách hàng
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item d-flex align-items-center gap-2"
-                                            href="/web/nguoidungs">
+                                        <a class="dropdown-item d-flex align-items-center gap-2" href="/web/nguoidungs">
                                             <img src="../../public/images/staff.png" alt="Quản lý nhân viên" width="24"
                                                 height="24" />
                                             Quản lý nhân viên
@@ -97,56 +90,49 @@
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2"
-                                    href="/web/loaiphongs">
+                                <a class="nav-link d-flex align-items-center gap-2" href="/web/loaiphongs">
                                     <img src="../../public/images/roomtype.png" alt="Quản lý loại phòng" width="24"
                                         height="24" />
                                     Quản lý loại phòng
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2"
-                                    href="/web/phongs">
+                                <a class="nav-link d-flex align-items-center gap-2" href="/web/phongs">
                                     <img src="../../public/images/room.png" alt="Quản lý phòng" width="24"
                                         height="24" />
                                     Quản lý phòng
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2"
-                                    href="/web/hoadons">
+                                <a class="nav-link d-flex align-items-center gap-2" href="/web/hoadons">
                                     <img src="../../public/images/hoadon.png" alt="Quản lý hóa đơn" width="24"
                                         height="24" />
                                     Quản lý hóa đơn
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2"
-                                    href="/web/tiennghis">
+                                <a class="nav-link d-flex align-items-center gap-2" href="/web/tiennghis">
                                     <img src="../../public/images/tiennghi.png" alt="Quản lý tiện nghi" width="24"
                                         height="24" />
                                     Quản lý tiện nghi
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2"
-                                    href="/web/dichvus">
+                                <a class="nav-link d-flex align-items-center gap-2" href="/web/dichvus">
                                     <img src="../../public/images/dichvu.png" alt="Quản lý dịch vụ" width="24"
                                         height="24" />
                                     Quản lý dịch vụ
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2"
-                                    href="/web/amthucs">
+                                <a class="nav-link d-flex align-items-center gap-2" href="/web/amthucs">
                                     <img src="../../public/images/amthuc.png" alt="Quản lý ẩm thực" width="24"
                                         height="24" />
                                     Quản lý ẩm thực
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2"
-                                    href="/web/hotros">
+                                <a class="nav-link d-flex align-items-center gap-2" href="/web/hotros">
                                     <img src="../../public/images/hotro.png" alt="Quản lý hỗ trợ" width="24"
                                         height="24" />
                                     Quản lý hỗ trợ
@@ -161,8 +147,7 @@
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="userDropdown">
                                     <li>
-                                        <a class="dropdown-item d-flex align-items-center gap-2"
-                                            href="/web/coupons">
+                                        <a class="dropdown-item d-flex align-items-center gap-2" href="/web/coupons">
                                             <img src="../../public/images/coupon.png" alt="Quản lý coupon" width="24"
                                                 height="24" />
                                             Danh sách coupon
@@ -179,39 +164,13 @@
                                 </ul>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2"
-                                    href="/web/danhgias">
+                                <a class="nav-link d-flex align-items-center gap-2" href="/web/danhgias">
                                     <img src="../../public/images/danhgia.png" alt="Quản lý đánh giá" width="24"
                                         height="24" />
                                     Quản lý đánh giá
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2" href="#">
-                                    <img src="../../public/images/thongbao.png" alt="Quản lý thông báo" width="24"
-                                        height="24" />
-                                    Quản lý thông báo
-                                </a>
-                            </li>
-                        </ul>
-
-                        <hr class="my-3 mt-5">
-
-                        <ul class="nav flex-column mb-auto">
-                            <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2" href="#">
-                                    <img src="../../public/images/setting.png" alt="Settings" width="24" height="24" />
-                                    Settings
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2" href="#" data-bs-toggle="modal"
-                                    data-bs-target="#confirmLogOutModal">
-                                    <img src="../../public/images/logout.png" alt="Sign out" width="24" height="24" />
-                                    Sign out
-                                </a>
-                            </li>
+                            
                         </ul>
                     </div>
                 </div>
