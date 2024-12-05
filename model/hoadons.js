@@ -13,7 +13,7 @@ const HoaDonModel = new Schema({
     phuongThucThanhToan : { type : String, },
     trangThai : { type : Number, required : true, default : 3}, // chua thanh toan, da thanh toan, bi huy
     ghiChu : { type : String, },
-    maHoaDon : { type : String }
+    giamGia : { type : Number }
 },{
     timestamps : true
 })

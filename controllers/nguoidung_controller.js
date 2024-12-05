@@ -3,6 +3,10 @@ const HoadonModel = require('../model/hoadons');
 const { uploadToCloudinary, deleteFromCloudinary } = require("../config/common/uploads");
 const fs = require('fs');
 
+const ChiTietHoaDonModel = require('../model/chitiethoadons');
+const NguoiDungCouponModel = require('../model/nguoidungcoupons');
+const { formatDate } = require('./utils');
+
 exports.getListorByID = async (req, res, next) => {
     try {
         const { id } = req.query;
@@ -66,7 +70,7 @@ exports.addNguoiDung = async (req, res, next) => {
 
     } catch (error) {
         console.error('Error adding user:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi xử lý đăng ký người dùng', error });
+        res.status(500).json({ message: 'Lỗi khi xử lý đăng ký người dùng', error });
     }
 };
 
@@ -78,13 +82,13 @@ exports.suaNguoiDung = async (req, res, next) => {
         const { id } = req.params;
         const file = req.file;
 
-        const nguoidung = await nguoiDungModel.findOne({ _id : id});
+        const nguoidung = await nguoiDungModel.findOne({ _id: id });
 
         if (nguoidung == null) {
-            return res.status(303).send({message : 'Người dùng không tồn tại'});
+            return res.status(303).send({ message: 'Người dùng không tồn tại' });
         }
 
-        let imageUrl = nguoidung.hinhAnh ;
+        let imageUrl = nguoidung.hinhAnh;
         let imageId = nguoidung.hinhAnhID; // Lưu public_id của ảnh chính
 
         if (imageId) {
@@ -96,17 +100,17 @@ exports.suaNguoiDung = async (req, res, next) => {
             imageId = result.public_id;
             await fs.promises.unlink(file.path); // Xóa file tạm sau khi upload
         }
-        
+
         const result = await nguoiDungModel.findByIdAndUpdate(id, {
             ...req.body,
-            hinhAnh : data.hinhAnh || imageUrl,
-            hinhAnhID : data.hinhAnhID || imageId
-        }, { new : true })
+            hinhAnh: data.hinhAnh || imageUrl,
+            hinhAnhID: data.hinhAnhID || imageId
+        }, { new: true })
         res.json({ status: 200, message: "Cập nhật thông tin thành công", data: result });
 
     } catch (error) {
         console.error('Error adding user:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi xử lý sửa thông tin người dùng', error });
+        res.status(500).json({ message: 'Lỗi khi xử lý sửa thông tin người dùng', error });
     }
 };
 
@@ -115,10 +119,10 @@ exports.xoaNguoiDung = async (req, res, next) => {
     try {
         const { id } = req.params;
 
-        const nguoidung = await nguoiDungModel.findOne({ _id : id});
+        const nguoidung = await nguoiDungModel.findOne({ _id: id });
 
         if (nguoidung == null) {
-            return res.status(303).send({message : 'Người dùng không tồn tại'});
+            return res.status(303).send({ message: 'Người dùng không tồn tại' });
         }
 
         let imageId = nguoidung.hinhAnhID; // Lưu public_id của ảnh chính
@@ -126,17 +130,16 @@ exports.xoaNguoiDung = async (req, res, next) => {
         if (imageId) {
             await deleteFromCloudinary(imageId)
         }
-        
-        const result = await nguoiDungModel.findByIdAndDelete({_id : id})
+
+        const result = await nguoiDungModel.findByIdAndDelete({ _id: id })
         res.json({ status: 200, message: "Xóa người dùng thành công", data: result });
 
     } catch (error) {
         console.error('Error adding user:', error);
-        res.status(500).json({ success: false, message: 'Lỗi khi xử lý xóa người dùng', error });
+        res.status(500).json({ message: 'Lỗi khi xử lý xóa người dùng', error });
     }
 };
 
-const ChiTietHoaDonModel = require('../model/chitiethoadons');
 
 exports.PhongbyIdNguoidung = async (req, res, next) => {
     try {
@@ -190,7 +193,7 @@ exports.PhongbyIdNguoidung = async (req, res, next) => {
                         tenLoaiPhong: loaiPhong.tenLoaiPhong,
                         moTa: loaiPhong.moTa,
                         giaTien: loaiPhong.giaTien,
-                        hinhAnh : loaiPhong.hinhAnh
+                        hinhAnh: loaiPhong.hinhAnh
                     } : null,
                     VIP: phong.VIP,
                 },
@@ -203,13 +206,49 @@ exports.PhongbyIdNguoidung = async (req, res, next) => {
         });
 
         res.status(200).json({
-            data : danhSachPhong,
+            data: danhSachPhong,
         });
 
     } catch (error) {
         console.error('Error fetching rooms by user ID:', error);
-        res.status(500).json({ success: false, message: 'Lỗi server', error });
+        res.status(500).json({ message: 'Lỗi server', error });
     }
 };
+
+exports.getMyCoupon = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        if (id === null || id === undefined) {
+            return res.status(404).json({ message: 'Vui lòng cung cấp id người dùng.' });
+        }
+
+        const mycoupon = await NguoiDungCouponModel.find({ id_NguoiDung: id, trangThai: true })
+            .populate('id_Coupon', 'maGiamGia giamGia giamGiaToiDa dieuKienToiThieu ngayHetHan');
+
+        if (!mycoupon) {
+            return res.status(404).json({ message: 'Không tìm thấy mã giảm giá nào cho bạn.' });
+        }
+
+        const coupons = mycoupon.map(cp => {
+            const coupon = cp.id_Coupon; // Lấy dữ liệu từ trường populate
+            if (!coupon) return null; // Trường hợp coupon bị null
+
+            return {
+                maGiamGia: coupon.maGiamGia,
+                giamGia: coupon.giamGia,
+                giamGiaToiDa: coupon.giamGiaToiDa,
+                dieuKienToiThieu: coupon.dieuKienToiThieu,
+                ngayHetHan: formatDate(coupon.ngayHetHan),
+                id_Coupon: coupon._id // Để theo dõi mã giảm giá của người dùng
+            };
+        }).filter(Boolean); // Loại bỏ các giá trị null (nếu có)
+
+        // Trả về danh sách mã giảm giá
+        return res.json(coupons);
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi server', error });
+    }
+}
 
 

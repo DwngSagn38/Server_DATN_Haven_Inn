@@ -1,6 +1,7 @@
 const HoadonModel = require('../model/hoadons');
 const ChiTietHoaDonModel = require('../model/chitiethoadons')
 const CouponModel = require('../model/coupons');
+const NguoiDungCouponModel = require('../model/nguoidungcoupons');
 const { formatDate } = require('./utils');
 
 exports.getListorByIdUserorStatus = async (req, res, next) => {
@@ -49,28 +50,8 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
                 // Tổng số khách là tổng soLuongKhach trong chi tiết hóa đơn
                 hoadon.tongKhach = chiTietHoaDons.reduce((total, item) => total + item.soLuongKhach, 0);
 
-                hoadon.tongTien = chiTietHoaDons.reduce((total, item) => total + item.giaPhong, 0);
                 hoadon.ngayThanhToan = hoadon.trangThai === 1 ? formatDate(hoadon.updatedAt) : ''
 
-                // Kiểm tra mã giảm giá
-                if (hoadon.id_Coupon) {
-                    const coupon = await CouponModel.findById(hoadon.id_Coupon).lean();
-
-                    // Tính giảm giá
-                    let soTienGiam = hoadon.tongTien * coupon.giamGia;
-                    if (coupon.giamGiaToiDa) {
-                        soTienGiam = Math.min(soTienGiam, coupon.giamGiaToiDa);
-                    }
-
-                    // Áp dụng giảm giá vào tổng tiền
-                    hoadon.tongTien -= soTienGiam;
-
-
-                    // Cập nhật trạng thái mã giảm giá (nếu cần)
-                    await CouponModel.findByIdAndUpdate(hoadon.id_Coupon, { trangThai: 1 }); // 1: đã sử dụng
-                } else {
-                    hoadon.giamGia = 0; // Không có mã giảm giá
-                }
                 // Cập nhật vào hóa đơn
                 results.push({
                     ...hoadon.toObject(),
@@ -90,43 +71,100 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
 
 exports.addHoaDon = async (req, res, next) => {
     try {
+        // Lấy các thông tin cần thiết từ body
+        const { chiTiet, ...hoaDonData } = req.body;
+
+        if (!chiTiet || !Array.isArray(chiTiet) || chiTiet.length === 0) {
+            return res.status(400).json({
+                message: "Dữ liệu chi tiết hóa đơn không hợp lệ.",
+            });
+        }
+
+        // Tính tổng tiền dựa trên chi tiết hóa đơn
+        let tongTien = 0;
+        const ngayNhanPhong = new Date(hoaDonData.ngayNhanPhong);
+        const ngayTraPhong = new Date(hoaDonData.ngayTraPhong);
+
+        const soDem = Math.max(1, (ngayTraPhong - ngayNhanPhong) / (1000 * 60 * 60 * 24));
+
+        // Tính tổng tiền từ chi tiết hóa đơn
+        const chiTietHoaDon = chiTiet.map(item => {
+            const tienPhong = item.giaPhong * soDem;
+            tongTien += tienPhong;
+            return {
+                id_Phong: item.idPhong,
+                id_HoaDon: null,
+                soLuongKhach: item.soLuongKhach,
+                giaPhong: item.giaPhong,
+                buaSang: item.buaSang,
+                tongTien: tienPhong,
+            };
+        });
+
+        // Kiểm tra mã giảm giá
+        let soTienGiam = 0; // Biến lưu số tiền được giảm
+        if (hoaDonData.id_Coupon) {
+            const couponData = await NguoiDungCouponModel.findOne({
+                id_Coupon: hoaDonData.id_Coupon,
+                id_NguoiDung: hoaDonData.id_NguoiDung,
+                trangThai: true,
+            })
+                .populate('id_Coupon', 'giamGia giamGiaToiDa dieuKienToiThieu')
+                .lean();
+
+            if (couponData && couponData.id_Coupon) {
+                const coupon = couponData.id_Coupon;
+                if (tongTien >= coupon.dieuKienToiThieu) {
+                    soTienGiam = tongTien * coupon.giamGia;
+                    if (coupon.giamGiaToiDa) {
+                        soTienGiam = Math.min(soTienGiam, coupon.giamGiaToiDa);
+                    }
+                    tongTien -= soTienGiam;
+
+                    // Cập nhật trạng thái mã giảm giá
+                    await NguoiDungCouponModel.updateOne(
+                        { _id: couponData._id },
+                        { trangThai: false }
+                    );
+                }
+            }
+        }
+
+        // Tạo hóa đơn
         const hoadon = new HoadonModel({
-            ...req.body
-        })
+            ...hoaDonData,
+            tongTien,
+            giamGia : soTienGiam, // Lưu thông tin giảm giá (nếu có)
+        });
 
         const result = await hoadon.save();
 
-        // Lưu chi tiết hóa đơn với mã hóa đơn
-        // const chiTietHoaDon = req.body.chiTiet.map(item => ({
-        //     id_Phong: item.idPhong,
-        //     id_HoaDon: hoadon._id, // Liên kết qua mã hóa đơn
-        //     soLuongKhach: item.soLuongKhach,
-        //     giaPhong: item.giaPhong,
-        //     buaSang: item.buaSang,
-        //     tongTien: item.tongTien
-        // }));
-
-        // await ChiTietHoaDonModel.insertMany(chiTietHoaDon);
+        // Gắn ID hóa đơn vào chi tiết hóa đơn và lưu chi tiết
+        chiTietHoaDon.forEach(item => (item.id_HoaDon = hoadon._id));
+        await ChiTietHoaDonModel.insertMany(chiTietHoaDon);
 
         if (result) {
             res.json({
                 status: 200,
-                message:  "Tạo hóa đơn thành công",
-                data: hoadon._id
-            })
+                message: "Tạo hóa đơn thành công.",
+                data: {
+                    hoaDonId: hoadon._id,
+                    tongTien,
+                    giamGia : hoadon.giamGia,
+                },
+            });
         } else {
             res.json({
                 status: 400,
-                message: "Add fail",
-                data: []
-            })
+                message: "Thêm hóa đơn thất bại.",
+            });
         }
-
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Error fetching data", error: error.message });
+        res.status(500).json({ message: "Lỗi khi tạo hóa đơn.", error: error.message });
     }
-}
+};
+
 
 exports.suaHoaDon = async (req, res, next) => {
     try {

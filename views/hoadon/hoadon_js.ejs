@@ -58,6 +58,7 @@
                     <td>${ct.giaPhong.toLocaleString()} VNĐ</td>
                     <td>${ct.VIP ? '300.000 VNĐ' : 'Không'}</td>
                     <td>${ct.buaSang ? '150.000 VNĐ' : 'Không'}</td>
+                    <td>${ct.soDem}</td>
                     <td>${ct.tongTien.toLocaleString()} VNĐ</td>
                 </tr>
             `
@@ -97,13 +98,14 @@
                         <th>Giá phòng</th>
                         <th>VIP</th>
                         <th>Bữa sáng</th>
+                        <th>Số đêm</th>
                         <th>Tổng giá</th>
                     </tr>
                 </thead>
                 <tbody>${chiTiet}</tbody>
             </table>
 
-            <p><strong>Đã giảm:</strong> ${hoadon.giamGia.toLocaleString()} VNĐ</p>
+            <p><strong>Mã giảm giá:</strong> ${hoadon.id_Coupon?.maGiamGia ? hoadon.id_Coupon?.maGiamGia : "không"} <strong>  - Đã giảm:</strong> ${hoadon.giamGia.toLocaleString()} VNĐ</p>
             <p style="color: green;"
             ><strong>Tổng tiền: ${hoadon.tongTien.toLocaleString()} VNĐ </strong></p>
         `;

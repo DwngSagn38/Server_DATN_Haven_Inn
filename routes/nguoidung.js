@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.get('/',nguoiDungController.getListorByID)
 router.get('/myroom/:id',nguoiDungController.PhongbyIdNguoidung)
+router.get('/mycoupon/:id',nguoiDungController.getMyCoupon)
 router.post('/post', upload.single('image') ,nguoiDungController.addNguoiDung)
 router.put('/put/:id', upload.single('image') ,nguoiDungController.suaNguoiDung)
 router.delete('/delete/:id',nguoiDungController.xoaNguoiDung)

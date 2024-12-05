@@ -211,3 +211,13 @@
   background-color: #d4edda;  /* Màu xanh nhạt */
   color: #11812b;  /* Màu chữ xanh */
 }
+
+header.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header.navbar .nav-item img:hover {
+  transform: scale(1.1); /* Hiệu ứng phóng to khi hover */
+}
