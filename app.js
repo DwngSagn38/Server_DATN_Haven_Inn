@@ -13,28 +13,24 @@ const PORT = process.env.PORT || 3000;
 
 var database = require('./config/db')
 
-
-
-const session = require('express-session');
-const RedisStore = require('connect-redis').default; // Sử dụng `default` trong các phiên bản mới
+const RedisStore = require('connect-redis').default; // Đảm bảo sử dụng '.default' với connect-redis phiên bản mới
 const redis = require('redis');
 const redisClient = redis.createClient();
 
-// Cấu hình session với RedisStore
-app.use(
-  session({
-    store: new RedisStore({ client: redisClient }),
-    secret: process.env.SESSION_SECRET || 'sang',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: false, // Sử dụng cookie bảo mật nếu đang chạy production
-      httpOnly: true, // Bảo vệ khỏi XSS
-      maxAge: 3600000, // Thời gian hết hạn (1 giờ)
-    },
-  })
-);
+redisClient.connect().catch(console.error); // Kết nối Redis Client
 
+// Cấu hình session
+app.use(session({
+  store: new RedisStore({ client: redisClient }), // Tham chiếu client đã kết nối
+  secret: process.env.SESSION_SECRET || 'sang',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // Đặt true nếu chạy trên HTTPS
+    httpOnly: true, // Bảo vệ khỏi XSS
+    maxAge: 3600000 // Thời gian hết hạn (1 giờ)
+  }
+}));
 
 const methodOverride = require('method-override');
 
@@ -65,7 +61,7 @@ app.get('/', (req, res) => {
 
 // Khởi động server
 app.listen(PORT,async () => {
-  console.log(`Server đang chạy cổng ${PORT} `);
+  console.log(`Server đang chạy `);
 
   // // // Sử dụng dynamic import để mở trình duyệt
   const open = (await import('open')).default;
