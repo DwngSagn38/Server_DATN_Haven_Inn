@@ -58,11 +58,11 @@ app.get('/', (req, res) => {
 
 // Khởi động server
 app.listen(PORT, async () => {
-  console.log(`Server đang chạy tại: http://localhost:${PORT}`);
+  console.log(`Server đang chạy `);
 
   // // // Sử dụng dynamic import để mở trình duyệt
-  // const open = (await import('open')).default;
-  // await open(`http://localhost:${PORT}/web/auth/login`);
+  const open = (await import('open')).default;
+  await open(`http://localhost:${PORT}/web/auth/login`);
 });
 
 app.use((req, res, next) => {

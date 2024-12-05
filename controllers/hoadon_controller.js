@@ -81,27 +81,21 @@ exports.addHoaDon = async (req, res, next) => {
         }
 
         // Tính tổng tiền dựa trên chi tiết hóa đơn
-        let tongTien = 0;
-        const ngayNhanPhong = new Date(hoaDonData.ngayNhanPhong);
-        const ngayTraPhong = new Date(hoaDonData.ngayTraPhong);
+        // let tongTien = 0;
+        // const ngayNhanPhong = new Date(hoaDonData.ngayNhanPhong);
+        // const ngayTraPhong = new Date(hoaDonData.ngayTraPhong);
 
-        const soDem = Math.max(1, (ngayTraPhong - ngayNhanPhong) / (1000 * 60 * 60 * 24));
+        // const soDem = Math.max(1, (ngayTraPhong - ngayNhanPhong) / (1000 * 60 * 60 * 24));
 
         // Tính tổng tiền từ chi tiết hóa đơn
         const chiTietHoaDon = chiTiet.map(item => {
-
-            if(item.buaSang){
-                item.giaPhong = item.giaPhong + 150000;
-            }
-            const tienPhong = item.giaPhong * soDem;
-            tongTien += tienPhong;
             return {
                 id_Phong: item.idPhong,
                 id_HoaDon: null,
                 soLuongKhach: item.soLuongKhach,
                 giaPhong: item.giaPhong,
                 buaSang: item.buaSang,
-                tongTien: tienPhong,
+                tongTien: item.tongTien,
             };
         });
 
@@ -118,12 +112,12 @@ exports.addHoaDon = async (req, res, next) => {
 
             if (couponData && couponData.id_Coupon) {
                 const coupon = couponData.id_Coupon;
-                if (tongTien >= coupon.dieuKienToiThieu) {
-                    soTienGiam = tongTien * coupon.giamGia;
+                if (hoaDonData.tongTien >= coupon.dieuKienToiThieu) {
+                    soTienGiam = hoaDonData.tongTien * coupon.giamGia;
                     if (coupon.giamGiaToiDa) {
                         soTienGiam = Math.min(soTienGiam, coupon.giamGiaToiDa);
                     }
-                    tongTien -= soTienGiam;
+                    hoaDonData.tongTien -= soTienGiam;
 
                     // Cập nhật trạng thái mã giảm giá
                     await NguoiDungCouponModel.updateOne(
@@ -137,7 +131,6 @@ exports.addHoaDon = async (req, res, next) => {
         // Tạo hóa đơn
         const hoadon = new HoadonModel({
             ...hoaDonData,
-            tongTien,
             giamGia : soTienGiam, // Lưu thông tin giảm giá (nếu có)
         });
 
@@ -153,7 +146,6 @@ exports.addHoaDon = async (req, res, next) => {
                 message: "Tạo hóa đơn thành công.",
                 data: {
                     hoaDonId: hoadon._id,
-                    tongTien,
                     giamGia : hoadon.giamGia,
                 },
             });
