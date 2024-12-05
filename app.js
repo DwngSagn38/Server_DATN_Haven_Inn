@@ -16,9 +16,13 @@ var database = require('./config/db')
 
 
 const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
+const redis = require('redis');
+const redisClient = redis.createClient();
 
 // Cấu hình session
 app.use(session({
+  store: new RedisStore({ client: redisClient }),
   secret: process.env.SESSION_SECRET || 'sang',
   resave: false,
   saveUninitialized: false,
