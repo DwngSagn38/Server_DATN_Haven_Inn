@@ -74,7 +74,7 @@ app.use(bodyParser.json());
 
 // Route example
 app.get('/', (req, res) => {
-  res.render('./views/auth/login');
+  res.render('https://server-datn-haven-inn.onrender.com/web/auth/login');
 });
 
 // Khởi động server

@@ -82,12 +82,17 @@ exports.suaNguoiDung = async (req, res, next) => {
         const { id } = req.params;
         const file = req.file;
 
-        const nguoidung = await nguoiDungModel.findOne({ _id: id });
-
-        if (nguoidung == null) {
-            return res.status(303).send({ message: 'Người dùng không tồn tại' });
+        // Kiểm tra số điện thoại đã tồn tại chưa
+        const existingUser = await nguoiDungModel.findOne({ soDienThoai: data.soDienThoai });
+        if (existingUser) {
+            return res.status(400).json({ message: "Số điện thoại đã được đăng ký tài khoản khác" });
         }
 
+
+        const checkSDT = await nguoiDungModel.findOne({ soDienThoai: data.soDienThoai })
+        if (checkSDT) {
+            return res.status(303).send({ message: 'Số điện thoại đã được liên kết tài khoản khác' });
+        }
         let imageUrl = nguoidung.hinhAnh;
         let imageId = nguoidung.hinhAnhID; // Lưu public_id của ảnh chính
 

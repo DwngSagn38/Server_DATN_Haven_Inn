@@ -172,7 +172,7 @@ const getBieuDoData = async () => {
         },
     ]);
 
-    console.log("Kết quả sau $group:", JSON.stringify(bieuDoData, null, 2));
+    // console.log("Kết quả sau $group:", JSON.stringify(bieuDoData, null, 2));
 
     return bieuDoData;
 };
