@@ -12,26 +12,26 @@ var app = express();
 const PORT = process.env.PORT || 3000;
 
 var database = require('./config/db')
-
-
-
 const session = require('express-session');
-const RedisStore = require('connect-redis').default; // Đảm bảo sử dụng '.default' với connect-redis phiên bản mới
-const redis = require('redis');
-const redisClient = redis.createClient();
+const RedisStore = require('connect-redis').default; // Đảm bảo sử dụng '.default'
+const { createClient } = require('redis'); // Cách khởi tạo mới từ redis
 
-redisClient.connect().catch(console.error); // Kết nối Redis Client
+// Tạo Redis Client
+const redisClient = createClient();
 
-// Cấu hình session
+redisClient.on('error', (err) => console.error('Redis Client Error', err));
+redisClient.connect().catch(console.error); // Đảm bảo kết nối không bị lỗi
+
+// Cấu hình session với Redis Store
 app.use(session({
-  store: new RedisStore({ client: redisClient }), // Tham chiếu client đã kết nối
+  store: new RedisStore({ client: redisClient }),
   secret: process.env.SESSION_SECRET || 'sang',
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: false, // Đặt true nếu chạy trên HTTPS
-    httpOnly: true, // Bảo vệ khỏi XSS
-    maxAge: 3600000 // Thời gian hết hạn (1 giờ)
+    httpOnly: true,
+    maxAge: 3600000, // 1 giờ
   }
 }));
 
