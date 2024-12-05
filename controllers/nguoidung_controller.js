@@ -245,11 +245,7 @@ exports.getMyCoupon = async (req, res) => {
         }).filter(Boolean); // Loại bỏ các giá trị null (nếu có)
 
         // Trả về danh sách mã giảm giá
-        return res.json({
-            status: 200,
-            message: 'Lấy danh sách mã giảm giá thành công.',
-            data: coupons
-        });
+        return res.json(coupons);
     } catch (error) {
         res.status(500).json({ message: 'Lỗi server', error });
     }
