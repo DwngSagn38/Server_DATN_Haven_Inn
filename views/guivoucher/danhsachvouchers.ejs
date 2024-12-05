@@ -3,22 +3,22 @@
 <div class="container mt-4">
     <h1>Danh sách Voucher</h1>
 
-    <table class="table table-striped">
-        <thead>
+    <table id="dichVuTable" class="table table-striped table-bordered table-hover mt-3" >
+        <thead class="thead-dark">
             <tr>
-                <th>Tên Voucher</th>
-                <th>Mô Tả</th>
-                <th>Ngày Hết Hạn</th>
-                <th>Chức Năng</th>
+                <th class="text-center">Tên Voucher</th>
+                <th class="text-center">Giảm giá %</th>
+                <th class="text-center">Ngày Hết Hạn</th>
+                <th class="text-center">Chức Năng</th>
             </tr>
         </thead>
         <tbody>
             <% vouchers.forEach(voucher => { %>
                 <tr>
-                    <td><%= voucher.maGiamGia %></td>
-                    <td><%= voucher.giamGia %> VNĐ</td>
-                    <td><%= new Date(voucher.ngayHetHan).toLocaleDateString() %></td>
-                    <td><a href="guivouchers/<%= voucher._id %>" class="btn btn-primary">Gửi Voucher</a></td>
+                    <td class="text-center"><%= voucher.maGiamGia %></td>
+                    <td class="text-center"><%= voucher.giamGia*100 %> %</td>
+                    <td class="text-center"><%= new Date(voucher.ngayHetHan).toLocaleDateString() %></td>
+                    <td class="text-center"><a href="guivouchers/<%= voucher._id %>" class="btn btn-primary">Gửi Voucher</a></td>
                 </tr>
             <% }) %>
         </tbody>
