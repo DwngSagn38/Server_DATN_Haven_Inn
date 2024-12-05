@@ -13,6 +13,9 @@ const PORT = process.env.PORT || 3000;
 
 var database = require('./config/db')
 
+
+
+const session = require('express-session');
 const RedisStore = require('connect-redis').default; // Đảm bảo sử dụng '.default' với connect-redis phiên bản mới
 const redis = require('redis');
 const redisClient = redis.createClient();
@@ -31,6 +34,7 @@ app.use(session({
     maxAge: 3600000 // Thời gian hết hạn (1 giờ)
   }
 }));
+
 
 const methodOverride = require('method-override');
 
