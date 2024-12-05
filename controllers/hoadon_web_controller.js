@@ -31,9 +31,11 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
             .populate('id_NguoiDung', 'tenNguoiDung')
             .sort({ createdAt: -1 });
 
-        if (!hoadons.length) {
-            req.session.message = "Không tìm thấy hóa đơn phù hợp.";
-            return res.redirect("/web/hoadons");
+        if (hoadons.length === 0) {
+            res.render('../views/hoadon/hoadons', {
+                hoadons: [],
+                message: 'Không tìm thấy hóa đơn nào',
+            });
         }
 
 

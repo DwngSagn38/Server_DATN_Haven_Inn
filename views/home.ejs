@@ -19,6 +19,61 @@
                         </div>
         </div>
 
+        <div class="row mt-5 bieudochung mb-5">
+            <!-- Bảng Top 10 Khách Hàng Tiềm Năng -->
+            <div class="col-md-6 bang">
+                <h3>Top 10 Khách Hàng Tiềm Năng</h3>
+                <table class="table table-striped no-datatable ">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tên Khách Hàng</th>
+                            <th>Email</th>
+                            <th>Số Lần Đặt Phòng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% topKhachHang.forEach((khachHang, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td><%= khachHang.tenNguoiDung %></td>
+                            <td><%= khachHang.email %></td>
+                            <td><%= khachHang.soLanDatPhong %></td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        
+            <!-- Bảng Top 10 Loại Phòng Được Đánh Giá Cao Nhất -->
+            <div class="col-md-6 bang">
+                <h3>Top 10 Loại Phòng Được Đánh Giá Cao Nhất</h3>
+                <table class="table table-striped no-datatable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tên Loại Phòng</th>
+                            <th>Giá Tiền</th>
+                            <th>Số Lượt Đánh Giá</th>
+                            <th>Điểm Trung Bình</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% topLoaiPhong.forEach((loaiPhong, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td><%= loaiPhong.tenLoaiPhong %></td>
+                            <td><%= Number(loaiPhong.giaTien).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) %></td>
+                            <td><%= loaiPhong.soLuongDanhGia %></td>
+                            <td><%= loaiPhong.diemTrungBinh %></td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <script>
