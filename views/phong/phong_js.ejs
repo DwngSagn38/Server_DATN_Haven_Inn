@@ -90,3 +90,22 @@
             });
     }
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const filterDropdown = document.getElementById('filterTrangThai');
+        filterDropdown.addEventListener('change', () => {
+            const selectedTrangThai = filterDropdown.value;
+            const url = selectedTrangThai ? `/web/phongs?trangThai=${selectedTrangThai}` : `/web/phongs`;
+            window.location.href = url;
+        });
+    });
+
+    function submitFilter() {
+    const filterValue = document.getElementById('filterTrangThai').value;
+    const url = new URL(window.location.href);
+    url.searchParams.set('trangThai', filterValue);
+    window.location.href = url.toString();
+}
+
+</script>

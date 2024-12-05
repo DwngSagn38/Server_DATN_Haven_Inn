@@ -205,9 +205,7 @@ exports.PhongbyIdNguoidung = async (req, res, next) => {
             };
         });
 
-        res.status(200).json({
-            data: danhSachPhong,
-        });
+        res.status(200).json(chiTietHoaDons);
 
     } catch (error) {
         console.error('Error fetching rooms by user ID:', error);
