@@ -21,6 +21,7 @@ let redisClient = createClient({
   url: process.env.REDIS_URL, // Thay URL bằng của bạn
   socket: {
     tls: true, // Sử dụng TLS nếu URL có `rediss`
+    timeout: 10000,
   },
 });
 redisClient.connect().catch(console.error);
