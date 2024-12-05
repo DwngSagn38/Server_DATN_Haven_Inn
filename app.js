@@ -19,9 +19,9 @@ const PORT = process.env.PORT || 3000;
 // Khởi tạo Redis client
 let redisClient = createClient({
   url: process.env.REDIS_URL, // Thay URL bằng của bạn
+  legacyMode: false,
   socket: {
-    tls: true, // Sử dụng TLS nếu URL có `rediss`
-    timeout: 10000,
+    connectTimeout: 10000,
   },
 });
 
