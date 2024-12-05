@@ -34,7 +34,9 @@ exports.getDashboardData = async (req, res, next) => {
             hoTroChuaXuLy,
             hoaDonChuaXuLy,
             tongDoanhThuHoaDon,
-            doanhThuThang
+            doanhThuThang,
+            topKhachHang,
+            topLoaiPhong
         ] = await Promise.all([
             AmThucModel.countDocuments(),
             TienNghiModel.countDocuments(),
@@ -62,7 +64,9 @@ exports.getDashboardData = async (req, res, next) => {
                     }
                 },
                 { $group: { _id: null, total: { $sum: "$tongTien" } } }
-            ])
+            ]),
+            getTop10KhachHang(),
+            getTop10LoaiPhong()
         ]);
 
         const tongDoanhThuHoaDons = tongDoanhThuHoaDon.length > 0 ? tongDoanhThuHoaDon[0].total : 0;
@@ -84,7 +88,9 @@ exports.getDashboardData = async (req, res, next) => {
             hoTroChuaXuLy,
             hoaDonChuaXuLy,
             tongDoanhThuHoaDon: formatCurrencyVND(tongDoanhThuHoaDons),
-            doanhThuThang: formatCurrencyVND(doanhThuThangs)
+            doanhThuThang: formatCurrencyVND(doanhThuThangs),
+            topKhachHang,
+            topLoaiPhong
         };
 
         const message = req.session.message || null;
@@ -98,7 +104,9 @@ exports.getDashboardData = async (req, res, next) => {
             results,
             bieuDoData: processedData.doanhThuTheoThang,
             luotDatLoaiPhong: processedData.luotDatLoaiPhong, // Dữ liệu biểu đồ tròn
-            message
+            message,
+            topKhachHang,
+            topLoaiPhong
         });
     } catch (error) {
         console.error("Lỗi khi lấy dữ liệu dashboard:", error);
@@ -195,56 +203,90 @@ const processBieuDoData = (bieuDoData) => {
 };
 
 
-const getLuotDatLoaiPhong = async () => {
-    const luotDatData = await HoadonModel.aggregate([
+const getTop10KhachHang = async () => {
+    const topKhachHang = await HoadonModel.aggregate([
         {
             $match: {
                 trangThai: 1, // Chỉ lấy hóa đơn đã hoàn thành
             },
         },
         {
-            $lookup: {
-                from: "chitiethoadons", // Tên collection chi tiết hóa đơn
-                localField: "_id",
-                foreignField: "id_HoaDon",
-                as: "chiTietHoaDon",
-            },
-        },
-        { $unwind: "$chiTietHoaDon" }, // Tách từng chi tiết hóa đơn
-        {
-            $lookup: {
-                from: "phongs", // Tên collection phòng
-                localField: "chiTietHoaDon.id_Phong",
-                foreignField: "_id",
-                as: "phong",
-            },
-        },
-        { $unwind: "$phong" }, // Tách thông tin phòng
-        {
-            $lookup: {
-                from: "loaiphongs", // Tên collection loại phòng
-                localField: "phong.id_LoaiPhong",
-                foreignField: "_id",
-                as: "loaiPhong",
-            },
-        },
-        { $unwind: "$loaiPhong" }, // Tách thông tin loại phòng
-        {
             $group: {
-                _id: "$loaiPhong.tenLoaiPhong", // Gom nhóm theo loại phòng
-                soLuotDat: { $sum: 1 }, // Tính số lượt đặt
+                _id: "$id_NguoiDung", // Gom nhóm theo ID người dùng
+                soLanDatPhong: { $sum: 1 }, // Đếm số lần đặt phòng
+            },
+        },
+        {
+            $sort: { soLanDatPhong: -1 }, // Sắp xếp theo số lần đặt giảm dần
+        },
+        {
+            $limit: 10, // Lấy top 10 khách hàng
+        },
+        {
+            $lookup: {
+                from: "nguoidungs", // Tên collection người dùng
+                localField: "_id",
+                foreignField: "_id",
+                as: "thongTinNguoiDung",
+            },
+        },
+        {
+            $unwind: "$thongTinNguoiDung", // Tách thông tin người dùng
+        },
+        {
+            $project: {
+                _id: 0,
+                idNguoiDung: "$_id",
+                tenNguoiDung: "$thongTinNguoiDung.tenNguoiDung", // Lấy tên người dùng
+                email: "$thongTinNguoiDung.email",
+                soLanDatPhong: 1, // Số lần đặt phòng
             },
         },
     ]);
 
-    return luotDatData;
+    return topKhachHang;
 };
 
+const getTop10LoaiPhong = async () => {
+    const topLoaiPhong = await DanhGiaModel.aggregate([
+        {
+            $match: { trangThai: true }, // Chỉ lấy đánh giá có trạng thái hợp lệ
+        },
+        {
+            $group: {
+                _id: "$id_LoaiPhong", // Gom nhóm theo ID loại phòng
+                soLuongDanhGia: { $sum: 1 }, // Đếm số lượt đánh giá
+                diemTrungBinh: { $avg: "$soDiem" }, // Tính điểm trung bình
+            },
+        },
+        {
+            $lookup: {
+                from: "loaiphongs", // Kết nối với collection LoaiPhong
+                localField: "_id",
+                foreignField: "_id",
+                as: "loaiPhong",
+            },
+        },
+        {
+            $unwind: "$loaiPhong", // Tách thông tin loại phòng
+        },
+        {
+            $project: {
+                _id: 0,
+                idLoaiPhong: "$_id", // ID loại phòng
+                tenLoaiPhong: "$loaiPhong.tenLoaiPhong", // Tên loại phòng
+                giaTien: "$loaiPhong.giaTien", // Giá tiền loại phòng
+                soLuongDanhGia: 1, // Số lượt đánh giá
+                diemTrungBinh: { $round: ["$diemTrungBinh", 2] }, // Làm tròn điểm trung bình đến 2 chữ số
+            },
+        },
+        {
+            $sort: { diemTrungBinh: -1, soLuongDanhGia: -1 }, // Sắp xếp theo điểm trung bình và số lượt đánh giá
+        },
+        {
+            $limit: 10, // Giới hạn lấy top 10
+        },
+    ]);
 
-
-// Ví dụ phương thức lấy dữ liệu top sản phẩm
-async function getTopData() {
-    // Lấy top dữ liệu (ví dụ top 5 sản phẩm)
-    const topData = await PhongModel.find().limit(5).sort({ sales: -1 });
-    return topData;
-}
+    return topLoaiPhong;
+};

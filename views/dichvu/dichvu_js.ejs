@@ -25,8 +25,6 @@
         const editButtons = document.querySelectorAll('.btn-edit-dichvu');
         const serviceForm = document.getElementById('serviceForm');
         const serviceModalLabel = document.getElementById('serviceModalLabel');
-        const currentImageContainer = document.getElementById('currentImage');
-        const currentImagePreview = document.getElementById('currentImagePreview');
 
         // Khi nhấn nút "Sửa"
         editButtons.forEach(button => {
@@ -34,7 +32,6 @@
                 const serviceId = button.getAttribute('data-id');
                 const serviceName = button.getAttribute('data-ten');
                 const serviceDescription = button.getAttribute('data-mota');
-                const serviceImage = button.getAttribute('data-hinhanh');
 
                 // Đặt action của form là PUT cho cập nhật dịch vụ
                 serviceForm.action = `/web/dichvus/put/${serviceId}?_method=PUT`;
@@ -45,13 +42,6 @@
                 document.getElementById('tenDichVu').value = serviceName;
                 document.getElementById('moTa').value = serviceDescription;
 
-                // Nếu có hình ảnh cũ, hiển thị ảnh đó
-                if (serviceImage) {
-                    currentImageContainer.style.display = 'block'; // Hiển thị ảnh cũ
-                    currentImagePreview.src = serviceImage; // Đặt src cho ảnh cũ
-                } else {
-                    currentImageContainer.style.display = 'none'; // Ẩn ảnh cũ nếu không có
-                }
             });
         });
 
@@ -60,8 +50,7 @@
         serviceModal.addEventListener('hidden.bs.modal', () => {
             // Reset dữ liệu trong các trường nhập liệu và ảnh
             serviceForm.reset(); // Reset tất cả các trường input
-            currentImageContainer.style.display = 'none'; // Ẩn ảnh cũ
-            currentImagePreview.src = ''; // Xóa hình ảnh hiển thị
+      
         });
     });
 </script>

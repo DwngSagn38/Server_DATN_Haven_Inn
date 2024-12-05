@@ -55,7 +55,7 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
                 // Cập nhật vào hóa đơn
                 results.push({
                     ...hoadon.toObject(),
-                    ngayThanhToan: hoadon.ngayThanhToan
+                    chitiet: chiTietHoaDons
                 });
             }
         }
@@ -89,6 +89,10 @@ exports.addHoaDon = async (req, res, next) => {
 
         // Tính tổng tiền từ chi tiết hóa đơn
         const chiTietHoaDon = chiTiet.map(item => {
+
+            if(item.buaSang){
+                item.giaPhong = item.giaPhong + 150000;
+            }
             const tienPhong = item.giaPhong * soDem;
             tongTien += tienPhong;
             return {

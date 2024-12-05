@@ -47,6 +47,10 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use('/public', express.static(path.join(__dirname, 'public')))
 
+// Hoặc nếu muốn hỗ trợ cả JSON và x-www-form-urlencoded:
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
 // Route example
 app.get('/', (req, res) => {
   res.render('index');

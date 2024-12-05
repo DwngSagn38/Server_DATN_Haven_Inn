@@ -19,7 +19,6 @@
                         <tr>
                             <th class="text-center" style="width: 240px">Tên Dịch Vụ</th>
                             <th class="text-center">Mô Tả</th>
-                            <th class="text-center" style="width: 120px">Hình ảnh</th>
                             <th class="text-center" style="width: 120px">Hành Động</th>
                         </tr>
                     </thead>
@@ -42,18 +41,11 @@
                                             <p>Không có mô tả</p>
                                             <% } %>
                                 </td>
-                                <td>
-                                    <% if (dichvu.hinhAnh) { %>
-                                        <img src="<%= dichvu.hinhAnh %>" class="img-fluid"
-                                            style="max-width: 120px; max-height: 120px;">
-                                        <% } else { %>
-                                            Không có ảnh
-                                            <% } %>
-                                </td>
+
                                 <td class="text-center">
                                     <a href="javascript:void(0)" class=" btn-edit-dichvu btn-sm"
                                         data-id="<%= dichvu._id %>" data-ten="<%= dichvu.tenDichVu %>"
-                                        data-mota="<%= dichvu.moTa %>" data-hinhanh="<%= dichvu.hinhAnh %>"
+                                        data-mota="<%= dichvu.moTa %>" 
                                         data-bs-toggle="modal" data-bs-target="#serviceModal">
                                         <img src="/public/images/edit.png" alt="Sửa" style="width: 24px; height: 24px;"></a>
                                     <a class="btn-sm btn-delete-dichvu" data-id="<%= dichvu._id %>"
@@ -117,17 +109,7 @@
                                     <label for="moTa" class="form-label">Mô Tả</label>
                                     <textarea class="form-control" id="moTa" name="moTa" rows="4" required></textarea>
                                 </div>
-                                <!-- Hình ảnh -->
-                                <div class="mb-3">
-                                    <label for="hinhAnh" class="form-label">Hình Ảnh</label>
-                                    <input type="file" class="form-control" id="hinhAnh" name="hinhAnh"
-                                        accept="image/*">
-                                </div>
-                                <!-- Hiển thị ảnh cũ nếu có -->
-                                <div id="currentImage" class="mb-3" style="display: none;">
-                                    <label for="currentImageLabel" class="form-label">Ảnh hiện tại</label>
-                                    <img id="currentImagePreview" src="" alt="Hình ảnh hiện tại" style="width: 100px;">
-                                </div>
+
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>

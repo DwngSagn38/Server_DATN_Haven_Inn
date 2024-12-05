@@ -7,7 +7,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js"
   integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
@@ -34,30 +33,32 @@
   </script>
   <% } %>
 
-    <script>
-      $(document).ready(function () {
-        $('table').DataTable({
-          "language": {
-            "sProcessing": "Đang xử lý...",
-            "sLengthMenu": "Hiển thị _MENU_ mục",
-            "sZeroRecords": "Không tìm thấy dòng nào phù hợp",
-            "sInfo": "Đang xem _START_ đến _END_ trong tổng số _TOTAL_ mục",
-            "sInfoEmpty": "Đang xem 0 đến 0 trong tổng số 0 mục",
-            "sInfoFiltered": "(được lọc từ _MAX_ mục)",
-            "sSearch": "Tìm kiếm:",
-            "oPaginate": {
-              "sFirst": "Đầu",
-              "sPrevious": "Trước",
-              "sNext": "Tiếp",
-              "sLast": "Cuối"
-            }
-          },
-          "lengthMenu": [5, 10, 25, 50], // Số dòng mỗi trang
-          "pageLength": 10, // Mặc định 10 dòng mỗi trang
-          "order": [[0, "asc"]] // Sắp xếp theo cột đầu tiên
-        });
+  <script>
+    $(document).ready(function () {
+      // Áp dụng DataTable cho các bảng không có lớp 'no-datatable'
+      $('table:not(.no-datatable)').DataTable({
+        "language": {
+          "sProcessing": "Đang xử lý...",
+          "sLengthMenu": "Hiển thị _MENU_ mục",
+          "sZeroRecords": "Không tìm thấy dòng nào phù hợp",
+          "sInfo": "Đang xem _START_ đến _END_ trong tổng số _TOTAL_ mục",
+          "sInfoEmpty": "Đang xem 0 đến 0 trong tổng số 0 mục",
+          "sInfoFiltered": "(được lọc từ _MAX_ mục)",
+          "sSearch": "Tìm kiếm:",
+          "oPaginate": {
+            "sFirst": "Đầu",
+            "sPrevious": "Trước",
+            "sNext": "Tiếp",
+            "sLast": "Cuối"
+          }
+        },
+        "lengthMenu": [5, 10, 25, 50], // Số dòng mỗi trang
+        "pageLength": 10, // Mặc định 10 dòng mỗi trang
+        "order": [[0, "asc"]] // Sắp xếp theo cột đầu tiên
       });
-    </script>
+    });
+  </script>
+  
 
 
     </body>
