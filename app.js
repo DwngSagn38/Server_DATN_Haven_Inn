@@ -57,12 +57,12 @@ app.get('/', (req, res) => {
 });
 
 // Khởi động server
-app.listen(PORT, async () => {
+app.listen(async () => {
   console.log(`Server đang chạy `);
 
   // // // Sử dụng dynamic import để mở trình duyệt
   const open = (await import('open')).default;
-  await open(`http://localhost:${PORT}/web/auth/login`);
+  await open(`https://server-datn-haven-inn.onrender.com/web/auth/login`);
 });
 
 app.use((req, res, next) => {
