@@ -24,6 +24,7 @@ let redisClient = createClient({
     timeout: 10000,
   },
 });
+
 redisClient.connect().catch(console.error);
 redisClient.on("connect", () => console.log("Connected to Redis successfully"));
 redisClient.on("error", (err) => console.error("Redis connection error:", err));
@@ -73,7 +74,7 @@ app.use(bodyParser.json());
 
 // Route example
 app.get('/', (req, res) => {
-  res.render('index');
+  res.render('./views/auth/login');
 });
 
 // Khởi động server
