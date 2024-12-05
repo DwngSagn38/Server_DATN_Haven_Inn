@@ -1,46 +1,58 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 require('dotenv').config();
 
-var indexAPIRouter = require('./routes/index_api');
-var indexWEBRouter = require('./routes/index_web');
+const indexAPIRouter = require('./routes/index_api');
+const indexWEBRouter = require('./routes/index_web');
+const database = require('./config/db');
 
-var app = express();
+const session = require("express-session");
+const { createClient } = require("redis");
+const { RedisStore } = require("connect-redis");
+
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-var database = require('./config/db')
-const session = require('express-session');
-const RedisStore = require('connect-redis').default; // Đảm bảo sử dụng '.default'
-const { createClient } = require('redis'); // Cách khởi tạo mới từ redis
+// Khởi tạo Redis client
+let redisClient = createClient({
+  url: process.env.REDIS_URL, // Thay URL bằng của bạn
+  socket: {
+    tls: true, // Sử dụng TLS nếu URL có `rediss`
+  },
+});
+redisClient.connect().catch(console.error);
+redisClient.on("connect", () => console.log("Connected to Redis successfully"));
+redisClient.on("error", (err) => console.error("Redis connection error:", err));
 
-// Tạo Redis Client
-const redisClient = createClient();
 
-redisClient.on('error', (err) => console.error('Redis Client Error', err));
-redisClient.connect().catch(console.error); // Đảm bảo kết nối không bị lỗi
+// Khởi tạo RedisStore
+let redisStore = new RedisStore({
+  client: redisClient,
+  prefix: "haveninn:", // Tiền tố cho key trong Redis
+});
 
-// Cấu hình session với Redis Store
-app.use(session({
-  store: new RedisStore({ client: redisClient }),
-  secret: process.env.SESSION_SECRET || 'sang',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: false, // Đặt true nếu chạy trên HTTPS
-    httpOnly: true,
-    maxAge: 3600000, // 1 giờ
-  }
-}));
-
+// Cấu hình session
+app.use(
+  session({
+    store: redisStore,
+    resave: false, // Không lưu lại session nếu không thay đổi
+    saveUninitialized: false, // Không lưu session nếu không có dữ liệu
+    secret: process.env.SESSION_SECRET || "sang",
+    cookie: {
+      secure: false, // true nếu ứng dụng sử dụng HTTPS
+      httpOnly: true, // Bảo vệ khỏi XSS
+      maxAge: 3600000, // Thời gian hết hạn cookie (1 giờ)
+    },
+  })
+);
 
 const methodOverride = require('method-override');
 
 // Middleware để xử lý _method trong form
 app.use(methodOverride('_method'));
-
 
 const bodyParser = require('body-parser');
 
@@ -64,12 +76,11 @@ app.get('/', (req, res) => {
 });
 
 // Khởi động server
-app.listen(PORT,async () => {
+app.listen(PORT, async () => {
   console.log(`Server đang chạy `);
 
-  // // // Sử dụng dynamic import để mở trình duyệt
-  const open = (await import('open')).default;
-  await open(`https://server-datn-haven-inn.onrender.com/web/auth/login`);
+  // const open = (await import('open')).default;
+  // await open(`https://server-datn-haven-inn.onrender.com/web/auth/login`);
 });
 
 app.use((req, res, next) => {
