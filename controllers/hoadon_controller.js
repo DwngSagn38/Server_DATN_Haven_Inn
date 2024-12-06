@@ -263,3 +263,73 @@ exports.xoaHoaDon = async (req, res, next) => {
         res.status(500).json({ message: "Error fetching data", error: error.message });
     }
 }
+
+exports.getLichSuDatPhong = async (req, res, next) => {
+    try {
+        const { id, id_NguoiDung, trangThai } = req.query;
+
+        // Xây dựng điều kiện lọc dựa trên các tham số có sẵn
+        let filter = {};
+
+        if (id) {
+            filter._id = id;
+        }
+        if (id_NguoiDung) {
+            filter.id_NguoiDung = id_NguoiDung;
+        }
+        // Lọc theo `trangThai` nếu có, nhưng kiểm tra trạng thái khác 3
+        if (trangThai) {
+            const trangThaiInt = parseInt(trangThai, 10); // Đảm bảo kiểu số
+            if (trangThaiInt === 3) {
+                return res.status(404).send({ message: 'Lỗi' });
+            } else {
+                filter.trangThai = trangThaiInt; // Lọc chính xác trạng thái được yêu cầu
+            }
+        } else {
+            // Mặc định lấy tất cả hóa đơn có trạng thái khác 3
+            filter.trangThai = { $ne: 3 }; // MongoDB operator để kiểm tra "khác"
+        }
+
+        // Tìm hóa đơn theo điều kiện lọc
+        const hoadons = await HoadonModel.find(filter).sort({ createdAt: -1 });
+
+        if (hoadons.length === 0) {
+            return res.status(404).send({ message: 'Không tìm thấy hóa đơn' });
+        }
+
+        // Lặp qua từng hóa đơn và lấy chi tiết
+        const results = [];
+        for (let hoadon of hoadons) {
+            // Lấy chi tiết hóa đơn liên quan đến id_HoaDon
+            const chiTietHoaDons = await ChiTietHoaDonModel.find({ id_HoaDon: hoadon._id })
+                .populate({
+                    path: 'id_Phong',
+                    select: 'soPhong id_LoaiPhong', // Lấy số phòng và loại phòng
+                    populate: {
+                        path: 'id_LoaiPhong',
+                        select: 'tenLoaiPhong hinhAnh', // Lấy tên loại phòng
+                    },
+                })
+                .lean();
+
+            if (chiTietHoaDons.length > 0) {
+                // Thêm chi tiết hóa đơn đã liên kết loại phòng và số phòng vào kết quả
+                results.push({
+                    ...hoadon.toObject(),
+                    chitiet: chiTietHoaDons.map((chitiet) => ({
+                        ...chitiet,
+                        soPhong: chitiet.id_Phong?.soPhong || null,
+                        tenLoaiPhong: chitiet.id_Phong?.id_LoaiPhong?.tenLoaiPhong || null,
+                        hinhAnh: chitiet.id_Phong?.id_LoaiPhong?.hinhAnh || null,
+                    })),
+                });
+            }
+        }
+
+        // Trả về kết quả
+        res.send(results);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error fetching data", error: error.message });
+    }
+};
