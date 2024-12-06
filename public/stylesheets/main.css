@@ -226,3 +226,7 @@ header.navbar {
 header.navbar .nav-item img:hover {
   transform: scale(1.1); /* Hiệu ứng phóng to khi hover */
 }
+
+.bg-header {
+  background-color: #213A58;
+}

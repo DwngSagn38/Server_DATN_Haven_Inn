@@ -33,8 +33,8 @@ exports.addPhong = async (req, res, next) => {
     try {
         const data = req.body;
         const loaiphong = await LoaiPhongModel.findById(data.id_LoaiPhong);
-        if(!loaiphong){
-            return res.send({message : "Khong tim thay loai phong"})
+        if (!loaiphong) {
+            return res.send({ message: "Khong tim thay loai phong" })
         }
 
         const phong = new PhongModel({
@@ -130,6 +130,8 @@ exports.getCheck = async (req, res, next) => {
         // Đảm bảo ngày tháng đúng định dạng
         const ngayNhan = new Date(ngayNhanPhong);
 
+        console.log('ngay nhan : ', ngayNhan);
+
         // Tạo bộ lọc cho loại phòng nếu có
         let filter = {};
         if (id_LoaiPhong) {
@@ -146,25 +148,30 @@ exports.getCheck = async (req, res, next) => {
         // Kiểm tra trạng thái của từng phòng
         const updatedPhongs = await Promise.all(
             phongs.map(async (phong) => {
-                // Kiểm tra nếu phòng này có trong chi tiết hóa đơn và ngày nhận phòng nằm trong khoảng ngày hóa đơn
-                const isBooked = await ChiTietHoaDonModel.exists({
+                // Tìm hóa đơn có phòng này và kiểm tra ngày nhận phòng    
+                const isBooked = await ChiTietHoaDonModel.findOne({
                     id_Phong: phong._id,
-                    id_HoaDon: { 
-                        $exists: true, 
-                        $ne: null, // Đảm bảo hóa đơn tồn tại
-                    },
-                    $expr: {
-                        $and: [
-                            // Kiểm tra nếu ngày nhận phòng của hóa đơn nằm trong khoảng ngày nhận và ngày trả của hóa đơn
-                            { $lte: ["$ngayNhanPhong", ngayNhan] }, // ngày nhận hóa đơn phải trước hoặc bằng ngày nhận phòng
-                            { $gte: ["$ngayTraPhong", ngayNhan] },  // ngày trả hóa đơn phải sau hoặc bằng ngày nhận phòng
-                        ],
-                    },
-                });
+                })
+                    .populate({
+                        path: 'id_HoaDon',
+                        match: {
+                            ngayNhanPhong: { $lte: ngayNhan },
+                            ngayTraPhong: { $gte: ngayNhan },
+                            trangThai: 1, // Chỉ xét hóa đơn đã thanh toán
+                        },
+                    });
+
+                if (isBooked?.id_HoaDon) {
+                    phong.trangThai = 1
+                    console.log(phong.soPhong,"Phòng đã được đặt.");
+                } else {
+                    phong.trangThai = 0
+                    console.log(phong.soPhong,"Phòng còn trống.");
+                }
+
 
                 return {
                     ...phong.toObject(),
-                    trangThai: isBooked ? 1 : 0, // Trạng thái 1 nếu đã được đặt trong khoảng thời gian, ngược lại là 0
                 };
             })
         );
