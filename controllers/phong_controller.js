@@ -120,17 +120,26 @@ exports.xoaPhong = async (req, res, next) => {
 
 exports.getCheck = async (req, res, next) => {
     try {
-        const { id_LoaiPhong, ngayNhanPhong } = req.query;
+        const { id_LoaiPhong, ngayNhanPhong, ngayTraPhong } = req.query;
 
-        // Kiểm tra điều kiện ngày nhận phòng
-        if (!ngayNhanPhong) {
-            return res.status(400).json({ message: "Cần cung cấp ngày nhận phòng." });
+        // Kiểm tra điều kiện ngày nhận và ngày trả phòng
+        if (!ngayNhanPhong || !ngayTraPhong) {
+            return res.status(400).json({ message: "Cần cung cấp ngày nhận và ngày trả phòng." });
         }
 
         // Đảm bảo ngày tháng đúng định dạng
         const ngayNhan = new Date(ngayNhanPhong);
+        const ngayTra = new Date(ngayTraPhong);
+
+        // Kiểm tra ngày trả > ngày nhận
+        if (ngayTra <= ngayNhan) {
+            return res.status(400).json({ 
+                message: "Ngày trả phòng phải lớn hơn ngày nhận phòng." 
+            });
+        }
 
         console.log('ngay nhan : ', ngayNhan);
+        console.log('ngay tra : ', ngayTra);
 
         // Tạo bộ lọc cho loại phòng nếu có
         let filter = {};
@@ -148,27 +157,34 @@ exports.getCheck = async (req, res, next) => {
         // Kiểm tra trạng thái của từng phòng
         const updatedPhongs = await Promise.all(
             phongs.map(async (phong) => {
-                // Tìm hóa đơn có phòng này và kiểm tra ngày nhận phòng    
+                // Tìm hóa đơn có phòng này và kiểm tra ngày nhận/trả phòng    
                 const isBooked = await ChiTietHoaDonModel.findOne({
                     id_Phong: phong._id,
                 })
                     .populate({
                         path: 'id_HoaDon',
                         match: {
-                            ngayNhanPhong: { $lte: ngayNhan },
-                            ngayTraPhong: { $gte: ngayNhan },
+                            $or: [
+                                {
+                                    ngayNhanPhong: { $lte: ngayNhan },
+                                    ngayTraPhong: { $gte: ngayNhan },
+                                },
+                                {
+                                    ngayNhanPhong: { $lte: ngayTra },
+                                    ngayTraPhong: { $gte: ngayTra },
+                                },
+                            ],
                             trangThai: 1, // Chỉ xét hóa đơn đã thanh toán
                         },
                     });
 
                 if (isBooked?.id_HoaDon) {
-                    phong.trangThai = 1
-                    console.log(phong.soPhong,"Phòng đã được đặt.");
+                    phong.trangThai = 1;
+                    console.log(phong.soPhong, "Phòng đã được đặt.");
                 } else {
-                    phong.trangThai = 0
-                    console.log(phong.soPhong,"Phòng còn trống.");
+                    phong.trangThai = 0;
+                    console.log(phong.soPhong, "Phòng còn trống.");
                 }
-
 
                 return {
                     ...phong.toObject(),
@@ -183,6 +199,7 @@ exports.getCheck = async (req, res, next) => {
         res.status(500).json({ message: "Lỗi khi lấy danh sách phòng.", error: error.message });
     }
 };
+
 
 
 
