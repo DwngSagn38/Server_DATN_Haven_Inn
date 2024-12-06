@@ -6,6 +6,7 @@ const { insertOtp, vertifyOtp } = require('./otp_controllor');
 const OtpModel = require('../model/otp');
 const OtpGenerator = require('otp-generator')
 const bcrypt = require('bcrypt');
+const { isValidPassword, isValidEmail } = require('./utils');
 
 
 // Cấu hình transport cho Nodemailer
@@ -22,17 +23,6 @@ const transporter = nodemailer.createTransport({
 //     return Math.floor(100000 + Math.random() * 900000); // OTP 6 chữ số
 // }
 
-// Hàm kiểm tra định dạng email
-function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex kiểm tra email
-    return emailRegex.test(email);
-}
-
-// Hàm kiểm tra mật khẩu hợp lệ
-const isValidPassword = (password) => {
-    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/; // Ít nhất 8 ký tự, bao gồm cả chữ và số
-    return passwordRegex.test(password);
-};
 
 exports.login = async (req, res, next) => {
     const { email, matKhau } = req.query;
