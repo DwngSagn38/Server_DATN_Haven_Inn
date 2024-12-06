@@ -52,15 +52,16 @@
                     <td><%= coupon.giamGiaToiDa.toLocaleString('vi-VN') %> VND</td>
                     <td><%= coupon.dieuKienToiThieu.toLocaleString('vi-VN') %> VND</td>
                     <td class="text-center">
-                        <button class="btn btn-primary btn-sm btn-edit-coupon" data-id="<%= coupon._id %>"
-                            data-code="<%= coupon.maGiamGia %>" data-status="<%= coupon.trangThai %>"
-                            data-discount="<%= coupon.giamGia %>" data-max-discount="<%= coupon.giamGiaToiDa %>"
-                            data-min-condition="<%= coupon.dieuKienToiThieu %>" data-start-date="<%= coupon.ngayBatDau %>"
-                            data-end-date="<%= coupon.ngayHetHan %>" data-bs-toggle="modal"
-                            data-bs-target="#couponModal">Sửa</button>
-                        <button class="btn btn-danger btn-sm btn-delete-coupon" data-id="<%= coupon._id %>"
+                            <a class="btn-edit-coupon" data-id="<%= coupon._id %>"
+                                data-code="<%= coupon.maGiamGia %>" data-status="<%= coupon.trangThai %>"
+                                data-discount="<%= coupon.giamGia %>" data-max-discount="<%= coupon.giamGiaToiDa %>"
+                                data-min-condition="<%= coupon.dieuKienToiThieu %>" data-start-date="<%= coupon.ngayBatDau %>"
+                                data-end-date="<%= coupon.ngayHetHan %>" data-bs-toggle="modal"
+                                data-bs-target="#couponModal"><img src="/public/images/edit.png" alt="Sửa"
+                                style="width: 24px; height: 24px;"></a>
+                        <!-- <button class="btn btn-danger btn-sm btn-delete-coupon" data-id="<%= coupon._id %>"
                             data-code="<%= coupon.maGiamGia %>" data-bs-toggle="modal"
-                            data-bs-target="#confirmDeleteModal">Xóa</button>
+                            data-bs-target="#confirmDeleteModal">Xóa</button> -->
                     </td>
                 </tr>
             <% }); %>

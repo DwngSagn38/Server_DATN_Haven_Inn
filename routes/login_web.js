@@ -91,7 +91,7 @@ router.post('/logout', (req, res) => {
 
         req.session.message = 'Đăng xuất thành công,Bạn cần đăng nhập lại để tiếp tục sử dụng trang web!';
         delete req.session.userId;
-        console.log(req.session)
+        // console.log(req.session)
 
         return res.redirect('login'); // Điều hướng lại trang đăng nhập
     } catch (error) {

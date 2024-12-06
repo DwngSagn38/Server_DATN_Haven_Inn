@@ -19,7 +19,7 @@
                         </tr>
                     </thead>
                     <tbody class="text-center">
-                        <% hotros.forEach(hotro => { %>
+                        <% hotros.forEach(hotro=> { %>
                             <tr>
                                 <td>
                                     <%= hotro.id_NguoiDung.tenNguoiDung %>
@@ -28,24 +28,26 @@
                                     <%= hotro.vanDe %>
                                 </td>
                                 <td>
-                                    <% let statusText = ''; 
-                                        if (hotro.trangThai === 0) { statusText = 'Chưa xử lý'; } 
-                                        else if (hotro.trangThai === 1) { statusText = 'Đang xử lý'; } 
-                                        else if (hotro.trangThai === 2) { statusText = 'Hoàn thành'; } %>
-                                    <%= statusText %>
+                                    <% let statusText='' , bg='' ; if (hotro.trangThai===0) { statusText='Chưa xử lý' ;
+                                        bg='bg-warning' ; } else if (hotro.trangThai===1) { statusText='Đang xử lý' ;
+                                        bg='bg-info' ; } else if (hotro.trangThai===2) { statusText='Hoàn thành' ;
+                                        bg='bg-success' ; } %>
+                                        <span class="badge <%= bg %>">
+                                            <%= statusText %>
+                                        </span>
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn btn-primary btn-edit-dichvu btn-sm" 
-                                        <% if (hotro.trangThai === 2) { %> disabled <% } %>
-                                        data-id="<%= hotro._id %>" data-trangThai="<%= hotro.trangThai %>"
-                                        data-tenNguoiDung="<%= hotro.id_NguoiDung.tenNguoiDung %>"
-                                        data-vanDe="<%= hotro.vanDe %>" data-bs-toggle="modal"
-                                        data-bs-target="#serviceModal">Phản hồi</button>
-                                </td>                                    
+                                    <button class="btn btn-primary btn-edit-dichvu btn-sm" <% if (hotro.trangThai===2) {
+                                        %> disabled <% } %>
+                                            data-id="<%= hotro._id %>" data-trangThai="<%= hotro.trangThai %>"
+                                                    data-tenNguoiDung="<%= hotro.id_NguoiDung.tenNguoiDung %>"
+                                                        data-vanDe="<%= hotro.vanDe %>" data-bs-toggle="modal"
+                                                            data-bs-target="#serviceModal">Phản hồi</button>
+                                </td>
                             </tr>
-                        <% }); %>
+                            <% }); %>
                     </tbody>
-                    
+
                 </table>
     </div>
 
