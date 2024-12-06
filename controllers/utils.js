@@ -18,4 +18,17 @@ function formatDate(dateString) {
     return `${day}/${month}/${year}`;
 }
 
-module.exports = { formatCurrencyVND, formatDate };
+// Hàm kiểm tra định dạng email
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex kiểm tra email
+    return emailRegex.test(email);
+}
+
+// Hàm kiểm tra mật khẩu hợp lệ
+const isValidPassword = (password) => {
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/; // Ít nhất 8 ký tự, bao gồm cả chữ và số
+    return passwordRegex.test(password);
+};
+
+
+module.exports = { formatCurrencyVND, formatDate, isValidEmail, isValidPassword };

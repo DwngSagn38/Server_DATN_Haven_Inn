@@ -74,7 +74,7 @@ app.use(bodyParser.json());
 
 // Route example
 app.get('/', (req, res) => {
-  res.render('https://haven-inn.onrender.com/web/auth/login');
+  res.redirect('https://haven-inn.onrender.com/web/auth/login');
 });
 
 // Khởi động server

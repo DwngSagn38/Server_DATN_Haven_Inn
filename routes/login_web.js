@@ -4,6 +4,7 @@ const router = express.Router();
 
 // Model người dùng
 const NguoiDungModel = require('../model/nguoidungs');
+const { isValidEmail } = require('../controllers/utils');
 
 // Route login Web
 router.get('/login', (req, res) => {
@@ -12,20 +13,20 @@ router.get('/login', (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const { soDienThoai, matKhau } = req.body;  // Sử dụng req.body thay vì req.query
+    const { email, matKhau } = req.body;  // Sử dụng req.body thay vì req.query
 
-    if (!soDienThoai || !matKhau) {
+    if (!email || !matKhau) {
         return res.render('auth/login', { message: "Chưa nhập đầy đủ thông tin" });
     }
 
-    if (soDienThoai.length !== 10 || soDienThoai[0] !== '0' || isNaN(soDienThoai)) {
-        return res.render('auth/login', { message: "Số điện thoại chưa chính xác" });
+    if (!isValidEmail(email)) {
+        return res.render('auth/login', { message: "Email chưa chính xác" });
     }
 
     try {
-        const nguoidung = await NguoiDungModel.findOne({ soDienThoai });
+        const nguoidung = await NguoiDungModel.findOne({ email });
         if (!nguoidung) {
-            return res.render('auth/login', { message: "Số điện thoại chưa đăng ký tài khoản!" });
+            return res.render('auth/login', { message: "Email chưa đăng ký tài khoản!" });
         }
 
         if (nguoidung.matKhau !== matKhau) {
