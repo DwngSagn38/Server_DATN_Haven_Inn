@@ -3,6 +3,8 @@ const ChiTietHoaDonModel = require('../model/chitiethoadons')
 const CouponModel = require('../model/coupons');
 const NguoiDungCouponModel = require('../model/nguoidungcoupons');
 const { formatDate } = require('./utils');
+const ThongBaoModel = require('../model/thongbaos');
+const socket = require('../socket');
 
 exports.getListorByIdUserorStatus = async (req, res, next) => {
     try {
@@ -72,9 +74,9 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
 exports.addHoaDon = async (req, res, next) => {
     try {
         // Lấy các thông tin cần thiết từ body
-        const { chiTiet, ...hoaDonData } = req.body;
+        const { ...hoaDonData } = req.body;
 
-        if (!chiTiet || !Array.isArray(chiTiet) || chiTiet.length === 0) {
+        if (!hoaDonData.chiTiet || !Array.isArray(hoaDonData.chiTiet) || hoaDonData.chiTiet.length === 0) {
             return res.status(400).json({
                 message: "Dữ liệu chi tiết hóa đơn không hợp lệ.",
             });
@@ -88,14 +90,13 @@ exports.addHoaDon = async (req, res, next) => {
         // const soDem = Math.max(1, (ngayTraPhong - ngayNhanPhong) / (1000 * 60 * 60 * 24));
 
         // Tính tổng tiền từ chi tiết hóa đơn
-        const chiTietHoaDon = chiTiet.map(item => {
+        const chiTietHoaDon = hoaDonData.chiTiet.map(item => {
             return {
-                id_Phong: item.idPhong,
+                id_Phong: item.id_Phong,
                 id_HoaDon: null,
                 soLuongKhach: item.soLuongKhach,
                 giaPhong: item.giaPhong,
                 buaSang: item.buaSang,
-                tongTien: item.tongTien,
             };
         });
 
@@ -141,6 +142,28 @@ exports.addHoaDon = async (req, res, next) => {
         await ChiTietHoaDonModel.insertMany(chiTietHoaDon);
 
         if (result) {
+            const thongBaoData = new ThongBaoModel({
+                id_NguoiDung: hoaDonData.id_NguoiDung,
+                tieuDe: "Bạn vừa đặt phòng thành công!",
+                noiDung: `Chi tiết đạt phòng : 
+  - Mã hóa đơn : ${hoadon._id},
+  - Số phòng : ${hoaDonData.chiTiet}
+  - Tổng tiền : ${hoadon.tongTien}`,
+                ngayGui: new Date(),
+            });
+
+            await thongBaoData.save();
+
+            const io = socket.getIO(); // Lấy đối tượng io từ socket.js
+
+            // Gửi thông báo đến phòng của người dùng
+            io.to(hoaDonData.id_NguoiDung).emit('new-notification', {
+                id_NguoiDung: hoaDonData.id_NguoiDung,
+                message: "Bạn vừa đặt phòng thành công!",
+                type: "success",
+                thongBaoData,
+            });
+
             res.json({
                 status: 200,
                 message: "Tạo hóa đơn thành công.",

@@ -1,6 +1,8 @@
 const Coupon = require('../model/coupons'); // Mô hình Coupon
 const User = require('../model/nguoidungs'); // Mô hình Người dùng
 const NguoiDungCoupon = require('../model/nguoidungcoupons'); // Mô hình Liên kết Người dùng và Coupon
+const socket = require('../socket');
+const ThongBaoModel = require('../model/thongbaos')
 
 // Hiển thị danh sách voucher
 const listVouchers = async (req, res) => {
@@ -57,7 +59,7 @@ const sendVoucherToUsers = async (req, res) => {
             return res.status(404).send('Voucher không tồn tại.');
         }
 
-        // Gửi voucher cho từng người dùng
+        // Gửi voucher cho từng người dùng và tạo thông báo
         const sendPromises = userIds.map(async (userId) => {
             // Kiểm tra xem người dùng đã được gửi voucher này chưa
             const existingRecord = await NguoiDungCoupon.findOne({
@@ -67,10 +69,30 @@ const sendVoucherToUsers = async (req, res) => {
 
             if (!existingRecord) {
                 // Tạo bản ghi mới nếu chưa tồn tại
-                return NguoiDungCoupon.create({
+                await NguoiDungCoupon.create({
                     id_NguoiDung: userId,
                     id_Coupon: id,
                     trangThai: true, // Chưa sử dụng
+                });
+
+                // Tạo thông báo cho người dùng
+                const thongBaoData = new ThongBaoModel({
+                    id_NguoiDung: userId,
+                    tieuDe: "Bạn đã nhận voucher mới!",
+                    noiDung: `Bạn đã nhận voucher: ${voucher.maGiamGia} - giảm giá ${voucher.giamGia*100}% - tối đa ${voucher.giamGiaToiDa} VND`,
+                    ngayGui: new Date(),
+                });
+
+                await thongBaoData.save();
+
+                const io = socket.getIO(); // Lấy đối tượng io từ socket.js
+
+                // Gửi thông báo đến phòng của người dùng
+                io.to(userId).emit('new-notification', {
+                    id_NguoiDung: userId,
+                    message: `Bạn đã nhận voucher: ${voucher.giamGia*100}% khi đặt phòng tại ứng dụng. Hãy sử dụng ngay!`,
+                    type: "success",
+                    thongBaoData,
                 });
             }
         });
