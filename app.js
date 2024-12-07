@@ -4,6 +4,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 require('dotenv').config();
+const http = require('http'); // Import http để tạo server HTTP cho socket.io
 
 const indexAPIRouter = require('./routes/index_api');
 const indexWEBRouter = require('./routes/index_web');
@@ -12,34 +13,41 @@ const database = require('./config/db');
 const session = require("express-session");
 const { createClient } = require("redis");
 const { RedisStore } = require("connect-redis");
+const socket = require('./socket'); // Import file socket.js
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Khởi tạo Redis client
-let redisClient = createClient({
-  url: process.env.REDIS_URL, // Thay URL bằng của bạn
-  legacyMode: false,
-  socket: {
-    connectTimeout: 10000,
-  },
-});
+// Tạo server HTTP
+const server = http.createServer(app);
 
-redisClient.connect().catch(console.error);
-redisClient.on("connect", () => console.log("Connected to Redis successfully"));
-redisClient.on("error", (err) => console.error("Redis connection error:", err));
+// Khởi tạo Socket.IO
+socket.init(server); // Sử dụng hàm init từ file socket.js
+
+// // Khởi tạo Redis client
+// let redisClient = createClient({
+//   url: process.env.REDIS_URL, // Thay URL bằng của bạn
+//   legacyMode: false,
+//   socket: {
+//     connectTimeout: 10000,
+//   },
+// });
+
+// redisClient.connect().catch(console.error);
+// redisClient.on("connect", () => console.log("Connected to Redis successfully"));
+// redisClient.on("error", (err) => console.error("Redis connection error:", err));
 
 
-// Khởi tạo RedisStore
-let redisStore = new RedisStore({
-  client: redisClient,
-  prefix: "haveninn:", // Tiền tố cho key trong Redis
-});
+// // Khởi tạo RedisStore
+// let redisStore = new RedisStore({
+//   client: redisClient,
+//   prefix: "haveninn:", // Tiền tố cho key trong Redis
+// });
 
 // Cấu hình session
 app.use(
   session({
-    store: redisStore,
+    // store: redisStore,
     resave: false, // Không lưu lại session nếu không thay đổi
     saveUninitialized: false, // Không lưu session nếu không có dữ liệu
     secret: process.env.SESSION_SECRET || "sang",
@@ -85,10 +93,10 @@ app.listen(PORT, async () => {
   // await open(`https://server-datn-haven-inn.onrender.com/web/auth/login`);
 });
 
-app.use((req, res, next) => {
-  console.log(`Request URL: ${req.url}, Method: ${req.method}`);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(`Request URL: ${req.url}, Method: ${req.method}`);
+//   next();
+// });
 
 const flash = require('connect-flash');
 app.use(flash());
