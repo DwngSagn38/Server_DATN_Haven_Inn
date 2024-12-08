@@ -82,24 +82,23 @@ exports.suaNguoiDung = async (req, res, next) => {
         const { id } = req.params;
         const file = req.file;
 
-        // Kiểm tra số điện thoại đã tồn tại chưa
-        const existingUser = await nguoiDungModel.findOne({ soDienThoai: data.soDienThoai });
-        if (existingUser) {
-            return res.status(404).json({ message: "Số điện thoại đã được đăng ký tài khoản khác" });
-        }
+        const user = await nguoiDungModel.findOne({ _id : id });
 
+        if(user.soDienThoai !== data.soDienThoai){
+            const checkSDT = await nguoiDungModel.findOne({ soDienThoai: data.soDienThoai }); 
 
-        const checkSDT = await nguoiDungModel.findOne({ soDienThoai: data.soDienThoai })
-        if (checkSDT) {
-            return res.status(303).send({ message: 'Số điện thoại đã được liên kết tài khoản khác' });
+            if (checkSDT) {
+                return res.status(303).send({ message: 'Số điện thoại đã được liên kết tài khoản khác' });
+            }
         }
-        let imageUrl = nguoidung.hinhAnh;
-        let imageId = nguoidung.hinhAnhID; // Lưu public_id của ảnh chính
-
-        if (imageId) {
-            await deleteFromCloudinary(imageId)
-        }
+        
+        let imageUrl = user.hinhAnh;
+        let imageId = user.hinhAnhID; // Lưu public_id của ảnh chính
+  
         if (file) {
+            if (imageId) {
+                await deleteFromCloudinary(imageId)
+            }
             const result = await uploadToCloudinary(file.path); // Upload lên Cloudinary
             imageUrl = result.secure_url;
             imageId = result.public_id;
@@ -119,31 +118,6 @@ exports.suaNguoiDung = async (req, res, next) => {
     }
 };
 
-exports.xoaNguoiDung = async (req, res, next) => {
-
-    try {
-        const { id } = req.params;
-
-        const nguoidung = await nguoiDungModel.findOne({ _id: id });
-
-        if (nguoidung == null) {
-            return res.status(303).send({ message: 'Người dùng không tồn tại' });
-        }
-
-        let imageId = nguoidung.hinhAnhID; // Lưu public_id của ảnh chính
-
-        if (imageId) {
-            await deleteFromCloudinary(imageId)
-        }
-
-        const result = await nguoiDungModel.findByIdAndDelete({ _id: id })
-        res.json({ status: 200, message: "Xóa người dùng thành công", data: result });
-
-    } catch (error) {
-        console.error('Error adding user:', error);
-        res.status(500).json({ message: 'Lỗi khi xử lý xóa người dùng', error });
-    }
-};
 
 
 exports.PhongbyIdNguoidung = async (req, res, next) => {

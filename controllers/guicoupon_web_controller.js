@@ -2,12 +2,13 @@ const Coupon = require('../model/coupons'); // Mô hình Coupon
 const User = require('../model/nguoidungs'); // Mô hình Người dùng
 const NguoiDungCoupon = require('../model/nguoidungcoupons'); // Mô hình Liên kết Người dùng và Coupon
 const socket = require('../socket');
-const ThongBaoModel = require('../model/thongbaos')
+const ThongBaoModel = require('../model/thongbaos');
+const { sendFirebaseNotification } = require('./utils');
 
 // Hiển thị danh sách voucher
 const listVouchers = async (req, res) => {
     try {
-        const vouchers = await Coupon.find(); // Lấy tất cả voucher
+        const vouchers = await Coupon.find({trangThai : 0}); // Lấy tất cả voucher
         res.render('guivoucher/danhsachvouchers.ejs', { vouchers, message: 'Có lỗi xảy ra' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Có lỗi xảy ra' });
@@ -43,68 +44,78 @@ const sendVoucherPage = async (req, res) => {
 };
 
 
+// Gửi voucher cho người dùng
 const sendVoucherToUsers = async (req, res) => {
     try {
-        const { id } = req.params; // Lấy ID voucher từ URL
+        const { id } = req.params;
         const userIds = Array.isArray(req.body.userIds) ? req.body.userIds : [req.body.userIds];
 
-        // Kiểm tra danh sách người dùng
-        if (!userIds || userIds.length === 0 || userIds[0] === '') {
-            return res.status(400).send('Chưa chọn người dùng nào.');
+        if (!Array.isArray(userIds) || userIds.length === 0 || userIds.some((id) => !id.trim())) {
+            return res.status(400).send('Danh sách người dùng không hợp lệ.');
         }
 
-        // Kiểm tra voucher
         const voucher = await Coupon.findById(id);
         if (!voucher) {
             return res.status(404).send('Voucher không tồn tại.');
         }
 
-        // Gửi voucher cho từng người dùng và tạo thông báo
         const sendPromises = userIds.map(async (userId) => {
-            // Kiểm tra xem người dùng đã được gửi voucher này chưa
-            const existingRecord = await NguoiDungCoupon.findOne({
-                id_NguoiDung: userId,
-                id_Coupon: id,
-            });
+            try {
+                const existingRecord = await NguoiDungCoupon.findOne({ id_NguoiDung: userId, id_Coupon: id });
 
-            if (!existingRecord) {
-                // Tạo bản ghi mới nếu chưa tồn tại
-                await NguoiDungCoupon.create({
-                    id_NguoiDung: userId,
-                    id_Coupon: id,
-                    trangThai: true, // Chưa sử dụng
-                });
+                if (!existingRecord) {
+                    // Tạo bản ghi voucher cho người dùng
+                    await NguoiDungCoupon.create({ id_NguoiDung: userId, id_Coupon: id, trangThai: true });
 
-                // Tạo thông báo cho người dùng
-                const thongBaoData = new ThongBaoModel({
-                    id_NguoiDung: userId,
-                    tieuDe: "Bạn đã nhận voucher mới!",
-                    noiDung: `Bạn đã nhận voucher: ${voucher.maGiamGia} - giảm giá ${voucher.giamGia*100}% - tối đa ${voucher.giamGiaToiDa} VND`,
-                    ngayGui: new Date(),
-                });
+                    // Tạo thông báo mới
+                    const thongBaoData = new ThongBaoModel({
+                        id_NguoiDung: userId,
+                        tieuDe: 'Bạn đã nhận voucher mới!',
+                        noiDung: `Bạn đã nhận voucher: ${voucher.maGiamGia} - giảm giá ${voucher.giamGia * 100}% - tối đa ${voucher.giamGiaToiDa} VND`,
+                        ngayGui: new Date(),
+                    });
 
-                await thongBaoData.save();
+                    await thongBaoData.save();
 
-                const io = socket.getIO(); // Lấy đối tượng io từ socket.js
+                    const io = socket.getIO();
+                    const sockets = await io.in(userId).fetchSockets();
 
-                // Gửi thông báo đến phòng của người dùng
-                io.to(userId).emit('new-notification', {
-                    id_NguoiDung: userId,
-                    message: `Bạn đã nhận voucher: ${voucher.giamGia*100}% khi đặt phòng tại ứng dụng. Hãy sử dụng ngay!`,
-                    type: "success",
-                    thongBaoData,
-                });
+                    if (sockets.length > 0) {
+                        // Gửi thông báo qua Socket.IO nếu người dùng online
+                        io.to(userId).emit('new-notification', {
+                            id_NguoiDung: userId,
+                            message: `Bạn đã nhận voucher: ${voucher.giamGia * 100}% khi đặt phòng tại ứng dụng. Hãy sử dụng ngay!`,
+                            type: 'success',
+                            thongBaoData,
+                        });
+                    } else {
+                        // Gửi thông báo qua Firebase nếu người dùng offline
+                        const user = await User.findById(userId);
+                        if (user && user.deviceToken) {
+                            await sendFirebaseNotification(
+                                user.deviceToken,
+                                'Bạn đã nhận voucher mới!',
+                                `Giảm giá ${voucher.giamGia * 100}% - tối đa ${voucher.giamGiaToiDa} VND`,
+                                { voucherId: id }
+                            );
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error(`Error sending voucher to user ${userId}: ${error.message}`);
             }
         });
 
+        // Chờ tất cả các Promise hoàn thành
         await Promise.all(sendPromises);
-
-        res.redirect('/web/guivouchers'); // Quay lại danh sách voucher
+        res.redirect('/web/guivouchers');
     } catch (error) {
         console.error(error);
         res.status(500).send('Lỗi server.');
     }
 };
+
+
 
 const searchUsersForVoucher = async (req, res) => {
     try {

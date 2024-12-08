@@ -1,3 +1,6 @@
+const admin = require('../config/firebase-admin'); 
+
+
 function formatCurrencyVND(amount) {
     const number = parseFloat(amount);
     if (!isNaN(number)) {
@@ -31,4 +34,20 @@ const isValidPassword = (password) => {
 };
 
 
-module.exports = { formatCurrencyVND, formatDate, isValidEmail, isValidPassword };
+// Hàm gửi thông báo qua Firebase
+const sendFirebaseNotification = async (userToken, title, body, data = {}) => {
+  const message = {
+    notification: { title, body },
+    data,
+    token: userToken,
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log('Successfully sent Firebase message:', response);
+  } catch (error) {
+    console.error('Error sending Firebase message:', error);
+  }
+};
+
+module.exports = { formatCurrencyVND, formatDate, isValidEmail, isValidPassword, sendFirebaseNotification };
