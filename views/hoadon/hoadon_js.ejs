@@ -55,11 +55,10 @@
                     <td>${ct.soPhong}</td>
                     <td>${ct.tenLoaiPhong}</td>
                     <td>${ct.soLuongKhach}</td>
-                    <td>${ct.giaPhong.toLocaleString()} VNĐ</td>
                     <td>${ct.VIP ? '300.000 VNĐ' : 'Không'}</td>
                     <td>${ct.buaSang ? '150.000 VNĐ' : 'Không'}</td>
                     <td>${ct.soDem}</td>
-                    <td>${ct.tongTien.toLocaleString()} VNĐ</td>
+                    <td>${ct.giaPhong.toLocaleString()} VNĐ</td>
                 </tr>
             `
                 )
@@ -95,11 +94,10 @@
                         <th>Số phòng</th>
                         <th>Loại phòng</th>
                         <th>Số lượng khách</th>
-                        <th>Giá phòng</th>
                         <th>VIP</th>
                         <th>Bữa sáng</th>
                         <th>Số đêm</th>
-                        <th>Tổng giá</th>
+                        <th>Giá phòng</th>
                     </tr>
                 </thead>
                 <tbody>${chiTiet}</tbody>

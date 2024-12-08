@@ -21,7 +21,7 @@ exports.getListLoaiPhong = async (req, res) => {
 
             // Cập nhật mức độ đánh giá dựa trên điểm trung bình
             roomType.danhGia = roomType.diemTrungBinh >= 9
-                ? 'Rất tốt'
+                ? 'Tuyệt vời'
                 : roomType.diemTrungBinh >= 7
                 ? 'Tốt'
                 : roomType.diemTrungBinh >= 5

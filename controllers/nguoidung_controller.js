@@ -85,7 +85,7 @@ exports.suaNguoiDung = async (req, res, next) => {
         // Kiểm tra số điện thoại đã tồn tại chưa
         const existingUser = await nguoiDungModel.findOne({ soDienThoai: data.soDienThoai });
         if (existingUser) {
-            return res.status(400).json({ message: "Số điện thoại đã được đăng ký tài khoản khác" });
+            return res.status(404).json({ message: "Số điện thoại đã được đăng ký tài khoản khác" });
         }
 
 

@@ -83,56 +83,58 @@ exports.addHoaDon = async (req, res, next) => {
         }
 
         // Tính tổng tiền dựa trên chi tiết hóa đơn
-        // let tongTien = 0;
-        // const ngayNhanPhong = new Date(hoaDonData.ngayNhanPhong);
-        // const ngayTraPhong = new Date(hoaDonData.ngayTraPhong);
+        let tongTien = 0;
+        const ngayNhanPhong = new Date(hoaDonData.ngayNhanPhong);
+        const ngayTraPhong = new Date(hoaDonData.ngayTraPhong);
 
-        // const soDem = Math.max(1, (ngayTraPhong - ngayNhanPhong) / (1000 * 60 * 60 * 24));
+        const soDem = Math.max(1, (ngayTraPhong - ngayNhanPhong) / (1000 * 60 * 60 * 24));
 
         // Tính tổng tiền từ chi tiết hóa đơn
         const chiTietHoaDon = hoaDonData.chiTiet.map(item => {
+            
             return {
                 id_Phong: item.id_Phong,
                 id_HoaDon: null,
                 soLuongKhach: item.soLuongKhach,
                 giaPhong: item.giaPhong,
                 buaSang: item.buaSang,
+                // tongTien: tongTien
             };
         });
 
         // Kiểm tra mã giảm giá
-        let soTienGiam = 0; // Biến lưu số tiền được giảm
-        if (hoaDonData.id_Coupon) {
-            const couponData = await NguoiDungCouponModel.findOne({
-                id_Coupon: hoaDonData.id_Coupon,
-                id_NguoiDung: hoaDonData.id_NguoiDung,
-                trangThai: true,
-            })
-                .populate('id_Coupon', 'giamGia giamGiaToiDa dieuKienToiThieu')
-                .lean();
+        // let soTienGiam = 0; // Biến lưu số tiền được giảm
+        // if (hoaDonData.id_Coupon) {
+        //     const couponData = await NguoiDungCouponModel.findOne({
+        //         id_Coupon: hoaDonData.id_Coupon,
+        //         id_NguoiDung: hoaDonData.id_NguoiDung,
+        //         trangThai: true,
+        //     })
+        //         .populate('id_Coupon', 'giamGia giamGiaToiDa dieuKienToiThieu')
+        //         .lean();
 
-            if (couponData && couponData.id_Coupon) {
-                const coupon = couponData.id_Coupon;
-                if (hoaDonData.tongTien >= coupon.dieuKienToiThieu) {
-                    soTienGiam = hoaDonData.tongTien * coupon.giamGia;
-                    if (coupon.giamGiaToiDa) {
-                        soTienGiam = Math.min(soTienGiam, coupon.giamGiaToiDa);
-                    }
-                    hoaDonData.tongTien -= soTienGiam;
+        //     if (couponData && couponData.id_Coupon) {
+        //         const coupon = couponData.id_Coupon;
+        //         if (hoaDonData.tongTien >= coupon.dieuKienToiThieu) {
+        //             soTienGiam = hoaDonData.tongTien * coupon.giamGia;
+        //             if (coupon.giamGiaToiDa) {
+        //                 soTienGiam = Math.min(soTienGiam, coupon.giamGiaToiDa);
+        //             }
+        //             hoaDonData.tongTien -= soTienGiam;
 
-                    // Cập nhật trạng thái mã giảm giá
-                    await NguoiDungCouponModel.updateOne(
-                        { _id: couponData._id },
-                        { trangThai: false }
-                    );
-                }
-            }
-        }
+        //             // Cập nhật trạng thái mã giảm giá
+        //             await NguoiDungCouponModel.updateOne(
+        //                 { _id: couponData._id },
+        //                 { trangThai: false }
+        //             );
+        //         }
+        //     }
+        // }
 
         // Tạo hóa đơn
         const hoadon = new HoadonModel({
             ...hoaDonData,
-            giamGia : soTienGiam, // Lưu thông tin giảm giá (nếu có)
+            // giamGia : soTienGiam, // Lưu thông tin giảm giá (nếu có)
         });
 
         const result = await hoadon.save();
@@ -145,9 +147,9 @@ exports.addHoaDon = async (req, res, next) => {
             const thongBaoData = new ThongBaoModel({
                 id_NguoiDung: hoaDonData.id_NguoiDung,
                 tieuDe: "Bạn vừa đặt phòng thành công!",
-                noiDung: `Chi tiết đạt phòng : 
+                noiDung: `
   - Mã hóa đơn : ${hoadon._id},
-  - Số phòng : ${hoaDonData.chiTiet}
+  - Số phòng : ${hoaDonData.chiTiet?.id_Phong?.soPhong}
   - Tổng tiền : ${hoadon.tongTien}`,
                 ngayGui: new Date(),
             });
