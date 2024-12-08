@@ -15,9 +15,9 @@ module.exports = {
             console.log(`User joined room: ${id_NguoiDung}`);
         }
     
-        socket.on('disconnect', () => {
-            console.log('User disconnected');
-        });
+        // socket.on('disconnect', () => {
+        //     console.log('User disconnected');
+        // });
     });
     return io;
   },
