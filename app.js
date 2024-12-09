@@ -21,10 +21,10 @@ const PORT = process.env.PORT || 3000;
 // Tạo server HTTP
 const server = http.createServer(app);
 
-// Khởi tạo Socket.IO
+// // Khởi tạo Socket.IO
 socket.init(server); // Sử dụng hàm init từ file socket.js
 
-// Khởi tạo Redis client
+// // Khởi tạo Redis client
 let redisClient = createClient({
   url: process.env.REDIS_URL,
   legacyMode: false,
