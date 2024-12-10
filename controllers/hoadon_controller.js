@@ -5,6 +5,8 @@ const NguoiDungCouponModel = require('../model/nguoidungcoupons');
 const { formatDate } = require('./utils');
 const ThongBaoModel = require('../model/thongbaos');
 const socket = require('../socket');
+const { default: mongoose } = require('mongoose');
+const moment = require('moment');
 
 exports.getListorByIdUserorStatus = async (req, res, next) => {
     try {
@@ -82,57 +84,75 @@ exports.addHoaDon = async (req, res, next) => {
             });
         }
 
-        // Tính tổng tiền dựa trên chi tiết hóa đơn
-        // let tongTien = 0;
-        // const ngayNhanPhong = new Date(hoaDonData.ngayNhanPhong);
-        // const ngayTraPhong = new Date(hoaDonData.ngayTraPhong);
+        // Định dạng ngày
+        const ngayNhanPhong = moment(hoaDonData.ngayNhanPhong, "DD/MM/YYYY").format("YYYY-MM-DD");
+        const ngayTraPhong = moment(hoaDonData.ngayTraPhong, "DD/MM/YYYY").format("YYYY-MM-DD");
 
-        // const soDem = Math.max(1, (ngayTraPhong - ngayNhanPhong) / (1000 * 60 * 60 * 24));
+        // Chuyển đổi ngày thành đối tượng Date nếu cần tính toán
+        const ngayNhanPhongDate = new Date(ngayNhanPhong);
+        const ngayTraPhongDate = new Date(ngayTraPhong);
+
+        // Tính số đêm
+        const soDem = Math.max(1, (ngayTraPhongDate - ngayNhanPhongDate) / (1000 * 60 * 60 * 24));
 
         // Tính tổng tiền từ chi tiết hóa đơn
-        const chiTietHoaDon = hoaDonData.chiTiet.map(item => {
-            return {
-                id_Phong: item.id_Phong,
-                id_HoaDon: null,
-                soLuongKhach: item.soLuongKhach,
-                giaPhong: item.giaPhong,
-                buaSang: item.buaSang,
-            };
-        });
+        const chiTietHoaDon = hoaDonData.chiTiet.map(item => ({
+            id_Phong: item.id_Phong,
+            id_HoaDon: null,
+            soLuongKhach: item.soLuongKhach,
+            giaPhong: item.giaPhong,
+            buaSang: item.buaSang,
+        }));
 
         // Kiểm tra mã giảm giá
-        let soTienGiam = 0; // Biến lưu số tiền được giảm
-        if (hoaDonData.id_Coupon) {
-            const couponData = await NguoiDungCouponModel.findOne({
-                id_Coupon: hoaDonData.id_Coupon,
-                id_NguoiDung: hoaDonData.id_NguoiDung,
-                trangThai: true,
-            })
-                .populate('id_Coupon', 'giamGia giamGiaToiDa dieuKienToiThieu')
-                .lean();
+        // let soTienGiam = 0; // Biến lưu số tiền được giảm
+        // if (hoaDonData.id_Coupon !== "" && mongoose.Types.ObjectId.isValid(hoaDonData.id_Coupon)) {
+        //     const couponData = await NguoiDungCouponModel.findOne({
+        //         id_Coupon: hoaDonData.id_Coupon,
+        //         id_NguoiDung: hoaDonData.id_NguoiDung,
+        //         trangThai: true,
+        //     })
+        //         .populate('id_Coupon', 'giamGia giamGiaToiDa dieuKienToiThieu')
+        //         .lean();
 
-            if (couponData && couponData.id_Coupon) {
-                const coupon = couponData.id_Coupon;
-                if (hoaDonData.tongTien >= coupon.dieuKienToiThieu) {
-                    soTienGiam = hoaDonData.tongTien * coupon.giamGia;
-                    if (coupon.giamGiaToiDa) {
-                        soTienGiam = Math.min(soTienGiam, coupon.giamGiaToiDa);
-                    }
-                    hoaDonData.tongTien -= soTienGiam;
+        //     if (couponData && couponData.id_Coupon) {
+        //         const coupon = couponData.id_Coupon;
+        //         if (hoaDonData.tongTien >= coupon.dieuKienToiThieu) {
+        //             soTienGiam = hoaDonData.tongTien * coupon.giamGia;
+        //             if (coupon.giamGiaToiDa) {
+        //                 soTienGiam = Math.min(soTienGiam, coupon.giamGiaToiDa);
+        //             }
+        //             hoaDonData.tongTien -= soTienGiam;
 
-                    // Cập nhật trạng thái mã giảm giá
-                    await NguoiDungCouponModel.updateOne(
-                        { _id: couponData._id },
-                        { trangThai: false }
-                    );
-                }
-            }
+        //             // Cập nhật trạng thái mã giảm giá
+        //             await NguoiDungCouponModel.updateOne(
+        //                 { _id: couponData._id },
+        //                 { trangThai: false }
+        //             );
+        //         }
+        //     }
+        // }
+
+        let id_Coupon = hoaDonData.id_Coupon;
+        console.log('idcoupon :', id_Coupon)
+        
+        if(id_Coupon !== ""){
+
+            await NguoiDungCouponModel.updateOne(
+                { _id: id_Coupon },
+                { trangThai: false }
+            );
+        }else{
+            id_Coupon = null
         }
+
 
         // Tạo hóa đơn
         const hoadon = new HoadonModel({
             ...hoaDonData,
-            giamGia : soTienGiam, // Lưu thông tin giảm giá (nếu có)
+            id_Coupon : id_Coupon,
+            ngayNhanPhong, // Lưu ngày định dạng yyyy/MM/dd vào DB
+            ngayTraPhong,
         });
 
         const result = await hoadon.save();
@@ -145,9 +165,9 @@ exports.addHoaDon = async (req, res, next) => {
             const thongBaoData = new ThongBaoModel({
                 id_NguoiDung: hoaDonData.id_NguoiDung,
                 tieuDe: "Bạn vừa đặt phòng thành công!",
-                noiDung: `Chi tiết đạt phòng : 
+                noiDung: `Thông tin :
   - Mã hóa đơn : ${hoadon._id},
-  - Số phòng : ${hoaDonData.chiTiet}
+  - Số phòng : ${hoaDonData.chiTiet?.id_Phong?.soPhong}
   - Tổng tiền : ${hoadon.tongTien}`,
                 ngayGui: new Date(),
             });
@@ -169,7 +189,6 @@ exports.addHoaDon = async (req, res, next) => {
                 message: "Tạo hóa đơn thành công.",
                 data: {
                     hoaDonId: hoadon._id,
-                    giamGia : hoadon.giamGia,
                 },
             });
         } else {

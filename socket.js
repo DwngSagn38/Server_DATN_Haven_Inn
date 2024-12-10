@@ -7,7 +7,7 @@ module.exports = {
     io = socketIo(server); // Khởi tạo Socket.IO với server
     io.on('connection', (socket) => {
         console.log('A user connected');
-    
+
         // Lấy id_NguoiDung từ client (ví dụ: thông qua query hoặc sự kiện)
         const id_NguoiDung = socket.handshake.query.idNguoiDung;
         if (id_NguoiDung) {

@@ -25,42 +25,49 @@ const transporter = nodemailer.createTransport({
 
 
 exports.login = async (req, res, next) => {
-    const { email, matKhau } = req.query;
+    const { email, matKhau, deviceToken } = req.query; // Nhận thêm deviceToken từ client
+
     if (!email) {
-        res.status(401).json({ message: "Chưa nhập Email" });
-    } else {
-        try {
-            const nguoidung = await NguoiDungModel.findOne({ email: email });
-            if (!nguoidung) {
-                return res
-                    .status(404)
-                    .json({ message: "Email chưa đăng ký tài khoản!" });
-            } else {
-                if (!nguoidung.trangThai) {
-                    return res.status(404).json({ message: "Tài khoản của bạn đã bị chặn khỏi ứng dụng" });
-                }
-                if (nguoidung.matKhau != matKhau) {
-                    return res.status(404).json({ message: "Mật khẩu chưa đúng" });
-                }
-                nguoidung.matKhau = null;
-                req.session.userId = nguoidung._id; // Lưu ID của người dùng để kiểm tra sau
-                console.log('Đăng nhập thành công, session:', req.session); // Debug session
-
-                const CheckXacMinh = await CCCDModel.findOne({ id_NguoiDung : nguoidung._id});
-
-                return res.json({
-                    status: 200,
-                    message: "Đăng nhập thành công",
-                    userId: req.session.userId,
-                    xacMinh : CheckXacMinh ? true : false,
-                });
-            }
-        } catch (error) {
-            console.error(error);
-            res.status(500).send("Lỗi server");
-        }
+        return res.status(401).json({ message: "Chưa nhập Email" });
     }
-}
+
+    try {
+        const nguoidung = await NguoiDungModel.findOne({ email: email });
+        if (!nguoidung) {
+            return res.status(404).json({ message: "Email chưa đăng ký tài khoản!" });
+        }
+
+        if (!nguoidung.trangThai) {
+            return res.status(403).json({ message: "Tài khoản của bạn đã bị chặn khỏi ứng dụng" });
+        }
+
+        if (nguoidung.matKhau !== matKhau) {
+            return res.status(401).json({ message: "Mật khẩu chưa đúng" });
+        }
+
+        // Cập nhật deviceToken nếu tồn tại
+        if (deviceToken) {
+            nguoidung.deviceToken = deviceToken;
+            await nguoidung.save();
+            console.log(`Device token cập nhật cho người dùng: ${nguoidung._id}`);
+        }
+
+        nguoidung.matKhau = null; // Không gửi mật khẩu về client
+
+        const CheckXacMinh = await CCCDModel.findOne({ id_NguoiDung: nguoidung._id });
+
+        return res.json({
+            status: 200,
+            message: "Đăng nhập thành công",
+            userId: nguoidung._id,
+            xacMinh: CheckXacMinh ? true : false,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Lỗi server");
+    }
+};
+
 
 exports.logout = async (req, res, next) => {
     try {
