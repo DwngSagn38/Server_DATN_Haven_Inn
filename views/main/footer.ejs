@@ -2,6 +2,184 @@
 </div>
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const socket = io("http://localhost:3000");
+
+    // Tham gia admin-room
+    socket.emit('join-admin-room');
+
+    const showNewNotifications = document.getElementById('showNewNotifications');
+    const showAllNotifications = document.getElementById('showAllNotifications');
+    const notificationList = document.getElementById('notificationList');
+    const notificationListContainer = document.getElementById('notificationListContainer');
+    const notificationDetailsContainer = document.getElementById('notificationDetailsContainer');
+    const notificationDetails = document.getElementById('notificationDetails');
+    const backToList = document.getElementById('backToList');
+    const notificationBadge = document.getElementById('notificationBadge');
+
+    const allNotifications = []; // Danh sách thông báo mới
+    const dbNotifications = []; // Danh sách tất cả thông báo từ DB
+
+    // Cập nhật số thông báo chưa đọc
+    function updateNotificationBadge() {
+      const unreadCount = dbNotifications.filter(notification => notification.trangThai).length;
+      if (unreadCount > 0) {
+        notificationBadge.textContent = unreadCount;
+        notificationBadge.classList.remove('d-none'); // Hiển thị số
+      } else {
+        notificationBadge.classList.add('d-none'); // Ẩn khi không có thông báo mới
+      }
+    }
+
+    // Hiển thị thông báo mới nhận được
+    socket.on('new-notification', (data) => {
+      console.log('New notification received:', data);
+      allNotifications.push(data.thongBaoData);
+      if (showNewNotifications.classList.contains('btn-primary')) {
+        updateNotificationList(allNotifications);
+        updateNotificationBadge();
+      }
+    });
+
+    function updateNotificationList(notifications) {
+      notificationList.innerHTML = '';
+      notifications.forEach((notification, index) => {
+        const listItem = document.createElement('li');
+        listItem.className = `list-group-item d-flex align-items-center notification-item ${notification.trangThai ? 'unread' : 'read'}`;
+        listItem.dataset.index = index;
+
+        // Thêm avatar
+        const avatar = document.createElement('img');
+        avatar.src = notification.avatar || '/public/images/avatar.png'; // Avatar mặc định nếu không có
+        avatar.alt = 'Avatar';
+        avatar.className = 'rounded-circle me-3';
+        avatar.style.width = '40px';
+        avatar.style.height = '40px';
+
+        // Thêm tiêu đề
+        const title = document.createElement('span');
+        title.textContent = notification.tieuDe || notification.message;
+
+        // Thêm vào danh sách
+        listItem.appendChild(avatar);
+        listItem.appendChild(title);
+        notificationList.appendChild(listItem);
+      });
+    }
+
+    // Lấy danh sách thông báo từ DB
+    async function fetchAllNotifications() {
+      try {
+        const response = await fetch('/web/thongbaos/');
+        const data = await response.json();
+        if (data.status === 200) {
+          dbNotifications.length = 0; // Reset danh sách cũ
+          dbNotifications.push(...data.notifications);
+          updateNotificationList(dbNotifications);
+          updateNotificationBadge();
+        }
+      } catch (error) {
+        console.error('Lỗi khi lấy thông báo từ DB:', error);
+      }
+    }
+
+    // Khi mở modal thông báo, tải danh sách từ DB
+    document.getElementById('notificationModal').addEventListener('show.bs.modal', fetchAllNotifications);
+
+    // Lần đầu tải danh sách
+    fetchAllNotifications();
+
+    // xem chi tiết thông báo
+    notificationList.addEventListener('click', async (e) => {
+      if (e.target.classList.contains('notification-item')) {
+        const index = e.target.dataset.index;
+        const notification = dbNotifications.length > 0 ? dbNotifications[index] : allNotifications[index];
+
+        // Gửi yêu cầu cập nhật trạng thái
+        try {
+          const response = await fetch(`/web/thongbaos/${notification._id}/trangthai`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+          });
+
+          if (response.ok) {
+            notification.trangThai = false; // Cập nhật trạng thái trong dữ liệu local
+            e.target.classList.remove('unread'); // Xóa class chưa đọc
+            e.target.classList.add('read'); // Thêm class đã đọc
+          } else {
+            console.error('Cập nhật trạng thái thất bại:', await response.json());
+          }
+        } catch (error) {
+          console.error('Lỗi khi gửi yêu cầu cập nhật trạng thái:', error);
+        }
+
+        // Hiển thị avatar
+        const avatar = document.getElementById('notificationAvatar');
+        avatar.src = notification.avatar || '/public/images/avatar.png';
+
+        // Hiển thị tiêu đề và nội dung
+        document.getElementById('notificationDetailsTitle').textContent = notification.tieuDe || "Chi tiết thông báo";
+        notificationDetails.textContent = notification.noiDung || "Nội dung không khả dụng";
+
+        // Hiển thị thời gian
+        const date = new Date(notification.ngayGui);
+        const formattedDate = date.toLocaleString('vi-VN', {
+          dateStyle: 'short',
+          timeStyle: 'short',
+        });
+        document.getElementById('notificationTime').textContent = `Gửi lúc: ${formattedDate}`;
+
+        notificationListContainer.classList.add('d-none');
+        notificationDetailsContainer.classList.remove('d-none');
+      }
+    });
+
+
+
+
+    // Quay lại danh sách thông báo
+    backToList.addEventListener('click', () => {
+      notificationDetailsContainer.classList.add('d-none');
+      notificationListContainer.classList.remove('d-none');
+    });
+
+    // Lấy thông báo từ DB
+    async function fetchAllNotifications() {
+      try {
+        const response = await fetch('/web/thongbaos/'); // API trả về danh sách thông báo
+        const data = await response.json();
+        if (data.status === 200) {
+          dbNotifications.length = 0; // Reset danh sách cũ
+          dbNotifications.push(...data.notifications);
+          updateNotificationList(dbNotifications);
+        }
+      } catch (error) {
+        console.error('Lỗi khi lấy thông báo từ DB:', error);
+      }
+    }
+
+    // Chuyển sang chế độ thông báo mới
+    showNewNotifications.addEventListener('click', () => {
+      showNewNotifications.classList.add('btn-primary');
+      showAllNotifications.classList.remove('btn-primary');
+      updateNotificationList(allNotifications);
+    });
+
+    // Chuyển sang chế độ tất cả thông báo
+    showAllNotifications.addEventListener('click', () => {
+      showNewNotifications.classList.remove('btn-primary');
+      showAllNotifications.classList.add('btn-primary');
+      fetchAllNotifications();
+    });
+  });
+
+</script>
+
+
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -33,32 +211,32 @@
   </script>
   <% } %>
 
-  <script>
-    $(document).ready(function () {
-      // Áp dụng DataTable cho các bảng không có lớp 'no-datatable'
-      $('table:not(.no-datatable)').DataTable({
-        "language": {
-          "sProcessing": "Đang xử lý...",
-          "sLengthMenu": "Hiển thị _MENU_ mục",
-          "sZeroRecords": "Không tìm thấy dòng nào phù hợp",
-          "sInfo": "Đang xem _START_ đến _END_ trong tổng số _TOTAL_ mục",
-          "sInfoEmpty": "Đang xem 0 đến 0 trong tổng số 0 mục",
-          "sInfoFiltered": "(được lọc từ _MAX_ mục)",
-          "sSearch": "Tìm kiếm:",
-          "oPaginate": {
-            "sFirst": "Đầu",
-            "sPrevious": "Trước",
-            "sNext": "Tiếp",
-            "sLast": "Cuối"
-          }
-        },
-        "lengthMenu": [5, 10, 25, 50], // Số dòng mỗi trang
-        "pageLength": 10, // Mặc định 10 dòng mỗi trang
-        "order": [[0, "asc"]] // Sắp xếp theo cột đầu tiên
+    <script>
+      $(document).ready(function () {
+        // Áp dụng DataTable cho các bảng không có lớp 'no-datatable'
+        $('table:not(.no-datatable)').DataTable({
+          "language": {
+            "sProcessing": "Đang xử lý...",
+            "sLengthMenu": "Hiển thị _MENU_ mục",
+            "sZeroRecords": "Không tìm thấy dòng nào phù hợp",
+            "sInfo": "Đang xem _START_ đến _END_ trong tổng số _TOTAL_ mục",
+            "sInfoEmpty": "Đang xem 0 đến 0 trong tổng số 0 mục",
+            "sInfoFiltered": "(được lọc từ _MAX_ mục)",
+            "sSearch": "Tìm kiếm:",
+            "oPaginate": {
+              "sFirst": "Đầu",
+              "sPrevious": "Trước",
+              "sNext": "Tiếp",
+              "sLast": "Cuối"
+            }
+          },
+          "lengthMenu": [5, 10, 25, 50], // Số dòng mỗi trang
+          "pageLength": 10, // Mặc định 10 dòng mỗi trang
+          "order": [[0, "asc"]] // Sắp xếp theo cột đầu tiên
+        });
       });
-    });
-  </script>
-  
+    </script>
+
 
 
     </body>

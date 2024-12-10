@@ -230,3 +230,24 @@ header.navbar .nav-item img:hover {
 .bg-header {
   background-color: #213A58;
 }
+
+.notification-item.unread {
+  background-color: #f8d7da; /* Màu đỏ nhạt cho chưa đọc */
+  border: 1px solid #f5c6cb;
+}
+
+.notification-item.read {
+  background-color: #d4edda; /* Màu xanh nhạt cho đã đọc */
+  border: 1px solid #c3e6cb;
+}
+
+#notificationBadge {
+  width: 3px;
+  height: 3px;
+  padding: 0;
+  text-align: center;
+  line-height: 3px;
+  font-size: 0; /* Ẩn số */
+  background-color: #dc3545;
+  border-radius: 50%;
+}

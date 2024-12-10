@@ -102,6 +102,7 @@ exports.addHoaDon = async (req, res, next) => {
             soLuongKhach: item.soLuongKhach,
             giaPhong: item.giaPhong,
             buaSang: item.buaSang,
+            tongTien : item.giaPhong * soDem
         }));
 
         // Kiểm tra mã giảm giá
@@ -161,6 +162,8 @@ exports.addHoaDon = async (req, res, next) => {
         chiTietHoaDon.forEach(item => (item.id_HoaDon = hoadon._id));
         await ChiTietHoaDonModel.insertMany(chiTietHoaDon);
 
+        console.log('chi tiet :', hoaDonData.chiTiet )
+        console.log('phong :', hoaDonData.chiTiet?.id_Phong )
         if (result) {
             const thongBaoData = new ThongBaoModel({
                 id_NguoiDung: hoaDonData.id_NguoiDung,
