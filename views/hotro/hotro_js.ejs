@@ -11,6 +11,7 @@
                 const trangThai = button.getAttribute('data-trangThai');
                 const tenNguoiDung = button.getAttribute('data-tenNguoiDung');
                 const vanDe = button.getAttribute('data-vanDe');
+                const phanHoi = button.getAttribute('data-phanHoi');
 
                 // Đặt action của form là PUT cho cập nhật dịch vụ
                 serviceForm.action = `/web/hotros/put/${serviceId}?_method=PUT`;
@@ -20,6 +21,9 @@
                 // Điền các thông tin vào form
                 document.getElementById('trangThai').value = trangThai;
                 document.getElementById('vanDe').value = vanDe;
+                document.getElementById('phanHoi').value = phanHoi;
+                
+                
             });
         });
 
