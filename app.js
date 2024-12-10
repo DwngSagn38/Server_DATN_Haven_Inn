@@ -80,10 +80,10 @@ server.listen(PORT, async () => {
   console.log(`Server đang chạy trên cổng ${PORT}`);
 });
 
-app.use((req, res, next) => {
-  console.log(`Request URL: ${req.url}, Method: ${req.method}`);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(`Request URL: ${req.url}, Method: ${req.method}`);
+//   next();
+// });
 
 const flash = require('connect-flash');
 app.use(flash());

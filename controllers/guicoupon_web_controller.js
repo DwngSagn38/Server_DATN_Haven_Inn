@@ -116,7 +116,6 @@ const sendVoucherToUsers = async (req, res) => {
 };
 
 
-
 const searchUsersForVoucher = async (req, res) => {
     try {
         const voucherId = req.params.id;
