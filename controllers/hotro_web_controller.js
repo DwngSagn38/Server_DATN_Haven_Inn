@@ -45,27 +45,6 @@ exports.getById = async (req, res) => {
     }
 };
 
-// Thêm mới thông tin hỗ trợ
-exports.addHotro = async (req, res) => {
-    try {
-        const { id_NguoiDung, vanDe } = req.body;
-
-        const newHotro = new HotroModel({
-            id_NguoiDung,
-            vanDe,
-            trangThai: 0,  // Trạng thái mới khi chưa xử lý
-        });
-
-        await newHotro.save();
-
-        req.session.message = 'Thêm thông tin hỗ trợ thành công!';
-        res.redirect('/web/hotros');
-    } catch (error) {
-        console.error('Lỗi thêm thông tin hỗ trợ:', error);
-        req.session.message = 'Lỗi khi thêm thông tin hỗ trợ!';
-        res.redirect('/web/hotros');
-    }
-};
 
 // Cập nhật thông tin hỗ trợ
 exports.suaHotro = async (req, res) => {
@@ -78,7 +57,7 @@ exports.suaHotro = async (req, res) => {
             return res.redirect('/web/hotros');
         }
 
-        const updatedHotro = await HotroModel.findByIdAndUpdate(id, req.body, { new: true });
+ await HotroModel.findByIdAndUpdate(id, req.body, { new: true });
 
         req.session.message = 'Cập nhật thông tin hỗ trợ thành công!';
         res.redirect('/web/hotros');
@@ -89,24 +68,3 @@ exports.suaHotro = async (req, res) => {
     }
 };
 
-// Xóa thông tin hỗ trợ
-exports.xoaHotro = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const hotro = await HotroModel.findById(id);
-
-        if (!hotro) {
-            req.session.message = 'Không tìm thấy thông tin hỗ trợ!';
-            return res.redirect('/web/hotros');
-        }
-
-        await HotroModel.findByIdAndDelete(id);
-
-        req.session.message = 'Xóa thông tin hỗ trợ thành công!';
-        res.redirect('/web/hotros');
-    } catch (error) {
-        console.error('Lỗi xóa thông tin hỗ trợ:', error);
-        req.session.message = 'Lỗi khi xóa thông tin hỗ trợ!';
-        res.redirect('/web/hotros');
-    }
-};

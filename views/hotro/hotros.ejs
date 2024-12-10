@@ -40,6 +40,7 @@
                                     <button class="btn btn-primary btn-edit-dichvu btn-sm" <% if (hotro.trangThai===2) {
                                         %> disabled <% } %>
                                             data-id="<%= hotro._id %>" data-trangThai="<%= hotro.trangThai %>"
+                                            data-phanHoi="<%= hotro.phanHoi %>"
                                                     data-tenNguoiDung="<%= hotro.id_NguoiDung.tenNguoiDung %>"
                                                         data-vanDe="<%= hotro.vanDe %>" data-bs-toggle="modal"
                                                             data-bs-target="#serviceModal">Phản hồi</button>
@@ -66,12 +67,12 @@
         <% } %>
 
 
-            <!-- Modal chung cho Thêm và Sửa dịch vụ -->
+            <!-- Modal Sửa dịch vụ -->
             <div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel"
                 aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form id="serviceForm" action="/web/hotros/p" method="POST">
+                        <form id="serviceForm" action="/web/hotros/" method="POST">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="serviceModalLabel">Cập nhật Trạng thái</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
@@ -80,7 +81,7 @@
                             <div class="modal-body">
                                 <div class="mb-3">
                                     <label for="vanDe" class="form-label">Vấn đề</label>
-                                    <textarea class="form-control" id="vanDe" name="vanDe" rows="4" readonly
+                                    <textarea class="form-control" id="vanDe" name="vanDe" rows="1" readonly
                                         required></textarea>
                                 </div>
                                 <div class="mb-3">
@@ -90,6 +91,10 @@
                                         <option value="1">Đang xử lý</option>
                                         <option value="2">Hoàn thành</option>
                                     </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phanHoi" class="form-label">Phản hồi của Admin</label>
+                                    <textarea class="form-control" id="phanHoi" name="phanHoi" ></textarea>
                                 </div>
 
                             </div>

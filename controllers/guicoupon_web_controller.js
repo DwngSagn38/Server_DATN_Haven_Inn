@@ -7,7 +7,7 @@ const ThongBaoModel = require('../model/thongbaos')
 // Hiển thị danh sách voucher
 const listVouchers = async (req, res) => {
     try {
-        const vouchers = await Coupon.find(); // Lấy tất cả voucher
+        const vouchers = await Coupon.find({ trangThai: 0 }); // Lấy tất cả voucher
         res.render('guivoucher/danhsachvouchers.ejs', { vouchers, message: 'Có lỗi xảy ra' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Có lỗi xảy ra' });
