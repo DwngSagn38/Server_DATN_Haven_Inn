@@ -25,28 +25,28 @@ const server = http.createServer(app);
 socket.init(server); // Sử dụng hàm init từ file socket.js
 
 // // Khởi tạo Redis client
-let redisClient = createClient({
-  url: process.env.REDIS_URL,
-  legacyMode: false,
-  socket: {
-    connectTimeout: 10000,
-  },
-});
+// let redisClient = createClient({
+//   url: process.env.REDIS_URL,
+//   legacyMode: false,
+//   socket: {
+//     connectTimeout: 10000,
+//   },
+// });
 
-redisClient.connect().catch(console.error);
-redisClient.on("connect", () => console.log("Connected to Redis successfully"));
-redisClient.on("error", (err) => console.error("Redis connection error:", err));
+// redisClient.connect().catch(console.error);
+// redisClient.on("connect", () => console.log("Connected to Redis successfully"));
+// redisClient.on("error", (err) => console.error("Redis connection error:", err));
 
-// Khởi tạo RedisStore
-let redisStore = new RedisStore({
-  client: redisClient,
-  prefix: "haveninn:",
-});
+// // Khởi tạo RedisStore
+// let redisStore = new RedisStore({
+//   client: redisClient,
+//   prefix: "haveninn:",
+// });
 
 // Cấu hình session
 app.use(
   session({
-    store: redisStore,
+    // store: redisStore,
     resave: false,
     saveUninitialized: false,
     secret: process.env.SESSION_SECRET || "sang",
@@ -80,10 +80,10 @@ server.listen(PORT, async () => {
   console.log(`Server đang chạy trên cổng ${PORT}`);
 });
 
-// app.use((req, res, next) => {
-//   console.log(`Request URL: ${req.url}, Method: ${req.method}`);
-//   next();
-// });
+app.use((req, res, next) => {
+  console.log(`Request URL: ${req.url}, Method: ${req.method}`);
+  next();
+});
 
 const flash = require('connect-flash');
 app.use(flash());
