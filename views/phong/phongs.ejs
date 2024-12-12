@@ -23,6 +23,7 @@
                             <option value="0" <%=trangThai==='0' ? 'selected' : '' %>>Còn Phòng</option>
                             <option value="1" <%=trangThai==='1' ? 'selected' : '' %>>Có Khách</option>
                             <option value="2" <%=trangThai==='2' ? 'selected' : '' %>>Khách đã đặt</option>
+                            <option value="3" <%=trangThai==='3' ? 'selected' : '' %>>Đang dọn phòng</option>
                         </select>
                     </div>
                 </div>
@@ -69,6 +70,9 @@
                                         } else if (phong.trangThai === 2) { 
                                             statusText = 'Khách đã đặt'; 
                                             bg = 'bg-warning'; 
+                                        }  else if (phong.trangThai === 3) { 
+                                            statusText = 'Đang dọn phòng'; 
+                                            bg = 'bg-dark'; 
                                         } 
                                     %>
                                     <span class="btn btn-sm text-white <%= bg %>">

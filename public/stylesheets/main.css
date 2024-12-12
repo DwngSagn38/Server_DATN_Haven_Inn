@@ -231,23 +231,55 @@ header.navbar .nav-item img:hover {
   background-color: #213A58;
 }
 
-.notification-item.unread {
-  background-color: #f8d7da; /* Màu đỏ nhạt cho chưa đọc */
-  border: 1px solid #f5c6cb;
+.notification-item {
+  border: 1px solid #999999;
+  border-radius: 10px;
+  margin: 10px;
+  padding: 5px;
 }
 
-.notification-item.read {
-  background-color: #d4edda; /* Màu xanh nhạt cho đã đọc */
-  border: 1px solid #c3e6cb;
+.notification-item.unread {
+  position: relative;
 }
+
+.notification-item.unread::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
+
 
 #notificationBadge {
-  width: 3px;
-  height: 3px;
-  padding: 0;
-  text-align: center;
-  line-height: 3px;
-  font-size: 0; /* Ẩn số */
-  background-color: #dc3545;
-  border-radius: 50%;
+  position: absolute;
+  top: 12px; /* Gần sát mép trên của biểu tượng */
+  right: 2px; /* Gần sát mép phải của biểu tượng */
+  transform: translate(50%, -50%); /* Dịch chuyển vào bên trong biểu tượng */
+  width: 14px; /* Kích thước chấm đỏ */
+  height: 14px; /* Kích thước chấm đỏ */
+  border-radius: 50%; /* Bo tròn chấm đỏ */
+  background-color: red; /* Màu nền chấm đỏ */
+  padding: 0; /* Loại bỏ padding */
+  display: flex; /* Hiển thị dạng flex */
+  align-items: center; /* Căn giữa dọc */
+  justify-content: center; /* Căn giữa ngang */
+  color: white; /* Màu chữ bên trong (nếu cần) */
+  font-size: 8px; /* Kích thước chữ */
+}
+
+.notification-content {
+  flex-grow: 1;
+}
+
+.notification-content span {
+  font-size: 14px;
+}
+
+.notification-content small {
+  font-size: 12px;
+  color: #6c757d; /* Màu chữ xám */
 }

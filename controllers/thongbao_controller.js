@@ -11,6 +11,30 @@ exports.getAllNotifications = async (req, res, next) => {
     }
 };
 
+
+// API Lấy tất cả thông báo từ DB cho nguoi dùng
+exports.getListorByidNguoiDung = async (req, res, next) => {
+    try {
+        const { id_NguoiDung } = req.query;
+
+        // Xây dựng điều kiện lọc dựa trên các tham số có sẵn
+        let filter = {};
+        if (id_NguoiDung) {
+            filter.id_NguoiDung = id_NguoiDung;
+        }
+        const thongbaos = await ThongBaoModel.find(filter).sort({ createdAt: -1 });
+
+        if (thongbaos.length === 0) {
+            return res.status(404).send({ message: 'Không tìm thấy' });
+        }
+
+        res.send(thongbaos);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error fetching data", error: error.message });
+    }
+}
+
 // Controller để cập nhật trạng thái thông báo
 exports.updateThongBaoStatus = async (req, res) => {
     try {

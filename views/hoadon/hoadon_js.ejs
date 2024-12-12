@@ -1,33 +1,36 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const editButtons = document.querySelectorAll('.btn-edit-dichvu');
-        const serviceForm = document.getElementById('serviceForm');
-        const serviceModalLabel = document.getElementById('serviceModalLabel');
+        // Lắng nghe nút cập nhật trạng thái
+        document.querySelectorAll('.btn-update-status').forEach(button => {
+            button.addEventListener('click', async () => {
+                const id = button.getAttribute('data-id');
+                const newStatus = parseInt(button.getAttribute('data-new-status'), 10);
 
-        // Khi nhấn nút "Sửa"
-        editButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                const serviceId = button.getAttribute('data-id');
-                const trangThai = button.getAttribute('data-trangThai');
-                const tenNguoiDung = button.getAttribute('data-tenNguoiDung');
-                const vanDe = button.getAttribute('data-vanDe');
+                // Xác nhận người dùng
+                const confirmMessage = `Bạn có chắc chắn muốn cập nhật trạng thái hóa đơn này không?`;
+                if (!confirm(confirmMessage)) return;
 
-                // Đặt action của form là PUT cho cập nhật dịch vụ
-                serviceForm.action = `/web/hotros/put/${serviceId}?_method=PUT`;
-                // Đặt tiêu đề modal là "Cập nhật dịch vụ"
-                document.getElementById('serviceModalLabel').textContent = 'Cập nhật trạng thái hỗ trợ của ' + tenNguoiDung;
+                // Gửi yêu cầu cập nhật
+                try {
+                    const response = await fetch(`/web/hoadons/update-status/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ trangThai: newStatus }),
+                    });
 
-                // Điền các thông tin vào form
-                document.getElementById('trangThai').value = trangThai;
-                document.getElementById('vanDe').value = vanDe;
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('Cập nhật trạng thái thành công!');
+                        window.location.reload(); // Reload trang
+                    } else {
+                        alert(`Cập nhật thất bại: ${result.message}`);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Có lỗi xảy ra khi cập nhật trạng thái.');
+                }
             });
-        });
-
-        // Reset form khi đóng modal
-        const serviceModal = document.getElementById('serviceModal');
-        serviceModal.addEventListener('hidden.bs.modal', () => {
-            // Reset dữ liệu trong các trường nhập liệu và ảnh
-            serviceForm.reset(); // Reset tất cả các trường input
         });
     });
 
@@ -82,8 +85,21 @@
             </div> 
 
             <p><strong>Ngày tạo đơn:</strong> ${hoadon.createdAt}</p>
-            <p style="color: ${hoadon.trangThai === 1 ? 'green' : 'red'}"
-            ><strong>Trạng thái thanh toán: ${hoadon.trangThai === 1 ? 'Đã thanh toán' : 'Chưa thanh toán'} </strong></p>
+            <p style="color: 
+                ${hoadon.trangThai === 1 ? 'green' : 
+                hoadon.trangThai === 0 ? 'blue' : 
+                hoadon.trangThai === 2 ? 'red' : 
+                'gray'}">
+                <strong>Trạng thái hóa đơn: 
+                ${
+                    hoadon.trangThai === 1 ? 'Đã thanh toán' :
+                    hoadon.trangThai === 0 ? 'Đã nhận phòng' :
+                    hoadon.trangThai === 2 ? 'Đã hủy' :
+                    'Đã trả phòng'
+                }
+                    </strong>
+            </p>
+            
             <p><strong>Ngày thanh toán:</strong> ${hoadon.ngayThanhToan}  </p>
 
             <h5 class="modal-header">Các phòng đã đặt</h5>
@@ -144,4 +160,17 @@
             });
         });
     });
+</script>
+
+<script>
+    function submitFilter() {
+        const trangThai = document.getElementById('filterTrangThai').value;
+        const queryParams = new URLSearchParams(window.location.search);
+        if (trangThai) {
+            queryParams.set('trangThai', trangThai);
+        } else {
+            queryParams.delete('trangThai');
+        }
+        window.location.search = queryParams.toString(); // Tải lại trang với query params
+    }
 </script>

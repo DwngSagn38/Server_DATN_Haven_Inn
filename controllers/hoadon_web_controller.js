@@ -1,7 +1,12 @@
 const HoadonModel = require('../model/hoadons');
 const ChiTietHoaDonModel = require('../model/chitiethoadons');
 const CouponModel = require('../model/coupons')
+const PhongModel = require('../model/phongs')
+const User = require('../model/nguoidungs')
 const { formatCurrencyVND, formatDate } = require('./utils');
+const socket = require('../socket');
+const ThongBaoModel = require('../model/thongbaos');
+const { sendFirebaseNotification } = require('./utils');
 
 exports.getListorByIdUserorStatus = async (req, res, next) => {
     try {
@@ -12,18 +17,10 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
         if (id_NguoiDung) {
             filter.id_NguoiDung = id_NguoiDung;
         }
-        // Lọc theo `trangThai` nếu có, nhưng kiểm tra trạng thái khác 3
-        if (trangThai) {
-            const trangThaiInt = parseInt(trangThai, 10); // Đảm bảo kiểu số
-            if (trangThaiInt === 3) {
-                req.session.message = "Không thể lọc trạng thái là 3.";
-                return res.redirect("/web/hoadons");
-            } else {
-                filter.trangThai = trangThaiInt; // Lọc chính xác trạng thái được yêu cầu
-            }
-        } else {
-            // Mặc định lấy tất cả hóa đơn có trạng thái khác 3
-            filter.trangThai = { $ne: 3 }; // MongoDB operator để kiểm tra "khác"
+
+        // Lọc theo trạng thái hóa đơn nếu có
+        if (trangThai !== undefined && trangThai !== '') {
+            filter.trangThai = parseInt(trangThai, 10); // Đảm bảo giá trị là số
         }
 
         // Lấy danh sách hóa đơn theo điều kiện
@@ -34,15 +31,15 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
         if (hoadons.length === 0) {
             res.render('../views/hoadon/hoadons', {
                 hoadons: [],
-                message: 'Không tìm thấy hóa đơn nào',
+                trangThai: trangThai || '', // Truyền trạng thái vào view
+                message: 'Không tìm thấy hóa đơn nào.',
             });
+            return;
         }
-
 
         // Lấy chi tiết hóa đơn song song
         const results = await Promise.all(
             hoadons.map(async (hoadon) => {
-
                 // Tính số đêm đặt phòng
                 let soDem = Math.ceil(
                     (new Date(hoadon.ngayTraPhong) - new Date(hoadon.ngayNhanPhong)) /
@@ -78,11 +75,16 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
         const message = req.session.message || null;
         delete req.session.message;
 
-        res.render('../views/hoadon/hoadons', { hoadons: results, message });
+        res.render('../views/hoadon/hoadons', {
+            hoadons: results,
+            trangThai: trangThai || '', // Duy trì trạng thái lọc
+            message,
+        });
     } catch (error) {
         console.error("Error fetching invoices:", error);
         res.render('../views/hoadon/hoadons', {
             hoadons: [],
+            trangThai: trangThai || '', // Truyền trạng thái vào view ngay cả khi lỗi
             message: 'Lỗi khi lấy dữ liệu.',
         });
     }
@@ -130,18 +132,13 @@ exports.getDetailAPI = async (req, res) => {
             .lean();
 
 
-        const ngayThanhToan = hoadon.trangThai === 1 ? formatDate(hoadon.ngayThanhToan) : ''
+        const ngayThanhToan = hoadon.ngayThanhToan ? formatDate(hoadon.ngayThanhToan) : ''
         console.log('ngay thanh toán : ', ngayThanhToan)
         hoadon.ngayNhanPhong = formatDate(hoadon.ngayNhanPhong);
         hoadon.ngayTraPhong = formatDate(hoadon.ngayTraPhong);
         hoadon.createdAt = formatDate(hoadon.createdAt);
         hoadon.ngayThanhToan = ngayThanhToan;
 
-        
-
-        console.log('====================================');
-        console.log(hoadon.giamGia);
-        console.log('====================================');
 
         // Định dạng dữ liệu trả về
         hoadon.chiTiet = chiTietHoaDons.map((ct) => ({
@@ -162,27 +159,192 @@ exports.getDetailAPI = async (req, res) => {
     }
 };
 
-exports.huyHoaDon = async (req, res, next) => {
+// Hàm cập nhật trạng thái hóa đơn và đồng bộ trạng thái phòng
+exports.updateTrangThai = async (req, res) => {
     try {
         const { id } = req.params;
+        const { trangThai } = req.body;
 
-        // Cập nhật trạng thái thành 2 (Hủy)
-        const updatedHoaDon = await HoadonModel.findByIdAndUpdate(
-            id,
-            { trangThai: 2 },
-            { new: true }
-        );
-
-        if (!updatedHoaDon) {
-            req.session.message = 'Không tìm thấy hóa đơn để hủy.';
-            return res.redirect('/web/hoadons');
+        // Ép kiểu để đảm bảo `trangThai` là số
+        const newTrangThai = parseInt(trangThai, 10);
+        if (isNaN(newTrangThai)) {
+            return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ.' });
         }
 
-        req.session.message = 'Đã hủy hóa đơn thành công.';
-        res.redirect('/web/hoadons');
+        const hoadon = await HoadonModel.findById(id);
+
+        // Lấy hóa đơn hiện tại
+        const chiTiets = await ChiTietHoaDonModel.find({ id_HoaDon: id }).populate('id_Phong', 'trangThai');
+        if (!chiTiets) {
+            return res.status(404).json({ success: false, message: 'Chi tiết hóa đơn không tồn tại.' });
+        }
+
+        // Kiểm tra logic trạng thái hợp lệ
+        const validTransitions = {
+            1: [0, 2], // "Đã thanh toán" -> "Nhận phòng" hoặc "Hủy"
+            0: [3],    // "Đã nhận phòng" -> "Đã trả phòng"
+        };
+
+        if (
+            validTransitions[hoadon.trangThai] &&
+            !validTransitions[hoadon.trangThai].includes(newTrangThai)
+        ) {
+            return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ để cập nhật.' });
+        }
+
+        // Cập nhật trạng thái hóa đơn
+        hoadon.trangThai = newTrangThai;
+        await hoadon.save();
+
+        // Cập nhật trạng thái phòng dựa trên trạng thái hóa đơn mới
+        const updatePhongStatus = async (status) => {
+            await Promise.all(
+                chiTiets.map(async (item) => {
+                    await PhongModel.updateOne(
+                        { _id: item.id_Phong },
+                        { trangThai: status }
+                    );
+                })
+            );
+        };
+
+        if (newTrangThai === 0) {
+            // "Nhận phòng" -> Cập nhật trạng thái phòng thành 1 (khách đã nhận)
+            await updatePhongStatus(1);
+        } else if (newTrangThai === 2) {
+            // "Hủy" -> Cập nhật trạng thái phòng thành 0 (còn trống)
+            await updatePhongStatus(0);
+        } else if (newTrangThai === 3) {
+            // "Trả phòng" -> Cập nhật trạng thái phòng thành 3 (đang dọn dẹp)
+            await updatePhongStatus(3);
+
+            // Sau 15 phút, cập nhật trạng thái phòng thành 0 (còn trống)
+            setTimeout(async () => {
+                try {
+                    await updatePhongStatus(0);
+                } catch (error) {
+                    console.error('Lỗi khi cập nhật trạng thái sau 15 phút:', error.message);
+                }
+            }, 1 * 60 * 1000); // 15 phút
+        }
+
+        // Thêm mã hóa đơn từ 8 ký tự cuối của _id
+        const maHoaDon = hoadon._id.toString().slice(-8);
+
+        const io = socket.getIO();
+        const sockets = await io.in(hoadon.id_NguoiDung).fetchSockets();
+
+        if (newTrangThai === 2) {
+            // Tạo thông báo mới
+            const thongBaoData = new ThongBaoModel({
+                id_NguoiDung: hoadon.id_NguoiDung,
+                tieuDe: 'Đơn đặt phòng của bạn đã bị hủy!',
+                noiDung: `Mã hóa đơn : ${maHoaDon} - Tổng tiền : ${formatCurrencyVND(hoadon.tongTien)} VND,
+Bạn vui lòng liên hệ với chúng tôi qua hotline 0367.974.725 để được hỗ trợ hoàn trả lại tiền đặt phòng!`,
+                ngayGui: new Date(),
+            });
+
+            await thongBaoData.save();
+
+            if (sockets.length > 0) {
+                // Gửi thông báo qua Socket.IO nếu người dùng online
+                io.to(hoadon.id_NguoiDung).emit('new-notification', {
+                    id_NguoiDung: hoadon.id_NguoiDung,
+                    message: `Đơn đặt phòng ${maHoaDon} của bạn đã bị hủy!`,
+                    type: 'success',
+                    thongBaoData,
+                });
+            } else {
+                // Gửi thông báo qua Firebase nếu người dùng offline
+                const user = await User.findById(hoadon.id_NguoiDung);
+                if (user && user.deviceToken) {
+                    await sendFirebaseNotification(
+                        user.deviceToken,
+                        'Đơn đặt phòng của bạn đã bị hủy!',
+                        `Mã hóa đơn : ${maHoaDon} - Tổng tiền : ${formatCurrencyVND(hoadon.tongTien)} VND,
+Bạn vui lòng liên hệ với chúng tôi qua hotline 0367.974.725 để được hỗ trợ hoàn trả lại tiền đặt phòng!`,
+                        { voucherId: id }
+                    );
+                }
+            }
+        }
+
+        if (newTrangThai === 0) {
+            // Tạo thông báo mới
+            const thongBaoData = new ThongBaoModel({
+                id_NguoiDung: hoadon.id_NguoiDung,
+                tieuDe: 'Nhận phòng thành công!',
+                noiDung: `Bạn vừa nhận phòng tại Haven Inn.`,
+                ngayGui: new Date(),
+            });
+
+            await thongBaoData.save();
+
+            if (sockets.length > 0) {
+                // Gửi thông báo qua Socket.IO nếu người dùng online
+                io.to(hoadon.id_NguoiDung).emit('new-notification', {
+                    id_NguoiDung: hoadon.id_NguoiDung,
+                    message: `Nhận phòng thành công!`,
+                    type: 'success',
+                    thongBaoData,
+                });
+            } else {
+                // Gửi thông báo qua Firebase nếu người dùng offline
+                const user = await User.findById(hoadon.id_NguoiDung);
+                if (user && user.deviceToken) {
+                    await sendFirebaseNotification(
+                        user.deviceToken,
+                        'Nhận phòng thành công!',
+                        `Bạn vừa nhận phòng tại Haven Inn.`,
+                        { voucherId: id }
+                    );
+                }
+            }
+        }
+
+        if (newTrangThai === 3) {
+            // Tạo thông báo mới
+            const thongBaoData = new ThongBaoModel({
+                id_NguoiDung: hoadon.id_NguoiDung,
+                tieuDe: 'Trả phòng thành công!',
+                noiDung: `Bạn vừa trả phòng tại Haven Inn.`,
+                ngayGui: new Date(),
+            });
+
+            await thongBaoData.save();
+
+            if (sockets.length > 0) {
+                // Gửi thông báo qua Socket.IO nếu người dùng online
+                io.to(hoadon.id_NguoiDung).emit('new-notification', {
+                    id_NguoiDung: hoadon.id_NguoiDung,
+                    message: `Trả phòng thành công!`,
+                    type: 'success',
+                    thongBaoData,
+                });
+            } else {
+                // Gửi thông báo qua Firebase nếu người dùng offline
+                const user = await User.findById(hoadon.id_NguoiDung);
+                if (user && user.deviceToken) {
+                    await sendFirebaseNotification(
+                        user.deviceToken,
+                        'Trả phòng thành công!',
+                        `Bạn vừa trả phòng tại Haven Inn.`,
+                        { voucherId: id }
+                    );
+                }
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Cập nhật trạng thái thành công.',
+            hoadon,
+        });
+
     } catch (error) {
-        console.error('Error updating invoice:', error);
-        req.session.message = 'Lỗi khi hủy hóa đơn.';
-        res.redirect('/web/hoadons');
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Lỗi hệ thống.', error: error.message });
     }
 };
+
+

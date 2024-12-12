@@ -4,7 +4,7 @@
     <%- include('./thongke/thongso', { results: results }) %>
         <div class="row mt-5 bieudochung">
             <% if (!bieuDoData || Object.keys(bieuDoData).length===0) { %>
-                <p>Không có dữ liệu để hiển thị biểu đồ.</p>
+                <p>Không có dữ liệu thống kê doanh số hiển thị biểu đồ.</p>
                 <% } else { %>
                     <!-- Biểu đồ doanh thu -->
                     <div class="col-md-8 chart-container bieudo">
@@ -12,11 +12,15 @@
                         <canvas id="bieuDoDoanhThu"></canvas>
                     </div>
                     <% } %>
-                        <!-- Biểu đồ tròn lượt đặt -->
-                        <div class="col-md-4 chart-container bieudo">
-                            <h5 class="mb-3">Tỉ lệ số lượt đặt theo loại phòng</h5>
-                            <canvas id="bieuDoLuotDat"></canvas>
-                        </div>
+            <% if (!luotDatLoaiPhong || Object.keys(luotDatLoaiPhong).length===0) { %>
+                <p>Không có dữ liệu thống kê lượt đặt.</p>
+                <% } else { %>
+                    <!-- Biểu đồ tròn lượt đặt -->
+                    <div class="col-md-4 chart-container bieudo">
+                        <h5 class="mb-3">Tỉ lệ số lượt đặt theo loại phòng</h5>
+                        <canvas id="bieuDoLuotDat"></canvas>
+                    </div>
+                    <% } %>
         </div>
 
         <div class="row mt-5 bieudochung mb-5">

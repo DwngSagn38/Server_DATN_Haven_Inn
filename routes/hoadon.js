@@ -22,7 +22,6 @@ const hoaDonController = require('../controllers/hoadon_controller')
 router.get('/',hoaDonController.getListorByIdUserorStatus);
 router.get('/history/',hoaDonController.getLichSuDatPhong);
 router.post('/post',hoaDonController.addHoaDon);
-router.put('/put/:id',hoaDonController.suaHoaDon);
-router.delete('/delete/:id',hoaDonController.xoaHoaDon);
+router.put('/huy/:id',hoaDonController.huyHoaDon);
 
 module.exports = router;

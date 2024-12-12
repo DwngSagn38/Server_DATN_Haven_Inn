@@ -134,8 +134,7 @@ exports.PhongbyIdNguoidung = async (req, res, next) => {
         // Lấy danh sách hóa đơn của người dùng trong khoảng ngày hiện tại
         const hoadons = await HoadonModel.find({
             id_NguoiDung: id,
-            ngayNhanPhong: { $lte: today },
-            ngayTraPhong: { $gte: today }
+            trangThai : 0
         });
 
         if (!hoadons.length) {
