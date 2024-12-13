@@ -46,7 +46,7 @@
                     </thead>
                     <tbody class="text-center">
                         <% phongs.forEach(phong=> { %>
-                            <tr >
+                            <tr>
                                 <td>
                                     <%= phong.soPhong %>
                                 </td>
@@ -59,25 +59,14 @@
 
                                 <td onclick="getTrangThaiPhongDetails('<%= phong._id %>')" data-bs-toggle="modal"
                                     data-bs-target="#detailsModal">
-                                    <% 
-                                        let statusText = '', bg = ''; 
-                                        if (phong.trangThai === 0) { 
-                                            statusText = 'Còn Phòng'; 
-                                            bg = 'bg-info'; 
-                                        } else if (phong.trangThai === 1) { 
-                                            statusText = 'Có khách'; 
-                                            bg = 'bg-danger'; 
-                                        } else if (phong.trangThai === 2) { 
-                                            statusText = 'Khách đã đặt'; 
-                                            bg = 'bg-warning'; 
-                                        }  else if (phong.trangThai === 3) { 
-                                            statusText = 'Đang dọn phòng'; 
-                                            bg = 'bg-dark'; 
-                                        } 
-                                    %>
-                                    <span class="btn btn-sm text-white <%= bg %>">
-                                        <%= statusText %>
-                                    </span>
+                                    <% let statusText='' , bg='' ; if (phong.trangThai===0) { statusText='Còn Phòng' ;
+                                        bg='bg-info' ; } else if (phong.trangThai===1) { statusText='Có khách' ;
+                                        bg='bg-danger' ; } else if (phong.trangThai===2) { statusText='Khách đã đặt' ;
+                                        bg='bg-warning' ; } else if (phong.trangThai===3) { statusText='Đang dọn phòng'
+                                        ; bg='bg-dark' ; } %>
+                                        <span class="btn btn-sm text-white <%= bg %>">
+                                            <%= statusText %>
+                                        </span>
                                 </td>
                                 <td>
                                     <%= phong.ngayNhanPhong ? phong.ngayNhanPhong.toLocaleDateString('vi-VN') : '' %>
@@ -86,26 +75,20 @@
                                     <%= phong.ngayTraPhong ? phong.ngayTraPhong.toLocaleDateString('vi-VN') : '' %>
                                 </td>
                                 <td class="text-center">
-
-                                    <a class="btn-sm btn-edit-phong" data-id="<%= phong._id %>"
-                                        data-ten="<%= phong.soPhong %>" data-idloaiPhong="<%=phong.id_LoaiPhong?._id%>"
-                                        data-VIP="<%= phong.VIP %>" data-trangthai="<%= phong.trangThai %>"
-                                        data-bs-toggle="modal" data-bs-target="#serviceModal">
-                                        <img src="/public/images/edit.png" alt="Sửa"
-                                            style="width: 24px; height: 24px;"></a>
-
-                                    <!-- <a class="btn-sm btn-delete-phong" data-id="<%= phong._id %>"
-                                        data-soPhong="<%= phong.soPhong%>" data-bs-toggle="modal"
-                                        data-bs-target="#confirmDeleteModal">
-                                        <img src="/public/images/delete.png" alt="Xóa"
-                                            style="width: 24px; height: 24px;"></a> -->
+                                    <% if (phong.trangThai===0 || phong.trangThai===3) { %>
+                                        <a class="btn-sm btn-edit-phong" data-id="<%= phong._id %>"
+                                            data-ten="<%= phong.soPhong %>"
+                                            data-idloaiPhong="<%=phong.id_LoaiPhong?._id%>" data-VIP="<%= phong.VIP %>"
+                                            data-trangthai="<%= phong.trangThai %>" data-bs-toggle="modal"
+                                            data-bs-target="#serviceModal">
+                                            <img src="/public/images/edit.png" alt="Sửa"
+                                                style="width: 24px; height: 24px;">
+                                        </a>
+                                        <% } %>
                                 </td>
-
-
                             </tr>
                             <% }); %>
                     </tbody>
-
                 </table>
 
     </div>
@@ -168,14 +151,13 @@
                             </select>
                         </div>
                         <!-- Trạng thái -->
-                        <!-- <div class="mb-3">
+                        <div class="mb-3">
                             <label for="trangThai" class="form-label">Trạng Thái</label>
                             <select class="form-select" id="trangThai" name="trangThai">
-                                <option value="">Còn trống</option>
-                                <option value="1">Có khách</option>
-                                <option value="2">Khách đã đặt</option>
+                                <option value="0">Còn trống</option>
+                                <option value="3">Bảo trì (Clean)</option>
                             </select>
-                        </div> -->
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>

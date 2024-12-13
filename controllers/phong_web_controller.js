@@ -151,7 +151,11 @@ exports.getTrangThai = async (req, res, next) => {
 
         // Lấy thông tin trạng thái của phòng từ database
         const chiTietHoaDons = await ChiTietHoaDonModel.find({ id_Phong: id })
-            .populate('id_HoaDon', 'ngayNhanPhong ngayTraPhong')
+            .populate({
+                path: 'id_HoaDon',
+                select: 'ngayNhanPhong ngayTraPhong trangThai',
+                match: { trangThai: { $in: [0, 1] } }, // Chỉ lấy hóa đơn có trạng thái 0 hoặc 1
+            })
             .lean();
 
         // Tạo một mảng ngày từ ngày nhận phòng đến ngày trả phòng
