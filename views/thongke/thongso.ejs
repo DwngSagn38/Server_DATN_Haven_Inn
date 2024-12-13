@@ -1,13 +1,13 @@
 <% if (message) { %>
-    <div class="alert alert-success messageLogin" id="successMessage" >
+    <div class="alert alert-success messageLogin" id="successMessage">
         <%= message %>
     </div>
     <% } %>
 
-<h1>Dashboard</h1>
+        <h1>Dashboard</h1>
 
-<div class="container thongso">
-    <h2>Thống kê thông số</h2>
+        <div class="container thongso">
+            <h2>Thống kê thông số</h2>
 
             <div class="row g-3 mt-2">
                 <!-- Người dùng -->
@@ -40,7 +40,7 @@
 
                 <!-- Tiện nghi -->
                 <div class="col-md-3">
-                    <div class="card text-white"  style="background-color: #F78C6A;">
+                    <div class="card text-white" style="background-color: #F78C6A;">
                         <div class="card-body text-center">
                             <h5 class="card-title">
                                 <i class="fas fa-concierge-bell"></i> Tiện nghi
@@ -68,7 +68,7 @@
 
                 <!-- Loại phòng -->
                 <div class="col-md-3">
-                    <div class="card text-white"  style="background-color: #0C6478;">
+                    <div class="card text-white" style="background-color: #0C6478;">
                         <div class="card-body text-center">
                             <h5 class="card-title">
                                 <i class="fas fa-door-closed"></i> Loại phòng
@@ -150,38 +150,9 @@
                     </div>
                 </div>
 
-
-                <!-- Hóa đơn -->
-                <div class="col-md-3">
-                    <div class="card bg-warning text-white">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">
-                                <i class="fas fa-file-invoice-dollar"></i> Hóa đơn
-                            </h5>
-                            <p class="card-text display-6">
-                                <%= results.totalHoaDon %>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Hóa đơn chưa xử lý-->
-                <div class="col-md-3">
-                    <div class="card bg-light text-dark">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">
-                                <i class="fas fa-file-invoice-dollar"></i> Hóa đơn chưa xử lý
-                            </h5>
-                            <p class="card-text display-6">
-                                <%= results.hoaDonChuaXuLy %>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Coupon -->
                 <div class="col-md-3">
-                    <div class="card bg-success text-white" >
+                    <div class="card bg-success text-white">
                         <div class="card-body text-center">
                             <h5 class="card-title">
                                 <i class="fas fa-ticket-alt"></i> Coupon
@@ -207,6 +178,49 @@
                     </div>
                 </div>
 
+
+                <!-- Hóa đơn -->
+                <div class="col-md-3">
+                    <div class="card text-white" style="background-color: #413e95;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">
+                                <i class="fas fa-file-invoice-dollar"></i> Hóa đơn
+                            </h5>
+                            <p class="card-text display-6">
+                                <%= results.totalHoaDon %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hóa đơn chưa xử lý-->
+                <div class="col-md-3">
+                    <div class="card bg-light text-dark">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">
+                                <i class="fas fa-file-invoice-dollar"></i> HĐ chưa nhận phòng
+                            </h5>
+                            <p class="card-text display-6">
+                                <%= results.hoaDonChuaXuLy %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hóa đơn bij hủy -->
+                <div class="col-md-3">
+                    <div class="card text-white" style="background-color: #716fa5;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">
+                                <i class="fas fa-file-invoice-dollar"></i> HĐ bị hủy
+                            </h5>
+                            <p class="card-text display-6">
+                                <%= results.hoaDonBiHuy %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Tổng doanh thu tháng -->
                 <div class="col-md-3">
                     <div class="card bg-primary text-white">
@@ -221,4 +235,4 @@
                     </div>
                 </div>
             </div>
-</div>
+        </div>

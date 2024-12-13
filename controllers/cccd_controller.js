@@ -1,7 +1,11 @@
 const CccdModel = require('../model/cccds');
 const fs = require('fs');
-const NguoiDungModel = require('../model/nguoidungs');
 const { uploadToCloudinary, deleteFromCloudinary } = require("../config/common/uploads");
+const { formatCurrencyVND, formatDate } = require('./utils');
+const socket = require('../socket');
+const ThongBaoModel = require('../model/thongbaos');
+const NguoiDungModel = require('../model/nguoidungs');
+const { sendFirebaseNotification } = require('./utils');
 
 // Phương thức lấy thông tin CCCD theo userId
 exports.getCccdByUserId = async (req, res) => {
@@ -40,7 +44,7 @@ exports.addCccd = async (req, res) => {
         return res.status(404).json({ message: "CCCD không hợp lệ!" });
     }
 
-    const existingSoCCCD = await CccdModel.findOne({ soCCCD : soCCCD });
+    const existingSoCCCD = await CccdModel.findOne({ soCCCD: soCCCD });
     if (existingSoCCCD) {
         return res.status(404).json({ message: "CCCD đã được liên kết tài khoản khác!" });
     }
@@ -51,8 +55,8 @@ exports.addCccd = async (req, res) => {
         return res.status(404).json({ message: "Người dùng không tồn tại!" });
     }
 
-    const existingCCCD = await CccdModel.findOne({id_NguoiDung : user._id})
-    if(existingCCCD){
+    const existingCCCD = await CccdModel.findOne({ id_NguoiDung: user._id })
+    if (existingCCCD) {
         return res.status(404).json({ message: "Người dùng đã có cccd!" });
     }
 
@@ -99,9 +103,46 @@ exports.addCccd = async (req, res) => {
 
         const result = await cccd.save();
 
-        await NguoiDungModel.findByIdAndUpdate(id_NguoiDung, { xacMinh : true}, { new : true });
+        await NguoiDungModel.findByIdAndUpdate(id_NguoiDung, { xacMinh: true }, { new: true });
 
-        res.json({ status: 200, message: "Thêm thành công", data: result });
+        if (result) {
+            const io = socket.getIO();
+            const sockets = await io.in(id_NguoiDung).fetchSockets();
+
+            // Tạo thông báo mới
+            const thongBaoData = new ThongBaoModel({
+                id_NguoiDung: id_NguoiDung,
+                tieuDe: 'Xác thực thành công!',
+                noiDung: `Tài khoản của đã được xác thực CCCD thành công, bây giờ bạn có thể đặt phòng tại ứng dụng Haven Inn.`,
+                ngayGui: new Date(),
+            });
+
+            await thongBaoData.save();
+
+            if (sockets.length > 0) {
+                // Gửi thông báo qua Socket.IO nếu người dùng online
+                io.to(id_NguoiDung).emit('new-notification', {
+                    id_NguoiDung: id_NguoiDung,
+                    message: `Xác thực thành công!`,
+                    type: 'success',    
+                    thongBaoData,
+                });
+            } else {
+                // Gửi thông báo qua Firebase nếu người dùng offline
+                const user = await NguoiDungModel.findById(id_NguoiDung);
+                if (user && user.deviceToken) {
+                    await sendFirebaseNotification(
+                        user.deviceToken,
+                        'Xác thực thành công!',
+                        `Tài khoản của đã được xác thực CCCD thành công, bây giờ bạn có thể đặt phòng tại ứng dụng Haven Inn.`,
+                        { cccdId: cccd._id }
+                    );
+                }
+            }
+
+            res.json({ status: 200, message: "Thêm thành công", data: result });
+        }
+
 
     } catch (error) {
         console.error('Error:', error);

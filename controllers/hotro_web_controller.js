@@ -1,5 +1,8 @@
 const HotroModel = require('../model/hotros'); // Model hỗ trợ
-
+const socket = require('../socket');
+const ThongBaoModel = require('../model/thongbaos');
+const NguoiDungModel = require('../model/nguoidungs');
+const { sendFirebaseNotification } = require('./utils');
 // Lấy danh sách hoặc theo ID
 
 
@@ -57,7 +60,65 @@ exports.suaHotro = async (req, res) => {
             return res.redirect('/web/hotros');
         }
 
- await HotroModel.findByIdAndUpdate(id, req.body, { new: true });
+        const { trangThai: oldTrangThai } = hotro;
+        const { trangThai: newTrangThai, phanHoi } = req.body;
+
+        // Cập nhật thông tin hỗ trợ
+        await HotroModel.findByIdAndUpdate(id, req.body, { new: true });
+
+        if (oldTrangThai !== newTrangThai) {
+            // Gửi thông báo
+            const io = socket.getIO();
+            const id_NguoiDung = hotro.id_NguoiDung;
+            const sockets = await io.in(id_NguoiDung).fetchSockets();
+
+            // Xác định tiêu đề và nội dung thông báo
+            let tieuDe = '';
+            let noiDung = '';
+
+            if (newTrangThai == 1) {
+                tieuDe = 'Yêu cầu hỗ trợ của bạn đang được xử lý!';
+                noiDung = `Vấn đề ${hotro.vanDe} của bạn đang được xử lý.
+Phản hồi: ${phanHoi}. 
+Xin cảm ơn!`;
+            } else if (newTrangThai == 2) {
+                tieuDe = 'Yêu cầu hỗ trợ của bạn đã được xử lý!';
+                noiDung = `Vấn đề ${hotro.vanDe} đã được xử lý. 
+Phản hồi: ${phanHoi}. 
+Xin cảm ơn!`;
+            }
+
+            // Lưu thông báo vào cơ sở dữ liệu
+            const thongBaoData = new ThongBaoModel({
+                id_NguoiDung,
+                tieuDe,
+                noiDung,
+                ngayGui: new Date(),
+            });
+            
+            await thongBaoData.save();
+
+            if (sockets.length > 0) {
+                // Gửi qua Socket.IO
+                io.to(id_NguoiDung).emit('new-notification', {
+                    id_NguoiDung,
+                    message: tieuDe,
+                    type: 'success',
+                    thongBaoData,
+                });
+            } else {
+                // Gửi qua Firebase nếu người dùng offline
+                const user = await NguoiDungModel.findById(id_NguoiDung);
+                if (user && user.deviceToken) {
+                    await sendFirebaseNotification(
+                        user.deviceToken,
+                        tieuDe,
+                        noiDung,
+                        { hotroId: String(hotro._id) }
+                    );
+                }
+            }
+        }
 
         req.session.message = 'Cập nhật thông tin hỗ trợ thành công!';
         res.redirect('/web/hotros');
@@ -67,4 +128,5 @@ exports.suaHotro = async (req, res) => {
         res.redirect('/web/hotros');
     }
 };
+
 

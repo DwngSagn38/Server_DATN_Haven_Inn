@@ -1,7 +1,7 @@
 html,
 body {
   height: 100%;
-  background-image: url('../images/M.jpg'); /* Đường dẫn ảnh */
+  background-image: url('../images/bg4.jpg'); /* Đường dẫn ảnh */
   background-size: cover; /* Làm cho ảnh phủ kín màn hình */
   background-position: center; /* Căn giữa ảnh */
   background-attachment: fixed; /* Giữ ảnh cố định khi cuộn trang */
@@ -36,7 +36,7 @@ body {
 .form-signin {
   border-color: rgb(252, 252, 252);
   border: 9px;
-  background-color: rgba(255, 255, 255, 0.2); /* Màu nền với độ trong suốt */
+  background-color: rgba(255, 255, 255, 0.5); /* Màu nền với độ trong suốt */
   padding: 30px;
   border-radius: 8px; /* Bo góc cho form */
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5); /* Thêm bóng đổ cho form */

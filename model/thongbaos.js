@@ -6,6 +6,7 @@ const ThongBaoModel = new Schema({
     tieuDe : { type : String , required : true},
     noiDung : { type : String , required : true},
     ngayGui : { type : Date},
+    avatar : { type : String},
     trangThai : { type : Boolean, default : true} // true : chưa đọc , false : đã đọc
 },{
     timestamps : true

@@ -230,3 +230,56 @@ header.navbar .nav-item img:hover {
 .bg-header {
   background-color: #213A58;
 }
+
+.notification-item {
+  border: 1px solid #999999;
+  border-radius: 10px;
+  margin: 10px;
+  padding: 5px;
+}
+
+.notification-item.unread {
+  position: relative;
+}
+
+.notification-item.unread::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
+
+
+#notificationBadge {
+  position: absolute;
+  top: 12px; /* Gần sát mép trên của biểu tượng */
+  right: 2px; /* Gần sát mép phải của biểu tượng */
+  transform: translate(50%, -50%); /* Dịch chuyển vào bên trong biểu tượng */
+  width: 14px; /* Kích thước chấm đỏ */
+  height: 14px; /* Kích thước chấm đỏ */
+  border-radius: 50%; /* Bo tròn chấm đỏ */
+  background-color: red; /* Màu nền chấm đỏ */
+  padding: 0; /* Loại bỏ padding */
+  display: flex; /* Hiển thị dạng flex */
+  align-items: center; /* Căn giữa dọc */
+  justify-content: center; /* Căn giữa ngang */
+  color: white; /* Màu chữ bên trong (nếu cần) */
+  font-size: 8px; /* Kích thước chữ */
+}
+
+.notification-content {
+  flex-grow: 1;
+}
+
+.notification-content span {
+  font-size: 14px;
+}
+
+.notification-content small {
+  font-size: 12px;
+  color: #6c757d; /* Màu chữ xám */
+}

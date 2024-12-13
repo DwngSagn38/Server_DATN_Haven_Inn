@@ -1,5 +1,18 @@
 const ThongBaoModel = require('../model/thongbaos')
 
+// API Lấy tất cả thông báo từ DB
+exports.getAllNotifications = async (req, res, next) => {
+    try {
+        const notifications = await ThongBaoModel.find({ id_NguoiDung : null }).sort({ ngayGui: -1 });
+        res.status(200).json({ status: 200, notifications });
+    } catch (error) {
+        console.error('Lỗi khi lấy thông báo:', error);
+        res.status(500).json({ status: 500, message: 'Lỗi server', error: error.message });
+    }
+};
+
+
+// API Lấy tất cả thông báo từ DB cho nguoi dùng
 exports.getListorByidNguoiDung = async (req, res, next) => {
     try {
         const { id_NguoiDung } = req.query;
@@ -22,84 +35,19 @@ exports.getListorByidNguoiDung = async (req, res, next) => {
     }
 }
 
-exports.addThongBao = async (req, res, next) => {
+// Controller để cập nhật trạng thái thông báo
+exports.updateThongBaoStatus = async (req, res) => {
     try {
-        const data = req.body;
-        const thongbao = new ThongBaoModel({
-            id_NguoiDung: data.id_NguoiDung,
-            tieuDe: data.tieuDe,
-            noiDung: data.noiDung,
-            ngayGui: data.ngayGui,
-            trangThai: true,
-        })
+        const { id } = req.params; // ID của thông báo
+        const thongBao = await ThongBaoModel.findByIdAndUpdate(id, { trangThai: false }, { new: true });
 
-        const result = await thongbao.save();
-
-        if (result) {
-            res.json({
-                status: 200,
-                msg: "Thêm thông báo thàn công",
-                data: result
-            })
-        } else {
-            res.json({
-                status: 400,
-                msg: "Add fail",
-                data: []
-            })
+        if (!thongBao) {
+            return res.status(404).json({ status: 404, message: "Thông báo không tồn tại" });
         }
+
+        res.status(200).json({ status: 200, message: "Cập nhật trạng thái thành công", data: thongBao });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error fetching data", error: error.message });
+        res.status(500).json({ status: 500, message: "Lỗi khi cập nhật trạng thái", error: error.message });
     }
-}
+};
 
-exports.suaThongBao = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const data = req.body;
-
-        // Sử dụng findByIdAndUpdate để tìm và cập nhật dữ liệu
-        const result = await ThongBaoModel.findByIdAndUpdate(id, data, { new: true });
-
-        if (result) {
-            res.json({
-                status: 200,
-                msg: "Update success",
-                data: result
-            })
-        } else {
-            res.json({
-                status: 400,
-                msg: "Update fail",
-                data: []
-            })
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error fetching data", error: error.message });
-    }
-}
-
-exports.xoaThongBao = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const result = await ThongBaoModel.findByIdAndDelete({ _id: id });
-        if (result) {
-            res.json({
-                "status": "200",
-                "msg": "Đã xóa thông báo",
-                "data": result
-            })
-        } else {
-            res.json({
-                "status": "400",
-                "msg": "Delete fail",
-                "data": []
-            })
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error fetching data", error: error.message });
-    }
-}

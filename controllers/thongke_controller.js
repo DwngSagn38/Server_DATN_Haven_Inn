@@ -33,6 +33,7 @@ exports.getDashboardData = async (req, res, next) => {
             totalDanhGia,
             hoTroChuaXuLy,
             hoaDonChuaXuLy,
+            hoaDonBiHuy,
             tongDoanhThuHoaDon,
             doanhThuThang,
             topKhachHang,
@@ -46,20 +47,21 @@ exports.getDashboardData = async (req, res, next) => {
             ChiTietHoaDonModel.countDocuments(),
             NguoiDungModel.countDocuments({ chucVu: { $ne: 2 } }),
             HoTroModel.countDocuments(),
-            HoadonModel.countDocuments({ trangThai: { $ne: 3 } }),
+            HoadonModel.countDocuments(),
             CouponModel.countDocuments(),
             DichVuModel.countDocuments(),
             DanhGiaModel.countDocuments(),
             HoTroModel.countDocuments({ trangThai: 0 }),
-            HoadonModel.countDocuments({ trangThai: 0 }),
+            HoadonModel.countDocuments({ trangThai: 1 }),
+            HoadonModel.countDocuments({ trangThai: 2 }),
             HoadonModel.aggregate([
-                { $match: { trangThai: 1 } },
+                { $match: { trangThai: { $ne: 2 } } },
                 { $group: { _id: null, total: { $sum: "$tongTien" } } }
             ]),
             HoadonModel.aggregate([
                 {
                     $match: {
-                        trangThai: 1,
+                        trangThai: { $ne: 2 },
                         ngayThanhToan: { $gte: firstDayOfMonth, $lte: lastDayOfMonth }
                     }
                 },
@@ -87,6 +89,7 @@ exports.getDashboardData = async (req, res, next) => {
             totalDanhGia,
             hoTroChuaXuLy,
             hoaDonChuaXuLy,
+            hoaDonBiHuy,
             tongDoanhThuHoaDon: formatCurrencyVND(tongDoanhThuHoaDons),
             doanhThuThang: formatCurrencyVND(doanhThuThangs),
             topKhachHang,
@@ -126,7 +129,7 @@ const getBieuDoData = async () => {
     const bieuDoData = await HoadonModel.aggregate([
         {
             $match: {
-                trangThai: 1, // Chỉ lấy hóa đơn đã hoàn thành
+                trangThai: { $ne: 2 }, // Chỉ lấy hóa đơn đã hoàn thành
                 ngayThanhToan: { $gte: startOfYear, $lt: endOfYear }, // Lọc theo năm hiện tại
             },
         },
@@ -207,7 +210,7 @@ const getTop10KhachHang = async () => {
     const topKhachHang = await HoadonModel.aggregate([
         {
             $match: {
-                trangThai: 1, // Chỉ lấy hóa đơn đã hoàn thành
+                trangThai: { $ne: 2 }, 
             },
         },
         {

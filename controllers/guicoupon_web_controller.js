@@ -95,7 +95,7 @@ const sendVoucherToUsers = async (req, res) => {
                             await sendFirebaseNotification(
                                 user.deviceToken,
                                 'Bạn đã nhận voucher mới!',
-                                `Giảm giá ${voucher.giamGia * 100}% - tối đa ${voucher.giamGiaToiDa} VND`,
+                                `Bạn đã nhận voucher: ${voucher.giamGia * 100}% khi đặt phòng tại ứng dụng. Hãy sử dụng ngay!`,
                                 { voucherId: id }
                             );
                         }

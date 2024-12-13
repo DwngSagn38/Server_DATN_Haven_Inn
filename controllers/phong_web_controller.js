@@ -2,12 +2,14 @@ const PhongModel = require('../model/phongs');
 const LoaiPhongModel = require('../model/loaiphongs');
 const ChiTietHoaDonModel = require('../model/chitiethoadons');
 
+
 exports.getListorByIdorIdPhong = async (req, res, next) => {
     try {
         const { trangThai } = req.query; // Lấy trạng thái từ query params
         const loaiphongs = await LoaiPhongModel.find();
-        
-        let filter = {}; // Bộ lọc
+
+        // Tạo bộ lọc phòng dựa trên trạng thái
+        let filter = {};
         if (trangThai !== undefined && trangThai !== '') {
             filter.trangThai = parseInt(trangThai, 10);
         }
@@ -19,34 +21,36 @@ exports.getListorByIdorIdPhong = async (req, res, next) => {
             })
             .lean();
 
-        const currentDate = new Date();
-
+        // Lấy chi tiết hóa đơn liên quan đến các phòng và trạng thái hóa đơn là 0 hoặc 1
         const chiTietHoaDons = await ChiTietHoaDonModel.find({ id_Phong: { $in: phongs.map(p => p._id) } })
             .populate({
                 path: 'id_HoaDon',
-                select: 'ngayNhanPhong ngayTraPhong',
+                select: 'ngayNhanPhong ngayTraPhong trangThai',
+                match: { trangThai: { $in: [0, 1] } }, // Chỉ lấy hóa đơn có trạng thái 0 hoặc 1
             })
             .lean();
 
         for (const phong of phongs) {
+            // Tìm chi tiết hóa đơn phù hợp với phòng
             const chiTiet = chiTietHoaDons.find(ct => String(ct.id_Phong) === String(phong._id));
             if (chiTiet && chiTiet.id_HoaDon) {
                 phong.ngayNhanPhong = chiTiet.id_HoaDon.ngayNhanPhong;
                 phong.ngayTraPhong = chiTiet.id_HoaDon.ngayTraPhong;
-
-                if (new Date(phong.ngayNhanPhong) > currentDate) {
-                    phong.trangThai = 2;
-                } else if (new Date(phong.ngayNhanPhong) <= currentDate && new Date(phong.ngayTraPhong) >= currentDate) {
-                    phong.trangThai = 1;
-                } else {
-                    phong.trangThai = 0;
-                }
-
-                await PhongModel.updateOne({ _id: phong._id }, { $set: { trangThai: phong.trangThai } });
             } else {
                 phong.ngayNhanPhong = null;
                 phong.ngayTraPhong = null;
-                phong.trangThai = 0;
+            }
+
+
+            // Nếu phòng đang dọn dẹp (giả sử trạng thái 3), đặt setTimeout để chuyển trạng thái về 0 sau 15 phút
+            if (phong.trangThai === 3) {
+                setTimeout(async () => {
+                    try {
+                        await PhongModel.updateOne({ _id: phong._id }, { trangThai: 0 });
+                    } catch (error) {
+                        console.error(`Lỗi khi cập nhật trạng thái phòng ${phong._id}:`, error.message);
+                    }
+                }, 15 * 60 * 1000); // 15 phút
             }
         }
 
@@ -64,12 +68,11 @@ exports.getListorByIdorIdPhong = async (req, res, next) => {
         res.render('../views/phong/phongs', {
             message: 'Lỗi khi lấy dữ liệu',
             phongs: [],
+            loaiphongs: [],
             trangThai: trangThai || '', // Truyền giá trị trạng thái vào view ngay cả khi lỗi
         });
     }
 };
-
-
 
 exports.addPhong = async (req, res, next) => {
     try {
@@ -148,7 +151,11 @@ exports.getTrangThai = async (req, res, next) => {
 
         // Lấy thông tin trạng thái của phòng từ database
         const chiTietHoaDons = await ChiTietHoaDonModel.find({ id_Phong: id })
-            .populate('id_HoaDon', 'ngayNhanPhong ngayTraPhong')
+            .populate({
+                path: 'id_HoaDon',
+                select: 'ngayNhanPhong ngayTraPhong trangThai',
+                match: { trangThai: { $in: [0, 1] } }, // Chỉ lấy hóa đơn có trạng thái 0 hoặc 1
+            })
             .lean();
 
         // Tạo một mảng ngày từ ngày nhận phòng đến ngày trả phòng

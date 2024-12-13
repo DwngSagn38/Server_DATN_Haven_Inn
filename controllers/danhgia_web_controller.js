@@ -34,7 +34,6 @@ exports.getListLoaiPhong = async (req, res) => {
         const message = req.session.message; // Lấy thông báo từ session
         delete req.session.message; // Xóa thông báo sau khi đã sử dụng
 
-
         // Chuyển message nếu có
         res.render('../views/danhgia/danhgias', { roomTypes, message: message || null });
     } catch (err) {

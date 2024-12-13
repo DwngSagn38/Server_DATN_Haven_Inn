@@ -60,6 +60,8 @@ app.use(
 
 const methodOverride = require('method-override');
 const bodyParser = require('body-parser');
+app.use(methodOverride('_method'));
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
