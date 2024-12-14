@@ -374,3 +374,73 @@ exports.getLichSuDatPhong = async (req, res, next) => {
         res.status(500).json({ message: "Error fetching data", error: error.message });
     }
 };
+
+
+exports.getDetailAPI = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Tìm hóa đơn và chi tiết
+        const hoadon = await HoadonModel.findById(id)
+            .populate('id_NguoiDung', 'tenNguoiDung email soDienThoai')
+            .populate('id_Coupon', 'maGiamGia')
+            .lean();
+
+        if (!hoadon) {
+            return res.render({ error: true, message: 'Không tìm thấy hóa đơn.' });
+        }
+
+        const ngayNhanPhong = new Date(hoadon.ngayNhanPhong);
+        const ngayTraPhong = new Date(hoadon.ngayTraPhong);
+
+        if (isNaN(ngayNhanPhong.getTime()) || isNaN(ngayTraPhong.getTime())) {
+            return res.status(400).json({
+                error: true,
+                message: "Ngày nhận hoặc ngày trả không hợp lệ.",
+            });
+        }
+
+        const soDem = Math.ceil((ngayTraPhong - ngayNhanPhong) / (1000 * 60 * 60 * 24));
+        if (soDem <= 0) {
+            return res.status(400).json({
+                error: true,
+                message: "Ngày trả phòng phải sau ngày nhận phòng.",
+            });
+        }
+
+
+        const chiTietHoaDons = await ChiTietHoaDonModel.find({ id_HoaDon: hoadon._id })
+            .populate({
+                path: 'id_Phong',
+                select: 'soPhong id_LoaiPhong VIP',
+                populate: { path: 'id_LoaiPhong', select: 'tenLoaiPhong giaTien' },
+            })
+            .lean();
+
+
+        const ngayThanhToan = hoadon.ngayThanhToan ? formatDate(hoadon.ngayThanhToan) : ''
+        console.log('ngay thanh toán : ', ngayThanhToan)
+        hoadon.ngayNhanPhong = formatDate(hoadon.ngayNhanPhong);
+        hoadon.ngayTraPhong = formatDate(hoadon.ngayTraPhong);
+        hoadon.createdAt = formatDate(hoadon.createdAt);
+        hoadon.ngayThanhToan = ngayThanhToan;
+
+
+        // Định dạng dữ liệu trả về
+        hoadon.chiTiet = chiTietHoaDons.map((ct) => ({
+            soPhong: ct.id_Phong.soPhong,
+            tenLoaiPhong: ct.id_Phong.id_LoaiPhong?.tenLoaiPhong || 'Không xác định',
+            giaPhong: ct.giaPhong,
+            VIP: ct.id_Phong.VIP,
+            soLuongKhach: ct.soLuongKhach,
+            tongTien: ct.tongTien,
+            buaSang: ct.buaSang,
+            soDem: soDem
+        }));
+
+        res.json(hoadon);
+    } catch (error) {
+        console.error('Error fetching invoice details:', error);
+        res.status(500).json({ error: true, message: 'Lỗi khi lấy chi tiết hóa đơn.' });
+    }
+};
