@@ -85,5 +85,14 @@
     });
 });
 
+document.getElementById('couponForm').addEventListener('submit', function (event) {
+    const couponCode = document.getElementById('maGiamGia').value;
+    const validPattern = /^[a-zA-Z0-9]+$/;
+    if (!validPattern.test(couponCode)) {
+        event.preventDefault();
+        alert('Mã coupon không hợp lệ. Chỉ được sử dụng chữ cái, số, không dấu cách hoặc ký tự đặc biệt.');
+        return;
+    }
+});
 
 </script>
