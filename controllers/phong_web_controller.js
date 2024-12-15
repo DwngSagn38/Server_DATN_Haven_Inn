@@ -21,6 +21,8 @@ exports.getListorByIdorIdPhong = async (req, res, next) => {
             })
             .lean();
 
+        // await PhongModel.updateMany({ trangThai : 0})
+
         // Lấy chi tiết hóa đơn liên quan đến các phòng và trạng thái hóa đơn là 0 hoặc 1
         const chiTietHoaDons = await ChiTietHoaDonModel.find({ id_Phong: { $in: phongs.map(p => p._id) } })
             .populate({

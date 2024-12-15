@@ -70,7 +70,7 @@ exports.suaHotro = async (req, res) => {
             // Gửi thông báo
             const io = socket.getIO();
             const id_NguoiDung = hotro.id_NguoiDung;
-            const sockets = await io.in(id_NguoiDung).fetchSockets();
+            const sockets = await io.in(id_NguoiDung.toString()).fetchSockets();
 
             // Xác định tiêu đề và nội dung thông báo
             let tieuDe = '';
@@ -100,7 +100,7 @@ Xin cảm ơn!`;
 
             if (sockets.length > 0) {
                 // Gửi qua Socket.IO
-                io.to(id_NguoiDung).emit('new-notification', {
+                io.to(id_NguoiDung.toString()).emit('new-notification', {
                     id_NguoiDung,
                     message: tieuDe,
                     type: 'success',

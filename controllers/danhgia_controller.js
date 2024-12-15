@@ -38,8 +38,6 @@ exports.getListorByIdUserorIdLPhong = async (req, res, next) => {
     }
 }
 
-
-
 exports.addDanhGia = async (req, res, next) => {
     try {
         const data = req.body;
@@ -122,25 +120,3 @@ exports.suaDanhGia = async (req, res, next) => {
     }
 }
 
-exports.xoaDanhGia = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const result = await DanhGiaModel.findByIdAndDelete({ _id: id });
-        if (result) {
-            res.json({
-                "status": "200",
-                "msg": "Đã xóa đánh giá",
-                "data": result
-            })
-        } else {
-            res.json({
-                "status": "400",
-                "msg": "Delete fail",
-                "data": []
-            })
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error fetching data", error: error.message });
-    }
-}

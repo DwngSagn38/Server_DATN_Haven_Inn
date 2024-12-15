@@ -1,13 +1,13 @@
 const { Server } = require('socket.io');
 
 let io;
+const connectedUsers = {}; // Store connected users and their socket IDs
 
 module.exports = {
   init: (server) => {
-    // Khởi tạo Socket.IO với server và tùy chỉnh CORS nếu cần thiết
     io = new Server(server, {
       cors: {
-        origin: "http://localhost:3000", // Thay * bằng domain cụ thể nếu cần
+        origin: "http://localhost:3000",
         methods: ["GET", "POST"],
       },
     });
@@ -15,48 +15,47 @@ module.exports = {
     io.on('connection', (socket) => {
       console.log('A user connected:', socket.id);
 
-      // Lấy id_NguoiDung từ client
+      // Get `id_NguoiDung` from the client's handshake query
       const id_NguoiDung = socket.handshake.query.idNguoiDung;
 
-      // Nếu có id_NguoiDung, thêm user vào phòng riêng theo id
       if (id_NguoiDung) {
+        // Disconnect the previous connection if a user reconnects with the same ID
+        if (connectedUsers[id_NguoiDung]) {
+          const previousSocketId = connectedUsers[id_NguoiDung];
+          console.log(`Disconnecting previous socket for user ${id_NguoiDung}: ${previousSocketId}`);
+          io.sockets.sockets.get(previousSocketId)?.disconnect();
+        }
+
+        // Store the new connection
+        connectedUsers[id_NguoiDung] = socket.id;
         socket.join(id_NguoiDung);
-        console.log(`User with ID: ${id_NguoiDung} joined room.`);
+        console.log(`User with ID: ${id_NguoiDung} joined room ${id_NguoiDung}`);
       }
 
-      // Lắng nghe sự kiện join-admin để thêm admin vào phòng admin
+      // Handle disconnect
+      socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+
+        // Remove the disconnected user's socket ID from the list
+        for (const userId in connectedUsers) {
+          if (connectedUsers[userId] === socket.id) {
+            delete connectedUsers[userId];
+            console.log(`Removed user ${userId} from connected users`);
+            break;
+          }
+        }
+      });
+
+      // Custom events
+      socket.on('custom-event', (data) => {
+        console.log('Received custom-event with data:', data);
+        io.to('admin-room').emit('new-notification', data);
+      });
+
       socket.on('join-admin-room', () => {
         socket.join('admin-room');
         console.log(`Socket ${socket.id} joined admin-room`);
       });
-
-      // Xử lý khi client ngắt kết nối
-      socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
-      });
-
-      // Ví dụ: Xử lý sự kiện custom từ client
-      socket.on('custom-event', (data) => {
-        console.log('Received custom-event with data:', data);
-        // Phát lại sự kiện này tới phòng admin
-        io.to('admin-room').emit('new-notification', data);
-      });
-
-      // // Gửi thông báo đến admin-room
-      // function sendNotification(message, details) {
-      //   io.to('admin-room').emit('new-notification', {
-      //     message,    // Tóm tắt thông báo
-      //     details,    // Chi tiết thông báo
-      //   });
-      // }
-
-      // // Ví dụ: Gửi thông báo mỗi 30 giây (chỉ để test)
-      // setInterval(() => {
-      //   sendNotification(
-      //     `Thông báo mới lúc ${new Date().toLocaleTimeString()}`,
-      //     `Chi tiết thông báo được gửi vào lúc ${new Date().toLocaleTimeString()}`
-      //   );
-      // }, 30000);
     });
 
     return io;

@@ -20,6 +20,7 @@ const hoaDonController = require('../controllers/hoadon_controller')
 // });
 
 router.get('/',hoaDonController.getListorByIdUserorStatus);
+router.get('/chitiet/:id',hoaDonController.getDetailAPI);
 router.get('/history/',hoaDonController.getLichSuDatPhong);
 router.post('/post',hoaDonController.addHoaDon);
 router.put('/huy/:id',hoaDonController.huyHoaDon);
