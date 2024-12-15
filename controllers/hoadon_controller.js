@@ -318,17 +318,9 @@ exports.getLichSuDatPhong = async (req, res, next) => {
         if (id_NguoiDung) {
             filter.id_NguoiDung = id_NguoiDung;
         }
-        // Lọc theo `trangThai` nếu có, nhưng kiểm tra trạng thái khác 3
         if (trangThai) {
             const trangThaiInt = parseInt(trangThai, 10); // Đảm bảo kiểu số
-            if (trangThaiInt === 3) {
-                return res.status(404).send({ message: 'Lỗi' });
-            } else {
-                filter.trangThai = trangThaiInt; // Lọc chính xác trạng thái được yêu cầu
-            }
-        } else {
-            // Mặc định lấy tất cả hóa đơn có trạng thái khác 3
-            filter.trangThai = { $ne: 3 }; // MongoDB operator để kiểm tra "khác"
+            filter.trangThai = trangThaiInt;
         }
 
         // Tìm hóa đơn theo điều kiện lọc
@@ -348,15 +340,21 @@ exports.getLichSuDatPhong = async (req, res, next) => {
                     select: 'soPhong id_LoaiPhong', // Lấy số phòng và loại phòng
                     populate: {
                         path: 'id_LoaiPhong',
-                        select: 'tenLoaiPhong hinhAnh', // Lấy tên loại phòng
+                        select: '_id tenLoaiPhong hinhAnh', // Lấy tên loại phòng
                     },
                 })
                 .lean();
 
             if (chiTietHoaDons.length > 0) {
-                // Thêm chi tiết hóa đơn đã liên kết loại phòng và số phòng vào kết quả
+                // Lấy tất cả `id_LoaiPhong` từ các chi tiết
+                const id_LoaiPhongList = chiTietHoaDons
+                    .map((chitiet) => chitiet.id_Phong?.id_LoaiPhong?._id)
+                    .filter((id) => id !== undefined); // Loại bỏ giá trị null hoặc undefined
+
+                // Thêm vào kết quả chính
                 results.push({
                     ...hoadon.toObject(),
+                    id_LoaiPhong: id_LoaiPhongList[0], // Danh sách các id_LoaiPhong
                     chitiet: chiTietHoaDons.map((chitiet) => ({
                         ...chitiet,
                         soPhong: chitiet.id_Phong?.soPhong || null,
@@ -374,6 +372,7 @@ exports.getLichSuDatPhong = async (req, res, next) => {
         res.status(500).json({ message: "Error fetching data", error: error.message });
     }
 };
+
 
 
 exports.getDetailAPI = async (req, res) => {

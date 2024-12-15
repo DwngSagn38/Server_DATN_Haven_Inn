@@ -34,8 +34,8 @@
                             <th class="text-center" style="width: 180px">Mã hóa đơn</th>
                             <th class="text-center" style="width: 180px">Khách hàng</th>
                             <th class="text-center" style="width: 120px">Tổng tiền</th>
-                            <th class="text-center" style="width: 140px">Ngày tạo đơn</th>
-                            <th class="text-center" style="width: 140px">Ngày thanh toán</th>
+                            <th class="text-center" style="width: 140px">Ngày nhận phòng</th>
+                            <th class="text-center" style="width: 140px">Ngày trả phòng</th>
                             <th class="text-center" style="width: 120px">Trạng thái</th>
                             <th class="text-center" style="width: 140px">Hành Động</th>
                         </tr>
@@ -53,10 +53,10 @@
                                     <%= hoadon.tongTien %> VNĐ
                                 </td>
                                 <td>
-                                    <%= hoadon.createdAt %>
+                                    <%= hoadon.ngayNhanPhong %>
                                 </td>
                                 <td>
-                                    <%= hoadon.ngayThanhToan %>
+                                    <%= hoadon.ngayTraPhong %>
                                 </td>
                                 <td>
                                     <% let statusText='' , bg='' ; if (hoadon.trangThai===0) {

@@ -64,6 +64,8 @@ exports.getListorByIdUserorStatus = async (req, res, next) => {
                     ...hoadon.toObject(),
                     createdAt: formatDate(hoadon.createdAt),
                     ngayThanhToan: hoadon.ngayThanhToan ? formatDate(hoadon.ngayThanhToan) : '',
+                    ngayNhanPhong: formatDate(hoadon.ngayNhanPhong),
+                    ngayTraPhong: formatDate(hoadon.ngayTraPhong),
                     maHoaDon,
                     soDem,
                     tongTien: formatCurrencyVND(hoadon.tongTien),

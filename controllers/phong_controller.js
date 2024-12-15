@@ -29,95 +29,6 @@ exports.getListorByIdorIdPhong = async (req, res, next) => {
     }
 }
 
-exports.addPhong = async (req, res, next) => {
-    try {
-        const data = req.body;
-        const loaiphong = await LoaiPhongModel.findById(data.id_LoaiPhong);
-        if (!loaiphong) {
-            return res.send({ message: "Khong tim thay loai phong" })
-        }
-
-        const phong = new PhongModel({
-            soPhong: data.soPhong,
-            id_LoaiPhong: data.id_LoaiPhong,
-            VIP: data.VIP,
-            trangThai: data.trangThai,
-        })
-
-        const result = await phong.save();
-
-        if (result) {
-            res.json({
-                status: 200,
-                msg: "Add success",
-                data: result
-            })
-        } else {
-            res.json({
-                status: 400,
-                msg: "Add fail",
-                data: []
-            })
-        }
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error fetching data", error: error.message });
-    }
-}
-
-exports.suaPhong = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const data = req.body;
-
-        // Sử dụng findByIdAndUpdate để tìm và cập nhật dữ liệu
-        const result = await PhongModel.findByIdAndUpdate(id, data, { new: true });
-
-        if (result) {
-            res.json({
-                status: 200,
-                msg: "Update success",
-                data: result
-            })
-        } else {
-            res.json({
-                status: 400,
-                msg: "Update fail",
-                data: []
-            })
-        }
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error fetching data", error: error.message });
-    }
-}
-
-exports.xoaPhong = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const result = await PhongModel.deleteOne({ _id: id });
-        if (result) {
-            res.json({
-                "status": "200",
-                "msg": "Delete success",
-                "data": result
-            })
-        } else {
-            res.json({
-                "status": "400",
-                "msg": "Delete fail",
-                "data": []
-            })
-        }
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error fetching data", error: error.message });
-    }
-}
-
 exports.getCheck = async (req, res, next) => {
     try {
         const { id_LoaiPhong, ngayNhanPhong, ngayTraPhong } = req.query;
@@ -174,7 +85,7 @@ exports.getCheck = async (req, res, next) => {
                                     ngayTraPhong: { $gte: ngayTra },
                                 },
                             ],
-                            trangThai: 1, // Chỉ xét hóa đơn đã thanh toán
+                            trangThai: { $in: [0, 1] }, // Chỉ xét hóa đơn đã thanh toán, đã nhận phòng
                         },
                     });
 
