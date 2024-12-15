@@ -2,6 +2,7 @@ const HoadonModel = require('../model/hoadons');
 const ChiTietHoaDonModel = require('../model/chitiethoadons')
 const HoTroModel = require('../model/hotros');
 const PhongModel = require('../model/phongs')
+const DanhGiaModel = require('../model/danhgias')
 const User = require('../model/nguoidungs')
 const NguoiDungCouponModel = require('../model/nguoidungcoupons');
 const { formatDate, formatCurrencyVND } = require('./utils');
@@ -351,10 +352,17 @@ exports.getLichSuDatPhong = async (req, res, next) => {
                     .map((chitiet) => chitiet.id_Phong?.id_LoaiPhong?._id)
                     .filter((id) => id !== undefined); // Loại bỏ giá trị null hoặc undefined
 
+
+                const checkDanhGia = await DanhGiaModel.findOne({id_NguoiDung : hoadon.id_NguoiDung, id_LoaiPhong : id_LoaiPhongList[0]})
+                let danhGia = false
+                if(checkDanhGia){
+                    danhGia = true
+                }
                 // Thêm vào kết quả chính
                 results.push({
                     ...hoadon.toObject(),
                     id_LoaiPhong: id_LoaiPhongList[0], // Danh sách các id_LoaiPhong
+                    checkDanhGia : danhGia,
                     chitiet: chiTietHoaDons.map((chitiet) => ({
                         ...chitiet,
                         soPhong: chitiet.id_Phong?.soPhong || null,
