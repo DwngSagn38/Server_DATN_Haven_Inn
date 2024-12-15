@@ -1,7 +1,7 @@
 html,
 body {
   height: 100%;
-  background-image: url('../images/bg4.jpg'); /* Đường dẫn ảnh */
+  background-image: url('../images/backg1.jpg'); /* Đường dẫn ảnh */
   background-size: cover; /* Làm cho ảnh phủ kín màn hình */
   background-position: center; /* Căn giữa ảnh */
   background-attachment: fixed; /* Giữ ảnh cố định khi cuộn trang */
