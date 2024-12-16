@@ -21,7 +21,10 @@ exports.getCoupons = async (req, res, next) => {
             return coupon;
         }));
 
-        res.render('coupon/coupons.ejs', { coupons, message: null, formData: null });
+        const message = req.session.message
+        req.session.message = null
+
+        res.render('coupon/coupons.ejs', { coupons, message: message ? message : null, formData: null });
     } catch (error) {
         console.error(error);
         res.render('coupons', { message: "Error fetching data", coupons: [] });
@@ -36,11 +39,8 @@ exports.addCoupon = async (req, res, next) => {
         // Kiểm tra trùng mã giảm giá
         const CheckMaGiamGia = await CouponModel.findOne({ maGiamGia: data.maGiamGia });
         if (CheckMaGiamGia) {
-            return res.render('coupon/coupons.ejs', {
-                message: "Mã giảm giá không được trùng",
-                coupons: [],
-                formData: data 
-            });
+            req.session.message = 'Mã giảm giá không được trùng!'
+            return res.redirect('/web/coupons');  
         }
 
         // Kiểm tra ngày hết hạn để quyết định trạng thái

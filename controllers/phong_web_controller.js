@@ -113,7 +113,7 @@ exports.suaPhong = async (req, res, next) => {
         const data = req.body;
 
         const phong = await PhongModel.findOne({_id : id});
-        if(phong.trangThai !== 0){
+        if(phong.trangThai !== 0 && phong.trangThai !== 3){
             req.session.message = "Phòng có khách đặt không thể sửa!";
             // Trả về kết quả
             return res.redirect('/web/phongs');

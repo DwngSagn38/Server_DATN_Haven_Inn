@@ -216,7 +216,7 @@ exports.updateTrangThai = async (req, res) => {
                 } catch (error) {
                     console.error('Error updating status after 15 minutes:', error.message);
                 }
-            }, 15 * 60 * 1000);
+            }, 0.5 * 60 * 1000);
         }
 
         const maHoaDon = hoadon._id.toString().slice(-8);
