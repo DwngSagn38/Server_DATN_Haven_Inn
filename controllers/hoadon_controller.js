@@ -250,11 +250,11 @@ Vui lòng kiểm tra và phản hồi ở phần hỗ trợ!.`,
         await thongBaoQuanLy.save();
 
         const io = socket.getIO();
-        const sockets = await io.in(hoadon.id_NguoiDung).fetchSockets();
+        const sockets = await io.in(hoadon.id_NguoiDung.toString()).fetchSockets();
 
         if (sockets.length > 0) {
             // Gửi thông báo qua Socket.IO nếu người dùng online
-            io.to(hoadon.id_NguoiDung).emit('new-notification', {
+            io.to(hoadon.id_NguoiDung.toString()).emit('new-notification', {
                 id_NguoiDung: hoadon.id_NguoiDung,
                 message: `Đơn đặt phòng ${maHoaDon} của bạn đã bị hủy!`,
                 type: 'success',
