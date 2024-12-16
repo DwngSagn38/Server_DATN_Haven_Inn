@@ -21,7 +21,7 @@ exports.getCoupons = async (req, res, next) => {
             return coupon;
         }));
 
-        res.render('coupon/coupons.ejs', { coupons, message: null });
+        res.render('coupon/coupons.ejs', { coupons, message: null, formData: null });
     } catch (error) {
         console.error(error);
         res.render('coupons', { message: "Error fetching data", coupons: [] });
@@ -36,9 +36,10 @@ exports.addCoupon = async (req, res, next) => {
         // Kiểm tra trùng mã giảm giá
         const CheckMaGiamGia = await CouponModel.findOne({ maGiamGia: data.maGiamGia });
         if (CheckMaGiamGia) {
-            return res.render('coupons', {
+            return res.render('coupon/coupons.ejs', {
                 message: "Mã giảm giá không được trùng",
-                coupons: []
+                coupons: [],
+                formData: data 
             });
         }
 
@@ -71,7 +72,7 @@ exports.addCoupon = async (req, res, next) => {
         }
     } catch (error) {
         console.error(error);
-        res.render('coupons', { message: "Error adding coupon", coupons: [] });
+        res.render('/web/coupons', { message: "Error adding coupon", coupons: [],formData: req.body });
     }
 };
 
@@ -80,6 +81,20 @@ exports.editCoupon = async (req, res, next) => {
     try {
         const { id } = req.params;
         const data = req.body;
+
+// Kiểm tra trùng mã giảm giá (trừ mã coupon hiện tại)
+const CheckMaGiamGia = await CouponModel.findOne({
+    maGiamGia: data.maGiamGia,
+    _id: { $ne: id } // Tìm coupon trùng mã, ngoại trừ coupon hiện tại
+});
+
+if (CheckMaGiamGia) {
+    return res.render('coupon/coupons.ejs', {
+        message: "Mã giảm giá đã tồn tại. Vui lòng chọn mã khác.",
+        coupons: [],
+        formData: data 
+    });
+}
 
         // Kiểm tra ngày hết hạn để quyết định trạng thái
         let trangThai = data.trangThai;
