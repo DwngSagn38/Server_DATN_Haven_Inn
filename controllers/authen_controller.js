@@ -111,7 +111,7 @@ exports.sendOtp = async (req, res) => {
         const otp = OtpGenerator.generate(6, {
             digits: true,
             lowerCaseAlphabets: false,
-            upperCaseAlphabets: false,
+            upperCaseAlphabets: false,  
             specialChars: false,
         })
 
